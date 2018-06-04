@@ -268,7 +268,7 @@ void conv2waldpdf(const double X[], double m1, double s1, double m2, double s2, 
 
 			// fill the partition
 			/* CAN I REPLACE THIS WITH AN ADDITIVE FILLER? x[i+1] = x[i]+h
-			HOTSPIT ANALYSIS SUGGESTS THIS IS 18% OF RUNTIME */
+			HOTSPOT ANALYSIS SUGGESTS THIS IS 18% OF RUNTIME */
 
 			/*
 			for (int i = 0; i < partitionLength; i++)
