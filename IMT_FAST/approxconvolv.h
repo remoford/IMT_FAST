@@ -1,13 +1,4 @@
-/*
- * Student License - for use by students to meet course requirements and
- * perform academic research at degree granting institutions only.  Not
- * for government, commercial, or other organizational use.
- *
- * approxconvolv.h
- *
- * Code generation for function 'approxconvolv'
- *
- */
+
 
 #ifndef APPROXCONVOLV_H
 #define APPROXCONVOLV_H
@@ -28,4 +19,3 @@ extern void approxconvolv_replacement(const double z[], const double y[], const 
 
 #endif
 
-/* End of code generation (approxconvolv.h) */

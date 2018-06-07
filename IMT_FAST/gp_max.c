@@ -1,13 +1,4 @@
-/*
- * Student License - for use by students to meet course requirements and
- * perform academic research at degree granting institutions only.  Not
- * for government, commercial, or other organizational use.
- *
- * gp_max.c
- *
- * Code generation for function 'gp_max'
- *
- */
+
 
 /* Include files */
 #include "IMT_analysis_April2017.h"
@@ -18,9 +9,7 @@
 
 /* Function Definitions */
 
-/*
- * function M=gp_max(m,s)
- */
+
 
 double gp_max_fixed(double m, double s)
 {
@@ -69,4 +58,3 @@ double gp_max_fixed(double m, double s)
 }
 
 
-/* End of code generation (gp_max.c) */

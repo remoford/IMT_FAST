@@ -1,13 +1,4 @@
-/*
- * Student License - for use by students to meet course requirements and
- * perform academic research at degree granting institutions only.  Not
- * for government, commercial, or other organizational use.
- *
- * tailmass.h
- *
- * Code generation for function 'tailmass'
- *
- */
+
 
 #ifndef TAILMASS_H
 #define TAILMASS_H
@@ -26,4 +17,3 @@ extern int checktailmass(const double m_a, const double s_a, const double m_b, c
 
 #endif
 
-/* End of code generation (tailmass.h) */

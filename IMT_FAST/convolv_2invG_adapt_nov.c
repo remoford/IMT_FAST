@@ -1,13 +1,4 @@
-/*
- * Student License - for use by students to meet course requirements and
- * perform academic research at degree granting institutions only.  Not
- * for government, commercial, or other organizational use.
- *
- * convolv_2invG_adapt_nov.c
- *
- * Code generation for function 'convolv_2invG_adapt_nov'
- *
- */
+
 
 /* Include files */
 #include "IMT_analysis_April2017.h"

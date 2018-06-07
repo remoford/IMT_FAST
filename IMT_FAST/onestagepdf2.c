@@ -1,13 +1,4 @@
-/*
- * Student License - for use by students to meet course requirements and
- * perform academic research at degree granting institutions only.  Not
- * for government, commercial, or other organizational use.
- *
- * onestagepdf2.c
- *
- * Code generation for function 'onestagepdf2'
- *
- */
+
 
 /* Include files */
 #include "IMT_analysis_April2017.h"
@@ -84,5 +75,3 @@ void waldpdf(const double X[], double mu, double s, double Y[], int size_XY)
 	
 }
 
-
-/* End of code generation (onestagepdf2.c) */

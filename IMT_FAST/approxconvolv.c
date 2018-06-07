@@ -1,19 +1,10 @@
-/*
- * Student License - for use by students to meet course requirements and
- * perform academic research at degree granting institutions only.  Not
- * for government, commercial, or other organizational use.
- *
- * approxconvolv.c
- *
- * Code generation for function 'approxconvolv'
- *
- */
+
 
  /* Include files */
 #include "IMT_analysis_April2017.h"
 #include "approxconvolv.h"
 #include "float.h"
-#include "stdio.h""
+#include "stdio.h"
 
 //#define _VERBOSE
 //#define _FASTIDXMETHOD
@@ -212,6 +203,3 @@ void approxconvolv_replacement(const double z[], const double y[],
 
 
 
-
-
-/* End of code generation (approxconvolv.c) */

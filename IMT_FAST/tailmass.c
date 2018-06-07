@@ -1,13 +1,4 @@
-/*
- * Student License - for use by students to meet course requirements and
- * perform academic research at degree granting institutions only.  Not
- * for government, commercial, or other organizational use.
- *
- * tailmass.c
- *
- * Code generation for function 'tailmass'
- *
- */
+
 
 /* Include files */
 #include "IMT_analysis_April2017.h"
@@ -494,4 +485,3 @@ double tailmass(const double m[2], const double s[2], double T2, const double
 }
 
 #endif
-/* End of code generation (tailmass.c) */

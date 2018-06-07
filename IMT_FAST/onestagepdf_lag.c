@@ -1,13 +1,4 @@
-/*
- * Student License - for use by students to meet course requirements and
- * perform academic research at degree granting institutions only.  Not
- * for government, commercial, or other organizational use.
- *
- * onestagepdf_lag.c
- *
- * Code generation for function 'onestagepdf_lag'
- *
- */
+
 
 /* Include files */
 #include "IMT_analysis_April2017.h"
@@ -65,4 +56,3 @@ void waldlagpdf(const double X[266], double mu, double s, double l, double Y[266
 }
 
 
-/* End of code generation (onestagepdf_lag.c) */

@@ -1,13 +1,4 @@
-/*
- * Student License - for use by students to meet course requirements and
- * perform academic research at degree granting institutions only.  Not
- * for government, commercial, or other organizational use.
- *
- * convolv_3invG_nov.c
- *
- * Code generation for function 'convolv_3invG_nov'
- *
- */
+
 
 /* Include files */
 #include "IMT_analysis_April2017.h"
@@ -476,22 +467,6 @@ void convolv3waldpdf(double m1, double s1, double m2, double s2, double m3, doub
 			% approximate the convolution of the two pdfs
 			% the ith element of v gives approximates convolution over [0, x(i+1)]
 			% as a left-hand Riemann sum
-
-			C=conv(z,y)*h;
-			N=length(y);
-			% only the first N elements of the convolution are valid
-			C=C(1:N);
-			I=zeros(1,n);
-			P=zeros(1,n);
-			for i=1:n
-			%find element of x that is closest to t(i)
-			[M,I(i)]=min((t(i)-x).^2);
-			if I(i)>1
-			P(i)=C(I(i)-1);
-			end
-			if I(i)==1
-			P(i)=0;
-			end
 			*/
 			//printf("\n\ncalling approxconv_rep from conv3waldpdf partitionLength=%d size_XY=%d h=%f\n", partitionLength, size_XY, h);
 			approxconvolv_replacement(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
@@ -569,25 +544,9 @@ void convolv3waldpdf(double m1, double s1, double m2, double s2, double m3, doub
 			}
 			
 			/*
-
 			% approximate the convolution of the two pdfs
 			% the ith element of v gives approximates convolution over [.001, x(i+1)]
 			% as a left-hand Riemann sum
-			C=conv(z,y)*h1;
-			N=length(y);
-			% only the first N elements of the convolution are valid
-			C=C(1:N);
-			I=zeros(1,n);
-			P=zeros(1,n);
-			for i=1:n
-			%find element of x that is closest to t(i)
-			[~,I(i)]=min((t(i)-x).^2);
-			if I(i)>1
-				P(i)=C(I(i)-1);
-			end
-			if I(i)==1
-				P(i)=0;
-			end
 			*/
 			//printf("\n\ncalling approxconv_rep from conv3waldpdf partitionLength=%d size_XY=%d h1=%f\n", partitionLength, size_XY, h1);
 			approxconvolv_replacement(z, y, X, x, Y, &logP1, partitionLength, size_XY, h1);
@@ -604,22 +563,7 @@ void convolv3waldpdf(double m1, double s1, double m2, double s2, double m3, doub
 
 		} /* end */
 
-		/*
-		P=P';
-		P1=max(realmin,P);
-		logP1=sum(log(P1));
 
-		E=abs(logP1-logP0);
-
-		P0=P1;
-		logP0=logP1;
-		h=h1;
-
-		end
-		P=P0;
-		logP=sum(log(P));
-		end
-		*/
 	}
 
 
@@ -663,25 +607,6 @@ void convolv3waldpdf(double m1, double s1, double m2, double s2, double m3, doub
 		% approximate the convolution of the two pdfs
 		% the ith element of v gives approximates convolution over[.001, x(i + 1)]
 		% as a left - hand Riemann sum
-		C = conv(z, y)*h;
-		N = length(y);
-		% only the first N elements of the convolution are valid
-			C = C(1:N);
-		I = zeros(1, n);
-		P = zeros(1, n);
-		for i = 1:n
-			%find element of x that is closest to t(i)
-			[M, I(i)] = min((t(i) - x). ^ 2);
-		if I(i)>1
-			P(i) = C(I(i) - 1);
-		end
-			if I(i) == 1
-				P(i) = 0;
-		end
-			end
-			P = P';
-			P0 = max(realmin, P);
-		logP0 = sum(log(P0));
 		*/
 		double logP0;
 		//printf("\n\ncalling approxconv_rep from conv3waldpdf partitionLength=%d size_XY=%d h=%f\n", partitionLength, size_XY, h);
@@ -746,26 +671,6 @@ void convolv3waldpdf(double m1, double s1, double m2, double s2, double m3, doub
 			% approximate the convolution of the two pdfs
 			% the ith element of v gives approximates convolution over[.001, x(i + 1)]
 			% as a left - hand Riemann sum
-			C = conv(z, y)*h1;
-			N = length(y);
-			% only the first N elements of the convolution are valid
-			C = C(1:N);
-			I = zeros(1, n);
-			P = zeros(1, n);
-			for i = 1:n
-				%find element of x that is closest to t(i)
-				[~, I(i)] = min((t(i) - x). ^ 2);
-				if I(i)>1
-					P(i) = C(I(i) - 1);
-				end
-				if I(i) == 1
-					P(i) = 0;
-				end
-			end
-			P = P';
-			P1 = max(realmin, P);
-			logP1 = sum(log(P1));
-
 			*/
 			//printf("\n\ncalling approxconv_rep from conv3waldpdf partitionLength=%d size_XY=%d h1=%f\n", partitionLength, size_XY, h1);
 			approxconvolv_replacement(z, y, X, x, Y, &logP1, partitionLength, size_XY, h1);

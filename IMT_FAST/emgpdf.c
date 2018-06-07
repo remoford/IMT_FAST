@@ -1,13 +1,4 @@
-/*
- * Student License - for use by students to meet course requirements and
- * perform academic research at degree granting institutions only.  Not
- * for government, commercial, or other organizational use.
- *
- * emgpdf.c
- *
- * Code generation for function 'emgpdf'
- *
- */
+
 
 /* Include files */
 #include "IMT_analysis_April2017.h"
