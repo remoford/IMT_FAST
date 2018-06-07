@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- <!DOCTYPE IntelParallelAdvisorSummaryCollection SYSTEM  "IntelParallelAdvisorSummaryCollection.dtd"> -->
+
+<IntelParallelAdvisorSummary version="" 
+                             kind="DATAKIND_SURVEY_EX" >
+  <hotspot filename="C:\Users\remoford\source\repos\IMT_FAST\IMT_FAST\approxconvolv.c"
+           line_no="73"
+           routine="approxconvolv_replacement"
+           is_vectorized="1"
+           self_time="2.210233E+003"
+           total_time="2.210233E+003"
+           trip_counts=""
+           func_instance="351"
+           priority="0"/>
+  <hotspot filename="C:\Users\remoford\source\repos\IMT_FAST\IMT_FAST\approxconvolv.c"
+           line_no="128"
+           routine="approxconvolv_replacement"
+           is_vectorized="0"
+           self_time="3.575201E+001"
+           total_time="3.575201E+001"
+           trip_counts=""
+           func_instance="20"
+           priority="0"/>
+  <hotspot filename="C:\Users\remoford\source\repos\IMT_FAST\IMT_FAST\onestagepdf2.c"
+           line_no="150"
+           routine="d_onestagepdf2"
+           is_vectorized="0"
+           self_time="7.686594E+000"
+           total_time="3.395815E+001"
+           trip_counts=""
+           func_instance="70"
+           priority="0"/>
+  <hotspot filename="C:\Users\remoford\source\repos\IMT_FAST\IMT_FAST\onestagepdf2.c"
+           line_no="168"
+           routine="d_onestagepdf2"
+           is_vectorized="0"
+           self_time="7.044340E+000"
+           total_time="7.044340E+000"
+           trip_counts=""
+           func_instance="85"
+           priority="0"/>
+  <hotspot filename="C:\Users\remoford\source\repos\IMT_FAST\IMT_FAST\onestagepdf2.c"
+           line_no="179"
+           routine="d_onestagepdf2"
+           is_vectorized="1"
+           self_time="5.648270E+000"
+           total_time="5.648270E+000"
+           trip_counts=""
+           func_instance="354"
+           priority="0"/>
+</IntelParallelAdvisorSummary >

@@ -124,82 +124,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="abs.c" />
     <ClCompile Include="approxconvolv.c" />
-    <ClCompile Include="conv.c" />
     <ClCompile Include="convolv_2invG_adapt_nov.c" />
-    <ClCompile Include="convolv_2invG_nov.c" />
     <ClCompile Include="convolv_3invG_nov.c" />
     <ClCompile Include="emgpdf.c" />
-    <ClCompile Include="eps.c" />
-    <ClCompile Include="exp.c" />
-    <ClCompile Include="fminsearch.c" />
     <ClCompile Include="gp_max.c" />
     <ClCompile Include="IMT_analysis_April2017.c" />
     <ClCompile Include="IMT_analysis_April2017_data.c" />
-    <ClCompile Include="IMT_analysis_April2017_emxutil.c" />
-    <ClCompile Include="IMT_analysis_April2017_initialize.c" />
-    <ClCompile Include="IMT_analysis_April2017_rtwutil.c" />
-    <ClCompile Include="IMT_analysis_April2017_terminate.c" />
-    <ClCompile Include="log.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="onestagepdf2.c" />
     <ClCompile Include="onestagepdf_lag.c" />
     <ClCompile Include="onestagepdf_prime.c" />
-    <ClCompile Include="power.c" />
-    <ClCompile Include="rdivide.c" />
-    <ClCompile Include="recip.c" />
-    <ClCompile Include="rtGetInf.c" />
-    <ClCompile Include="rtGetNaN.c" />
-    <ClCompile Include="rt_nonfinite.c" />
-    <ClCompile Include="sort1.c" />
-    <ClCompile Include="sortIdx.c" />
-    <ClCompile Include="sortLE.c" />
-    <ClCompile Include="sortrows.c" />
-    <ClCompile Include="sqrt.c" />
-    <ClCompile Include="strcmp.c" />
-    <ClCompile Include="sum.c" />
     <ClCompile Include="tailmass.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="abs.h" />
     <ClInclude Include="approxconvolv.h" />
-    <ClInclude Include="conv.h" />
     <ClInclude Include="convolv_2invG_adapt_nov.h" />
     <ClInclude Include="convolv_2invG_nov.h" />
     <ClInclude Include="convolv_3invG_nov.h" />
     <ClInclude Include="emgpdf.h" />
-    <ClInclude Include="eps.h" />
-    <ClInclude Include="exp.h" />
-    <ClInclude Include="fminsearch.h" />
     <ClInclude Include="gp_max.h" />
     <ClInclude Include="IMT_analysis_April2017.h" />
     <ClInclude Include="IMT_analysis_April2017_data.h" />
-    <ClInclude Include="IMT_analysis_April2017_emxutil.h" />
-    <ClInclude Include="IMT_analysis_April2017_initialize.h" />
-    <ClInclude Include="IMT_analysis_April2017_rtwutil.h" />
-    <ClInclude Include="IMT_analysis_April2017_terminate.h" />
-    <ClInclude Include="IMT_analysis_April2017_types.h" />
-    <ClInclude Include="log.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="onestagepdf2.h" />
     <ClInclude Include="onestagepdf_lag.h" />
     <ClInclude Include="onestagepdf_prime.h" />
-    <ClInclude Include="power.h" />
-    <ClInclude Include="rdivide.h" />
-    <ClInclude Include="recip.h" />
-    <ClInclude Include="rtGetInf.h" />
-    <ClInclude Include="rtGetNaN.h" />
-    <ClInclude Include="rtwtypes.h" />
-    <ClInclude Include="rt_defines.h" />
-    <ClInclude Include="rt_nonfinite.h" />
-    <ClInclude Include="sort1.h" />
-    <ClInclude Include="sortIdx.h" />
-    <ClInclude Include="sortLE.h" />
-    <ClInclude Include="sortrows.h" />
-    <ClInclude Include="sqrt.h" />
-    <ClInclude Include="strcmp.h" />
-    <ClInclude Include="sum.h" />
     <ClInclude Include="tailmass.h" />
   </ItemGroup>
   <ItemGroup>

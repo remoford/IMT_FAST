@@ -1,0 +1,4 @@
+
+=== Start: [2018/06/06 14:08:04] === 
+Analysis started...
+Result file: C:\Users\remoford\source\repos\IMT_FAST\IMT_FAST\My Advisor Results - IMT_FAST\e000\trc000\trc000.advixe 

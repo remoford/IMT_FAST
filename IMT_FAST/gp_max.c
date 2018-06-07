@@ -10,12 +10,10 @@
  */
 
 /* Include files */
-#include "rt_nonfinite.h"
 #include "IMT_analysis_April2017.h"
 #include "gp_max.h"
-#include "onestagepdf_prime.h"
+#include "onestagepdf2.h"
 #include "emgpdf.h"
-#include "IMT_analysis_April2017_rtwutil.h"
 #include <gsl/gsl_poly.h>
 
 /* Function Definitions */
@@ -27,11 +25,11 @@
 double gp_max_fixed(double m, double s)
 {
 	double coeff[5];
-	coeff[4] = rt_powd_snf(m, 4.0) / (4.0 * rt_powd_snf(s, 4.0));
+	coeff[4] = pow(m, 4.0) / (4.0 * pow(s, 4.0));
 	coeff[3] = 3.0 * (m * m) / (2.0 * (s * s));
-	coeff[2] = 3.75 - m * m / (2.0 * rt_powd_snf(s, 4.0));
+	coeff[2] = 3.75 - m * m / (2.0 * pow(s, 4.0));
 	coeff[1] = -5.0 / (2.0 * (s * s));
-	coeff[0] = 1.0 / (4.0 * rt_powd_snf(s, 4.0));
+	coeff[0] = 1.0 / (4.0 * pow(s, 4.0));
 
 	double foundRoots[10];
 
@@ -56,7 +54,9 @@ double gp_max_fixed(double m, double s)
 		}
 	}
 	double y[10];
-	onestagepdf_prime_fixed(realRoots, numRealRoots, m, s, y);
+
+	waldpdf(realRoots, m, s, y, numRealRoots);
+
 
 	double largest = 0;
 	for (int i = 0; i < numRealRoots; i++) {

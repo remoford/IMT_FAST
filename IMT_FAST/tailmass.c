@@ -10,12 +10,9 @@
  */
 
 /* Include files */
-#include "rt_nonfinite.h"
 #include "IMT_analysis_April2017.h"
 #include "tailmass.h"
 #include "onestagepdf2.h"
-#include "sum.h"
-#include "IMT_analysis_April2017_emxutil.h"
 #include "gp_max.h"
 
 #define _GSL_GP_MAX_FIXED
@@ -40,9 +37,17 @@ int checktailmass(const double m_a, const double s_a, const double m_b, const do
 		return 0;
 }
 
+double tailmass(const double m[2], const double s[2], double T2, const double sd[2])
+{
+
+	return 0;
+}
+
+#ifdef _ENABLE_OLDTAILMASS
 /*
  * function check2 = tailmass( m, s, eps, T2, sd )
  */
+/**/
 double tailmass(const double m[2], const double s[2], double T2, const double
                 sd[2])
 {
@@ -488,4 +493,5 @@ double tailmass(const double m[2], const double s[2], double T2, const double
   return check2;
 }
 
+#endif
 /* End of code generation (tailmass.c) */

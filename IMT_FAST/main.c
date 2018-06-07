@@ -34,11 +34,8 @@
 /*                                                                       */
 /*************************************************************************/
 /* Include files */
-#include "rt_nonfinite.h"
 #include "IMT_analysis_April2017.h"
 #include "main.h"
-#include "IMT_analysis_April2017_terminate.h"
-#include "IMT_analysis_April2017_initialize.h"
 
 
 #include <gsl/gsl_sf_bessel.h>
@@ -67,10 +64,6 @@ int main(int argc, const char * const argv[])
 
 	  
 
-  /* Initialize the application.
-     You do not need to do this more than one time. */
-  IMT_analysis_April2017_initialize();
-
   /* Invoke the entry-point functions.
      You can call entry-point functions multiple times. */
   if (argc == 2) {
@@ -80,7 +73,6 @@ int main(int argc, const char * const argv[])
 	  printf("invalid number of arguments, please specify model\n");
   }
 
-  IMT_analysis_April2017_terminate();
   return 0;
 }
 

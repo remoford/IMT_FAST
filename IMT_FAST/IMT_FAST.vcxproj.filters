@@ -15,34 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="abs.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="approxconvolv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="conv.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="convolv_2invG_adapt_nov.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="convolv_2invG_nov.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="convolv_3invG_nov.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="emgpdf.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="eps.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="exp.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="fminsearch.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="gp_max.c">
@@ -52,21 +34,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IMT_analysis_April2017_data.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IMT_analysis_April2017_emxutil.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IMT_analysis_April2017_initialize.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IMT_analysis_April2017_rtwutil.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IMT_analysis_April2017_terminate.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="log.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.c">
@@ -81,57 +48,12 @@
     <ClCompile Include="onestagepdf2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="power.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rdivide.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="recip.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rt_nonfinite.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rtGetInf.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rtGetNaN.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sort1.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sortIdx.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sortLE.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sortrows.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sqrt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="strcmp.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sum.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="tailmass.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="abs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="approxconvolv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="conv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="convolv_2invG_adapt_nov.h">
@@ -146,15 +68,6 @@
     <ClInclude Include="emgpdf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="eps.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="exp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="fminsearch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="gp_max.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -162,24 +75,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IMT_analysis_April2017_data.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMT_analysis_April2017_emxutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMT_analysis_April2017_initialize.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMT_analysis_April2017_rtwutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMT_analysis_April2017_terminate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMT_analysis_April2017_types.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="main.h">
@@ -192,51 +87,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="onestagepdf2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="power.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rdivide.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="recip.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rt_defines.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rt_nonfinite.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rtGetInf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rtGetNaN.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rtwtypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sort1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sortIdx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sortLE.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sortrows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sqrt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="strcmp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tailmass.h">

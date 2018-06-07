@@ -10,17 +10,12 @@
  */
 
 /* Include files */
-#include "rt_nonfinite.h"
 #include "IMT_analysis_April2017.h"
-#include "sum.h"
-#include "log.h"
 #include "emgpdf.h"
-#include "fminsearch.h"
 #include "onestagepdf2.h"
 #include "onestagepdf_lag.h"
 #include "convolv_2invG_adapt_nov.h"
 #include "convolv_3invG_nov.h"
-#include "strcmp.h"
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_statistics_double.h"
 #include "time.h"
@@ -67,7 +62,7 @@ void IMT_analysis_April2017(const char *model)
   double mtmp;
 
   int ix;
-  boolean_T exitg1;
+  //boolean_T exitg1;
   double p[3];
   double ep[81];
 
@@ -147,6 +142,7 @@ void IMT_analysis_April2017(const char *model)
 
   cell_wrap_3 pcell[9];
   double c_P[180];
+  /**/
   static const signed char id[90] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2,
     2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 7,
     7, 7, 8, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 5, 6,
@@ -482,7 +478,7 @@ void IMT_analysis_April2017(const char *model)
 
 
 
-
+#ifdef _ENABLE_ONESTAGE
 
   /* Fit the one-stage model */
   /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
@@ -629,6 +625,7 @@ void IMT_analysis_April2017(const char *model)
 	printf("max_ld=%f row_ld=%d\n", maxLikelihood, ind_ld);
 	printf("pd_max=[%f %f]\n\n", optimizedParams[ind_ld][0], optimizedParams[ind_ld][1]);
   }
+#endif
 
   
 
@@ -663,7 +660,7 @@ void IMT_analysis_April2017(const char *model)
 
 
 
-
+#ifdef _ENABLE_ONESTAGELAG
   /* Fit one-stage model with lag with fminsearch */
   if (onestagelagnomle == 1) {
 
@@ -836,6 +833,7 @@ void IMT_analysis_April2017(const char *model)
 	printf("max_ld=%f row_ld=%d\n", maxLikelihood, ind_ld + 1);
 	printf("pd_max=[%f %f %f]\n\n", optimizedParams[ind_ld][0], optimizedParams[ind_ld][1], optimizedParams[ind_ld][2]);
   }
+#endif
 
 
 
@@ -864,11 +862,10 @@ void IMT_analysis_April2017(const char *model)
 
 
 
+#define _ENABLE_TWOSTAGE
 
 
-
-
-  
+#ifdef _ENABLE_TWOSTAGE  
   /*  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
   /* Fit two-stage model without mle */
   /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
@@ -1124,8 +1121,13 @@ void IMT_analysis_April2017(const char *model)
       /* 'IMT_analysis_April2017:640' l=sum(log(l)); */
       /* 'IMT_analysis_April2017:641' ld(i)=l; */
       /* 'IMT_analysis_April2017:642' fprintf('  l=%f hp=%f flag=%f E=%f\n\n',l,hp(i),flag(i),E(i)); */
-      b_log(l);
-	  printf("  l=%f hp=%f flag=%f E=%f\n\n", sum(l), 42, 42, 42);
+
+	  int l_sum = 0;
+	  for (int i = 0; i < 266; i++) {
+		  l_sum += log(l[i]);
+	  }
+
+	  printf("  l=%f hp=%f flag=%f E=%f\n\n", l_sum, 42, 42, 42);
     }
 
     /*  we previously optimized with a larger step size, recalculate with */
@@ -1147,8 +1149,12 @@ void IMT_analysis_April2017(const char *model)
 #endif
 
       /* 'IMT_analysis_April2017:651' ld_true(i)=sum(log(l)); */
-      b_log(l);
-      b_flag[emgfitnomle] = sum(l);
+
+	  int l_sum = 0;
+	  for (int i = 0; i < 266; i++)
+		  l_sum += log(l[i]);
+
+      b_flag[emgfitnomle] = l_sum;
     }
 
 	double max_ld = DBL_MIN;
@@ -1169,6 +1175,7 @@ void IMT_analysis_April2017(const char *model)
     emgfitnomle = 1;
     mtmp = b_flag[0];
     itmp = 0;
+	/*
     if (rtIsNaN(b_flag[0])) {
       ix = 1;
       exitg1 = false;
@@ -1183,6 +1190,7 @@ void IMT_analysis_April2017(const char *model)
         }
       }
     }
+	*/
 
     if (emgfitnomle < 45) {
       while (emgfitnomle + 1 < 46) {
@@ -1201,6 +1209,7 @@ void IMT_analysis_April2017(const char *model)
 
     /*  END FUNCTION FIT_TWOSTAGE */
   }
+#endif
 
 
 
@@ -1238,7 +1247,7 @@ void IMT_analysis_April2017(const char *model)
 
 
 
- 
+#ifdef _ENABLE_THREESTAGE
   /* Fit three-stage model with fminsearch */
   /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
   /* 'IMT_analysis_April2017:819' if threestagefitnomle == 1 */
@@ -1459,6 +1468,7 @@ void IMT_analysis_April2017(const char *model)
     emgfitnomle = 1;
     mtmp = c_flag[0];
     itmp = 0;
+	/*
     if (rtIsNaN(c_flag[0])) {
       ix = 1;
       exitg1 = false;
@@ -1473,6 +1483,7 @@ void IMT_analysis_April2017(const char *model)
         }
       }
     }
+	*/
 
     if (emgfitnomle < 20) {
       while (emgfitnomle + 1 < 21) {
@@ -1499,6 +1510,9 @@ void IMT_analysis_April2017(const char *model)
 
     /*  END FUNCTION FIT_THREESTAGE */
   }
-}
 
+#endif
+
+
+  }
 /* End of code generation (IMT_analysis_April2017.c) */

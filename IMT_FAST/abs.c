@@ -16,29 +16,3 @@
 
 /* Function Definitions */
 
-/*
- *
- */
-#ifdef _OLD_MATLAB_CODE
-void b_abs(const double x[2], double y[2])
-{
-  int k;
-  for (k = 0; k < 2; k++) {
-    y[k] = fabs(x[k]);
-  }
-}
-#endif
-
-/*
- *
- */
-#ifdef _OLD_MATLAB_CODE
-void c_abs(const double x[3], double y[3])
-{
-  int k;
-  for (k = 0; k < 3; k++) {
-    y[k] = fabs(x[k]);
-  }
-}
-#endif
-/* End of code generation (abs.c) */

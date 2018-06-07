@@ -17,11 +17,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include "rt_defines.h"
-#include "rt_nonfinite.h"
-#include "rtwtypes.h"
 #include "omp.h"
-#include "IMT_analysis_April2017_types.h"
 
 /* Function Declarations */
 extern double tailmass(const double m[2], const double s[2], double T2, const double sd[2]);

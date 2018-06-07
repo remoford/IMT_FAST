@@ -41,10 +41,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include "rt_defines.h"
-#include "rt_nonfinite.h"
-#include "rtwtypes.h"
-#include "IMT_analysis_April2017_types.h"
 
 /* Function Declarations */
 extern int main(int argc, const char * const argv[]);

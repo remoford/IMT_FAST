@@ -10,7 +10,6 @@
  */
 
 /* Include files */
-#include "rt_nonfinite.h"
 #include "IMT_analysis_April2017.h"
 #include "IMT_analysis_April2017_data.h"
 
