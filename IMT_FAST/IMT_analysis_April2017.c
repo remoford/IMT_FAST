@@ -672,7 +672,8 @@ void IMT_analysis_April2017(const char *model)
 #ifdef _PARALLEL_SEEDS
 #pragma omp parallel for
 #endif
-    for (emgfitnomle = 0; emgfitnomle < 45; emgfitnomle++) {
+	for (emgfitnomle = 0; emgfitnomle < 10; emgfitnomle++) {
+    //for (emgfitnomle = 0; emgfitnomle < 45; emgfitnomle++) {
 
 	
 		printf("i=%f\n", 1.0 + (double)emgfitnomle);

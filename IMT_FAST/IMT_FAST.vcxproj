@@ -110,13 +110,15 @@
       <OpenMP>GenerateParallelCode</OpenMP>
       <OpenMPSupport>true</OpenMPSupport>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <GenerateAlternateCodePaths>AVXI</GenerateAlternateCodePaths>
-      <UseProcessorExtensions>AVXI</UseProcessorExtensions>
-      <Mtune>Ivybridge</Mtune>
-      <Cpp0xSupport>false</Cpp0xSupport>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <GenerateAlternateCodePaths>AVX2</GenerateAlternateCodePaths>
+      <UseProcessorExtensions>AVX2</UseProcessorExtensions>
+      <Mtune>skylake</Mtune>
+      <Cpp0xSupport>true</Cpp0xSupport>
       <EnableMatrixMultiplyLibraryCall>Yes</EnableMatrixMultiplyLibraryCall>
       <SuppressStartupBanner>false</SuppressStartupBanner>
+      <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
+      <EmitGAPDiagnosticsToFile>true</EmitGAPDiagnosticsToFile>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
