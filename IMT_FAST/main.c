@@ -46,32 +46,36 @@
 
 
 /* Function Declarations */
-static void main_IMT_analysis_April2017(const char *);
+static void main_IMT_analysis_April2017 (const char *);
 
 /* Function Definitions */
-static void main_IMT_analysis_April2017(const char *model)
+static void
+main_IMT_analysis_April2017 (const char *model)
 {
   /* Call the entry-point 'IMT_analysis_April2017'. */
-  IMT_analysis_April2017(model);
+  IMT_analysis_April2017 (model);
 }
 
-int main(int argc, const char * const argv[])
+int
+main (int argc, const char *const argv[])
 {
-  (void)argc;
-  (void)argv;
+  (void) argc;
+  (void) argv;
 
-  
 
-	  
+
+
 
   /* Invoke the entry-point functions.
      You can call entry-point functions multiple times. */
-  if (argc == 2) {
-	  main_IMT_analysis_April2017(argv[1]);
-  }
-  else {
-	  printf("invalid number of arguments, please specify model\n");
-  }
+  if (argc == 2)
+    {
+      main_IMT_analysis_April2017 (argv[1]);
+    }
+  else
+    {
+      printf ("invalid number of arguments, please specify model\n");
+    }
 
   return 0;
 }
