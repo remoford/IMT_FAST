@@ -61,7 +61,9 @@ approxconvolv_replacement(const double z[], const double y[],
        }
        else { */
     for (int i = 0; i < size_xyz; i++) {
+#ifdef __INTEL_COMPILER
 #pragma vector aligned
+#endif
 	for (int j = 0; j < size_xyz; j++) {
 	    C[i + j] += z[i] * y[j] * h;
 	}
@@ -81,24 +83,27 @@ approxconvolv_replacement(const double z[], const double y[],
 #endif
 
     // Find the largest value in X
+	// Is this actually used anywhere?
+	/*
     int MaxX = 0;
     for (int i = 0; i < size_XY; i++) {
 	if (X[i] > MaxX)
 	    MaxX = X[i];
     }
+	*/
 
 #ifdef _VERBOSE
     printf("approxconvolv_replacement_indices = \n");
 #endif
     double delta, minDelta;
-    int nearestNeighborIdx, foundIdx, computedIdx, computedIdxLower,
-	computedIdxUpper;
+    int nearestNeighborIdx, foundIdx;
     for (int i = 0; i < size_XY; i++) {
 
 #ifdef _FASTIDXMETHOD
 	// Newer faster method
-	computedIdxLower = (int) floor(X[i] / h);
-	computedIdxUpper = (int) floor(X[i] / h) + 1;
+	int computedIdx;
+	int computedIdxLower = (int) floor(X[i] / h);
+	int computedIdxUpper = (int) floor(X[i] / h) + 1;
 	if (computedIdxUpper >= size_xyz) {
 	    //printf("WARNING OUT OF RANGE computedIdxUpper=%d size_xyz=%d\n", computedIdxUpper, size_xyz);
 	    computedIdxUpper = size_xyz - 1;

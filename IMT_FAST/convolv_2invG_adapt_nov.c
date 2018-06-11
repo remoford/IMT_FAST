@@ -40,9 +40,10 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void *params)
 
     double Y_WALD[266];
 
-    double Y_INVG[266];
+    
 
 #ifdef _CONV2INVG
+	double Y_INVG[266];
 #ifdef _VERBOSE
     printf("starting convolv_2invG_adapt_nov\n");
 #endif

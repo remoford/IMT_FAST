@@ -333,8 +333,8 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	double Tu = DBL_MIN;
 	if (100 > Tu)
 	    Tu = 100;
-	if (nu + r + 1000 * sd[0] > Tu)
-	    Tu = nu + r + 1000 * sd[0];
+	if (nu + r + 1000.0 * sd[0] > Tu)
+	    Tu = nu + r + 1000.0 * sd[0];
 
 	/*
 	   checkerror=100;
@@ -363,7 +363,9 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	    tally += hh;
 	}
 	tally = 0;
-	for (int i = nu + r; i < partitionLength2; i++) {
+
+	/* FIXME FIXME FIXME */
+	for (int i = (int) nu + r; i < partitionLength2; i++) {
 	    check1_X2[i] = tally;
 	    tally += hh;
 	}

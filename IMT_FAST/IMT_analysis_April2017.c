@@ -42,16 +42,16 @@ void IMT_analysis_April2017(const char *model)
     int emgfitnomle;
     int threestagefitnomle;
     int itmp;
-    double P[81];
+    //double P[81];
     double mtmp;
-    int ix;
-    double p[3];
-    double ep[81];
+    //int ix;
+    //double p[3];
+    //double ep[81];
     double l[266];
-    double b_P[32];
+    //double b_P[32];
     double ld[16];
-    double b_p[2];
-    double pd[32];
+    //double b_p[2];
+    //double pd[32];
 
     cell_wrap_3 pcell[9];
     double c_P[180];
@@ -69,8 +69,8 @@ void IMT_analysis_April2017(const char *model)
     };
 
     double b_pd[180];
-    double flag;
-    double E;
+    //double flag;
+    //double E;
     double b_flag[45];
     double c_p[4];
     cell_wrap_3 b_pcell[4];
@@ -369,7 +369,7 @@ void IMT_analysis_April2017(const char *model)
 
 	/* optimize parameters */
 	double optimizedParams[27][3];
-	double le[27];
+	//double le[27];
 #ifdef _PARALLEL_SEEDS
 #pragma omp parallel for
 #endif
@@ -823,12 +823,12 @@ void IMT_analysis_April2017(const char *model)
 	    conv2waldpdf(data, c_p[0], c_p[1], c_p[2], c_p[3], l, 0.01, 1,
 			 266);
 
-	    int l_sum = 0;
+	    double l_sum = 0;
 	    for (int i = 0; i < 266; i++) {
 		l_sum += log(l[i]);
 	    }
-
-	    printf("  l=%f hp=%f flag=%f E=%f\n\n", l_sum, 42, 42, 42);
+		/* FIXME FIXME FIXME we are not actually reporting hp, flag and E here!*/
+	    printf("  l=%f hp=%f flag=%f E=%f WARNING HP FLAG AND E ARE BOGUS NUMBERS\n\n", l_sum, 9999.0, 9999.0, 9999.0);
 	}
 
 	/*  we previously optimized with a larger step size, recalculate with */
@@ -844,7 +844,7 @@ void IMT_analysis_April2017(const char *model)
 			 b_pd[90 + emgfitnomle], b_pd[135 + emgfitnomle],
 			 l, 0.001, 1, 266);
 
-	    int l_sum = 0;
+	    double l_sum = 0;
 	    for (int i = 0; i < 266; i++)
 		l_sum += log(l[i]);
 
@@ -860,7 +860,7 @@ void IMT_analysis_April2017(const char *model)
 	    }
 	}
 
-	printf("max_ld=%f row_ld=%f\n", max_ld, row_id);
+	printf("max_ld=%f row_id=%d\n", max_ld, row_id);
 	printf("pd_max=[%f %f %f %f]\n\n", b_pd[row_id - 1],
 	       b_pd[45 + row_id - 1], b_pd[90 + row_id - 1],
 	       b_pd[135 + row_id - 1]);
@@ -1020,12 +1020,12 @@ void IMT_analysis_April2017(const char *model)
 	    convolv3waldpdf(d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5],
 			    data, l, 266, 0.01);
 
-	    int l_sum = 0;
+	    double l_sum = 0;
 	    for (int i = 0; i < 266; i++) {
 		l_sum += log(l[i]);
 	    }
-
-	    printf("  l=%f hp=%f flag=%f E=%f\n\n", l_sum, 42, 42, 42);
+		/* FIXME FIXME FIXME we are not reporting the real values here */
+	    printf("  l=%f hp=%f flag=%f E=%f WARNING HP FLAG AND E ARE BOGUS\n\n", l_sum, 9999.0, 9999.0, 9999.0);
 
 	}
 
@@ -1041,7 +1041,7 @@ void IMT_analysis_April2017(const char *model)
 			    c_pd[80 + emgfitnomle],
 			    c_pd[100 + emgfitnomle], data, l, 266, 0.001);
 
-	    int l_sum = 0;
+	    double l_sum = 0;
 	    for (int i = 0; i < 266; i++) {
 		l_sum += log(l[i]);
 	    }
