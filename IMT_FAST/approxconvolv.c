@@ -62,7 +62,7 @@ approxconvolv_replacement(const double z[], const double y[],
        else { */
     for (int i = 0; i < size_xyz; i++) {
 #ifdef __INTEL_COMPILER
-#pragma vector aligned
+//#pragma vector aligned
 #endif
 	for (int j = 0; j < size_xyz; j++) {
 	    C[i + j] += z[i] * y[j] * h;

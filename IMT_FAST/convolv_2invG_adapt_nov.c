@@ -126,7 +126,7 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
 	E = 0;
 
     //int N = 266; // number of points to be evaluated
-    int N = size_XY;
+    //int N = size_XY;
 
     double m_a = m1;
     double m_b = m2;

@@ -491,7 +491,7 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 #pragma omp parallel for
 #endif
 	    for (int i = 0; i < 2; i++) {
-		if (i = 0)
+		if (i == 0)
 		    conv2waldpdf(x, m[1], s[1], m[2], s[2], w[0], h, 0,
 				 partitionLength);
 		else

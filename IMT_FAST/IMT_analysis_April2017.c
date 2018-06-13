@@ -641,7 +641,7 @@ void IMT_analysis_April2017(const char *model)
 	double variance = gsl_stats_variance(data, 1, 266);
 
 	double vry[3] = { 0.25, 0.5, 0.75 };
-	double vrys[3] = { 0.01, 1, 10 };
+	//double vrys[3] = { 0.01, 1, 10 };
 
 	double m[3];
 	double s[3];
