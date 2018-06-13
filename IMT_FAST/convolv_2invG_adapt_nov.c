@@ -9,12 +9,14 @@
 #include "tailmass.h"
 #include "gsl/gsl_multimin.h"
 #include "math.h"
+#include "binned_conv.h"
+#include "nn_conv.h"
 
 //#define _CONV2INVG
 #define _CONV2WALD
 //#define _VERBOSE
 //#define _PARALLEL_PDF
-#define _BINNED_MODE
+//#define _BINNED_MODE
 
 /* Function Definitions */
 
