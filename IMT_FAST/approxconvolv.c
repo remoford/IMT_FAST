@@ -4,6 +4,8 @@
 #include "approxconvolv.h"
 #include "float.h"
 #include "stdio.h"
+#include "conv.h"
+#include "window_conv.h"
 
 //#define _VERBOSE
 //#define _FASTIDXMETHOD
@@ -48,28 +50,9 @@ approxconvolv_replacement(const double z[], const double y[],
 	C[i] = 0;
     }
 
-    // Do the convolution
-    /*
-       if (size_xyz > 1024*8) {
 
-       #pragma omp parallel for
-       for (int i = 0; i < size_xyz; i++) {
-       for (int j = 0; j < size_xyz; j++) {
-       C[i + j] += z[i] * y[j] * h;
-       }
-       }
-       }
-       else { */
-    for (int i = 0; i < size_xyz; i++) {
-#ifdef __INTEL_COMPILER
-//#pragma vector aligned
-#endif
-	for (int j = 0; j < size_xyz; j++) {
-	    C[i + j] += z[i] * y[j] * h;
-	}
-    }
-
-    //}
+    conv(y,z,C,h,size_xyz);
+    //window_conv(y,z,C,h,size_xyz);
 
     // Display the convolution
 #ifdef _VERBOSE
