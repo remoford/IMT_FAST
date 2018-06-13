@@ -14,6 +14,7 @@
 #define _CONV2WALD
 //#define _VERBOSE
 //#define _PARALLEL_PDF
+#define _BINNED_MODE
 
 /* Function Definitions */
 
@@ -113,17 +114,20 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void *params)
 
 void
 conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
-	     double Y[], double h, int adaptiveMode, int size_XY)
-{
+	double Y[], double h, int adaptiveMode, int size_XY) {
 
-    int flag = 0;		// remember if we applied the approximation
-    double eps = 0.01;		// a constant that is used in determining if the Dirac approximation should be applied.
+	int flag = 0;		// remember if we applied the approximation
+	double eps = 0.01;		// a constant that is used in determining if the Dirac approximation should be applied.
 
-    double E;
-    if (adaptiveMode)
-	E = FP_INFINITE;
+	double E;
+	if (adaptiveMode){
+		E = 2000000000;
+		//printf("Error E: %f\n", E);
+	}
     else
-	E = 0;
+		E = 0;
+
+	//printf("Adaptive Mode: %d", adaptiveMode);
 
     //int N = 266; // number of points to be evaluated
     //int N = size_XY;
@@ -249,10 +253,14 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
 	    waldpdf(x, m[i], s[i], w[i], partitionLength);
 	}
 
-	//printf("\n\ncalling approxconv_rep from conv2waldpdf partitionLength=%d size_XY=%d h=%f\n", partitionLength, size_XY, h);
-	//approxconvolv_replacement(z, y, X, x, Y, &logP0, partitionLength, 266, h);
-	approxconvolv_replacement(z, y, X, x, Y, &logP0, partitionLength,
-				  size_XY, h);
+
+	//approxconvolv_replacement(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+
+#ifdef _BINNED_MODE
+	binned_conv(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+#else
+	nn_conv(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+#endif
 
 #ifdef __INTEL_COMPILER
 	_mm_free(x);
@@ -264,7 +272,11 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
 	free(z);
 #endif
 
+	//printf("IM A LITTLE TEAPOT\n");
+	//printf("Error E: %f\n", E);
 	while (E >= 0.001 * fabs(logP0)) {
+
+		//printf("SHORT AND STOUT\n");
 	    h = h * 0.5;	// Shrink the step size
 #ifdef _VERBOSE
 	    printf("h=%f logP0=%f ", h, logP0);
@@ -318,10 +330,14 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
 		waldpdf(x, m[i], s[i], w[i], partitionLength);
 	    }
 
-	    //printf("\n\ncalling approxconv_rep from conv2waldpdf partitionLength=%d size_XY=%d h=%f\n", partitionLength, size_XY, h);
-	    //approxconvolv_replacement(z, y, X, x, Y, &logP1, partitionLength, 266, h);
-	    approxconvolv_replacement(z, y, X, x, Y, &logP1,
-				      partitionLength, size_XY, h);
+
+	    //approxconvolv_replacement(z, y, X, x, Y, &logP1, partitionLength, size_XY, h);
+
+#ifdef _BINNED_MODE
+		binned_conv(z, y, X, x, Y, &logP1, partitionLength, size_XY, h);
+#else
+		nn_conv(z, y, X, x, Y, &logP1, partitionLength, size_XY, h);
+#endif
 
 #ifdef __INTEL_COMPILER
 	    _mm_free(x);

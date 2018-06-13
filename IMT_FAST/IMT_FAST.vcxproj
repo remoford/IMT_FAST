@@ -27,26 +27,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -127,6 +127,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="approxconvolv.c" />
+    <ClCompile Include="binned_conv.c" />
+    <ClCompile Include="conv.c" />
     <ClCompile Include="convolv_2invG_adapt_nov.c" />
     <ClCompile Include="convolv_3invG_nov.c" />
     <ClCompile Include="emgpdf.c" />
@@ -134,13 +136,17 @@
     <ClCompile Include="IMT_analysis_April2017.c" />
     <ClCompile Include="IMT_analysis_April2017_data.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="nn_conv.c" />
     <ClCompile Include="onestagepdf2.c" />
     <ClCompile Include="onestagepdf_lag.c" />
     <ClCompile Include="onestagepdf_prime.c" />
     <ClCompile Include="tailmass.c" />
+    <ClCompile Include="window_conv.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="approxconvolv.h" />
+    <ClInclude Include="binned_conv.h" />
+    <ClInclude Include="conv.h" />
     <ClInclude Include="convolv_2invG_adapt_nov.h" />
     <ClInclude Include="convolv_2invG_nov.h" />
     <ClInclude Include="convolv_3invG_nov.h" />
@@ -149,10 +155,12 @@
     <ClInclude Include="IMT_analysis_April2017.h" />
     <ClInclude Include="IMT_analysis_April2017_data.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="nn_conv.h" />
     <ClInclude Include="onestagepdf2.h" />
     <ClInclude Include="onestagepdf_lag.h" />
     <ClInclude Include="onestagepdf_prime.h" />
     <ClInclude Include="tailmass.h" />
+    <ClInclude Include="window_conv.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

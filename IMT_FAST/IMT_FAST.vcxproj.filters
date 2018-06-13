@@ -51,6 +51,18 @@
     <ClCompile Include="tailmass.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="conv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="window_conv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="binned_conv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nn_conv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="approxconvolv.h">
@@ -90,6 +102,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tailmass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="conv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="window_conv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="binned_conv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nn_conv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

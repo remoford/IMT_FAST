@@ -10,7 +10,7 @@
 //#define _VERBOSE
 //#define _FASTIDXMETHOD
 #define _SLOWIDXMETHOD
-
+#define _WINDOW_MODE
 /* Function Definitions */
 
 void
@@ -50,9 +50,11 @@ binned_conv(const double z[], const double y[],
 	C[i] = 0;
     }
 
-
-    conv(y,z,C,h,size_xyz);
-    //window_conv(y,z,C,h,size_xyz);
+#ifdef _WINDOW_MODE
+    window_conv(y,z,C,h,size_xyz);
+#else
+	conv(y, z, C, h, size_xyz);
+#endif
 
     // Display the convolution
 #ifdef _VERBOSE
@@ -65,135 +67,56 @@ binned_conv(const double z[], const double y[],
     printf("\n\n");
 #endif
 
-    // Find the largest value in X
-	// Is this actually used anywhere?
+	// Calculate the probability integral over the bin for each point in the data
+	for (int i = 0; i < size_XY; i++) {
+		// rightmost boundry of integration for this particular bin
+		int rightBound = (int) (X[i] / h);
+
+		// the bin width in terms of indices
+		int goback = (int) (0.1 / h);
+
+		// the leftmost boundry of integration
+		int leftBound = rightBound - goback;
+
+		// Calculate the right handed riemann sum
+		Y[i] = 0;
+		for (int j = leftBound + 1; j <= rightBound; j++) {
+			Y[i] += C[j] * h;
+		}
+
+	}
+
 	/*
-    int MaxX = 0;
-    for (int i = 0; i < size_XY; i++) {
-	if (X[i] > MaxX)
-	    MaxX = X[i];
-    }
+	printf("Y = \n");
+	for (int i = 0; i < size_XY; i++) {
+		if (i % 8 == 0)
+			printf("\n");
+		printf("%.17f ", Y[i]);
+	}
+	printf("\n\n");
 	*/
 
-#ifdef _VERBOSE
-    printf("approxconvolv_replacement_indices = \n");
-#endif
-    double delta, minDelta;
-    int nearestNeighborIdx, foundIdx;
-    for (int i = 0; i < size_XY; i++) {
-
-#ifdef _FASTIDXMETHOD
-	// Newer faster method
-	int computedIdx;
-	int computedIdxLower = (int) floor(X[i] / h);
-	int computedIdxUpper = (int) floor(X[i] / h) + 1;
-	if (computedIdxUpper >= size_xyz) {
-	    //printf("WARNING OUT OF RANGE computedIdxUpper=%d size_xyz=%d\n", computedIdxUpper, size_xyz);
-	    computedIdxUpper = size_xyz - 1;
+	
+	// Replace all zero values with DBL_MIN to abvoid unbounded numbers when taking a logarithm
+	for (int i = 0; i < size_XY; i++) {
+		if (Y[i] == 0){
+			//Y[i] = 2.2250738585072014E-308;
+			//printf("OMG OMG OMG OMG WE GOT A NUMBER THTS REALLY DAMN CLOSE TO ZERO!!!!!!!!!!!!!!!!!!!!!!\n");
+			Y[i] = DBL_MIN;
+		}
 	}
+	
 
-	double deltaLower = fabs(X[i] - x[computedIdxLower]);
-	double deltaUpper = fabs(X[i] - x[computedIdxUpper]);
+	// FIX ME FIX ME FIX ME THIS IS BROKEN AND NEEDS FIXING ALWAYS RETURNS HTE SAME DMANED THING
 
-	if (deltaLower <= deltaUpper)
-	    computedIdx = computedIdxLower;
-	else
-	    computedIdx = computedIdxUpper;
-#endif
-
-#ifdef _SLOWIDXMETHOD
-	// Older slower method
-	//%[~, I(i)] = min((t(i) - x). ^ 2); % slow
-	minDelta = DBL_MAX;
-	foundIdx = 0;
-	for (int k = 0; k <= size_xyz; k++) {
-	    delta = fabs(X[i] - x[k]);
-	    if (delta < minDelta) {
-		foundIdx = k;
-		minDelta = delta;
-	    }
+	// Caluclate the log likelihood of the data given our computed distribution
+	*logP0 = 0;
+	for (int i = 0; i < size_XY; i++) {
+		*logP0 += log(Y[i]);
 	}
-#endif
+	//printf("OUR FOUND LOGP0 = %f", *logP0);
 
-	/*
-	   printf("index check X[i]=%f x[%d]=%f x[%d]=%f X[i]/h=%f h=%f computedIdx=%d",
-	   X[i], computedIdxLower, x[computedIdxLower], computedIdxUpper, x[computedIdxUpper], X[i] / h, h, computedIdx);
 
-	   printf(" foundIdx=%d minDelta=%f x[%d]=%f\n", foundIdx, minDelta, foundIdx, x[foundIdx]);
-	 */
+	
 
-#ifdef _FASTIDXMETHOD
-#ifdef _SLOWIDXMETHOD
-	if (foundIdx != computedIdx)
-	    printf
-		("WARNING WARNING WARNING INDEX METHODS DIFFER WARNING WARNING WARNING\n");
-#endif
-#endif
-
-#ifdef _SLOWIDXMETHOD
-	nearestNeighborIdx = foundIdx;
-#endif
-#ifdef _FASTIDXMETHOD
-	nearestNeighborIdx = computedIdx;
-#endif
-
-#ifdef _VERBOSE
-	printf("%d ", nearestNeighborIdx);
-	if (i % 8 == 0)
-	    printf("\n");
-#endif
-
-	if (X[i] > 0 && nearestNeighborIdx > 0
-	    && nearestNeighborIdx < size_conv) {
-	    // This is from matlab
-	    //P(i)=C(I(i)-1);
-
-	    // This is what I wrote the first time
-	    //Y[i] = C[computedIdx];
-
-	    // This mirrors what the matlab translated does
-	    //Y[i] = C[computedIdx-2];
-
-	    Y[i] = C[nearestNeighborIdx - 1];
-
-	    // WHY????
-	} else if (X[i] == 0) {
-	    Y[i] = DBL_MIN;
-	} else {
-	    printf
-		("WARNING OUT OF RANGE X[%d]=%f nearestNeighborIdx=%d size_conv=%d size_XY=%d\n",
-		 i, X[i], nearestNeighborIdx, size_conv, size_XY);
-	    Y[i] = DBL_MIN;
-	}
-    }
-#ifdef _VERBOSE
-    printf("\n\n");
-#endif
-
-    *logP0 = 0;
-    for (int i = 0; i < size_XY; i++) {
-	*logP0 += log(Y[i]);
-    }
-
-    for (int i = 0; i < size_XY; i++) {
-	if (Y[i] == 0)
-	    //Y[i] = 2.2250738585072014E-308;
-	    Y[i] = DBL_MIN;
-    }
-
-#ifdef _VERBOSE
-    printf("approxconvolv_replacement = \n");
-    for (int i = 0; i < size_XY; i++) {
-	if (i % 8 == 0)
-	    printf("\n");
-	printf("%.17f ", Y[i]);
-    }
-    printf("\n\n");
-#endif
-
-#ifdef __INTEL_COMPILER
-    _mm_free(C);
-#else
-    free(C);
-#endif
 }
