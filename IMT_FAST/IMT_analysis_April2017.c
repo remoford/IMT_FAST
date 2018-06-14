@@ -9,6 +9,7 @@
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_statistics_double.h"
 #include "time.h"
+#include "optimze_twostage.h"
 
 #define _VERBOSE
 #define _CONV2WALD
@@ -36,6 +37,59 @@ void IMT_analysis_April2017(const char *model)
 
     printf("Using GSL minimizer\n");
 
+	int data_size = 266;
+	static const double data[266] =
+	{ 11.9, 10.6, 11.6, 9.8, 9.3, 9.0, 11.6, 11.1,
+		12.4, 13.7, 12.4, 11.9, 10.3, 12.9, 14.7, 11.6, 13.4, 13.4, 11.6,
+		10.3,
+		9.3,
+		13.7, 9.6, 10.1, 9.8, 10.9, 16.0, 9.3, 9.6, 10.3, 11.4, 10.6, 8.5,
+		10.3,
+		11.1, 8.0, 10.6, 7.5, 12.9, 9.0, 8.5, 12.4, 11.6, 9.6, 9.6, 14.7,
+		9.8,
+		10.3,
+		12.1, 8.8, 10.6, 12.1, 13.4, 12.4, 8.8, 13.2, 10.1, 11.6, 11.1,
+		15.8,
+		12.1,
+		12.7, 12.7, 11.1, 13.2, 11.9, 12.4, 13.2, 14.0, 8.0, 8.8, 9.3,
+		16.5, 14.5,
+		10.1, 14.2, 7.8, 13.2, 8.8, 8.8, 10.1, 11.9, 12.9, 14.5, 10.9,
+		10.6, 14.0,
+		8.8, 8.8, 9.0, 10.9, 14.5, 9.6, 12.4, 11.9, 12.4, 11.1, 14.5, 10.3,
+		12.4,
+		12.7, 11.9, 10.3, 13.7, 15.5, 14.5, 11.6, 10.6, 15.5, 14.7, 8.8,
+		11.6,
+		8.3,
+		17.6, 12.4, 11.6, 15.0, 13.7, 12.7, 10.9, 7.2, 8.5, 8.3, 9.6, 11.4,
+		12.9,
+		11.6, 13.4, 10.1, 11.6, 8.8, 12.4, 10.3, 16.3, 10.9, 10.1, 8.8,
+		9.3, 15.2,
+		8.5, 11.1, 8.3, 11.4, 11.9, 9.3, 9.8, 16.3, 12.7, 9.0, 11.9, 9.3,
+		10.3,
+		13.4,
+		11.4, 12.9, 12.4, 9.6, 10.3, 13.2, 10.6, 9.8, 11.9, 14.2, 13.4,
+		9.3, 9.6,
+		12.1, 11.9, 10.1, 14.0, 12.9, 21.7, 11.6, 12.1, 10.3, 9.8, 14.2,
+		13.7,
+		7.2,
+		10.9, 10.1, 9.6, 13.4, 13.2, 16.3, 11.6, 14.0, 10.9, 14.2, 12.4,
+		12.4,
+		13.4,
+		17.6, 10.1, 10.9, 14.0, 12.9, 9.0, 13.4, 15.0, 16.0, 8.0, 9.8,
+		12.4, 8.5,
+		9.6, 12.7, 12.1, 15.0, 16.0, 10.9, 14.2, 13.7, 11.9, 16.8, 11.4,
+		13.4,
+		12.4,
+		22.0, 12.4, 16.8, 12.1, 10.3, 13.4, 11.6, 10.1, 14.5, 10.6, 11.9,
+		15.5,
+		9.8,
+		12.4, 10.1, 8.0, 9.0, 9.3, 13.2, 11.1, 12.7, 12.1, 10.1, 13.2,
+		14.5, 10.1,
+		12.7, 12.9, 11.9, 12.4, 11.1, 8.5, 14.5, 16.5, 12.4, 9.0, 11.1,
+		9.8, 11.1,
+		11.1, 8.8, 13.2, 17.6, 16.8, 10.9, 12.4, 8.5, 14.7
+	};
+
     int twostagefitnomle;
     int onestagelagnomle;
     int onestagefitnomle;
@@ -56,17 +110,7 @@ void IMT_analysis_April2017(const char *model)
     cell_wrap_3 pcell[9];
     double c_P[180];
      /**/
-	static const signed char id[90] =
-	{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2,
-	2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6,
-	    6, 6, 6,
-	7,
-	7, 7, 8, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 2, 3, 4, 5, 6, 7, 8, 9,
-	    3, 4, 5,
-	6,
-	7, 8, 9, 4, 5, 6, 7, 8, 9, 5, 6, 7, 8, 9, 6, 7, 8, 9, 7, 8, 9, 8,
-	    9, 9
-    };
+
 
     double b_pd[180];
     //double flag;
@@ -89,57 +133,7 @@ void IMT_analysis_April2017(const char *model)
     double c_flag[20];
     double d_p[6];
 
-    static const double data[266] =
-	{ 11.9, 10.6, 11.6, 9.8, 9.3, 9.0, 11.6, 11.1,
-	12.4, 13.7, 12.4, 11.9, 10.3, 12.9, 14.7, 11.6, 13.4, 13.4, 11.6,
-	    10.3,
-	9.3,
-	13.7, 9.6, 10.1, 9.8, 10.9, 16.0, 9.3, 9.6, 10.3, 11.4, 10.6, 8.5,
-	    10.3,
-	11.1, 8.0, 10.6, 7.5, 12.9, 9.0, 8.5, 12.4, 11.6, 9.6, 9.6, 14.7,
-	    9.8,
-	10.3,
-	12.1, 8.8, 10.6, 12.1, 13.4, 12.4, 8.8, 13.2, 10.1, 11.6, 11.1,
-	    15.8,
-	12.1,
-	12.7, 12.7, 11.1, 13.2, 11.9, 12.4, 13.2, 14.0, 8.0, 8.8, 9.3,
-	    16.5, 14.5,
-	10.1, 14.2, 7.8, 13.2, 8.8, 8.8, 10.1, 11.9, 12.9, 14.5, 10.9,
-	    10.6, 14.0,
-	8.8, 8.8, 9.0, 10.9, 14.5, 9.6, 12.4, 11.9, 12.4, 11.1, 14.5, 10.3,
-	    12.4,
-	12.7, 11.9, 10.3, 13.7, 15.5, 14.5, 11.6, 10.6, 15.5, 14.7, 8.8,
-	    11.6,
-	8.3,
-	17.6, 12.4, 11.6, 15.0, 13.7, 12.7, 10.9, 7.2, 8.5, 8.3, 9.6, 11.4,
-	    12.9,
-	11.6, 13.4, 10.1, 11.6, 8.8, 12.4, 10.3, 16.3, 10.9, 10.1, 8.8,
-	    9.3, 15.2,
-	8.5, 11.1, 8.3, 11.4, 11.9, 9.3, 9.8, 16.3, 12.7, 9.0, 11.9, 9.3,
-	    10.3,
-	13.4,
-	11.4, 12.9, 12.4, 9.6, 10.3, 13.2, 10.6, 9.8, 11.9, 14.2, 13.4,
-	    9.3, 9.6,
-	12.1, 11.9, 10.1, 14.0, 12.9, 21.7, 11.6, 12.1, 10.3, 9.8, 14.2,
-	    13.7,
-	7.2,
-	10.9, 10.1, 9.6, 13.4, 13.2, 16.3, 11.6, 14.0, 10.9, 14.2, 12.4,
-	    12.4,
-	13.4,
-	17.6, 10.1, 10.9, 14.0, 12.9, 9.0, 13.4, 15.0, 16.0, 8.0, 9.8,
-	    12.4, 8.5,
-	9.6, 12.7, 12.1, 15.0, 16.0, 10.9, 14.2, 13.7, 11.9, 16.8, 11.4,
-	    13.4,
-	12.4,
-	22.0, 12.4, 16.8, 12.1, 10.3, 13.4, 11.6, 10.1, 14.5, 10.6, 11.9,
-	    15.5,
-	9.8,
-	12.4, 10.1, 8.0, 9.0, 9.3, 13.2, 11.1, 12.7, 12.1, 10.1, 13.2,
-	    14.5, 10.1,
-	12.7, 12.9, 11.9, 12.4, 11.1, 8.5, 14.5, 16.5, 12.4, 9.0, 11.1,
-	    9.8, 11.1,
-	11.1, 8.8, 13.2, 17.6, 16.8, 10.9, 12.4, 8.5, 14.7
-    };
+	
 
     printf("FUCCI Data\n\n");
 
@@ -184,8 +178,8 @@ void IMT_analysis_April2017(const char *model)
 	printf("emgfitnomle\n\n");
 
 	/* prepare statistical variables */
-	double mean = gsl_stats_mean(data, 1, 266);
-	double variance = gsl_stats_variance(data, 1, 266);
+	double mean = gsl_stats_mean(data, 1, data_size);
+	double variance = gsl_stats_variance(data, 1, data_size);
 	double vry[3] = { 0.25, 0.5, 0.75 };
 
 	/*we vary the parameters so the the Gaussian and exponential parts of
@@ -309,7 +303,7 @@ void IMT_analysis_April2017(const char *model)
 
 	    /* calculate the log likelihood for our best fit */
 	    double loglikelihood = 0;
-	    for (int i = 0; i < 266; i++) {
+	    for (int i = 0; i < data_size; i++) {
 		loglikelihood += log(l[i]);
 	    }
 
@@ -341,8 +335,8 @@ void IMT_analysis_April2017(const char *model)
 	printf("onestagefitnomle\n\n");
 
 	/* prepare statistical variables */
-	double mean = gsl_stats_mean(data, 1, 266);
-	double variance = gsl_stats_variance(data, 1, 266);
+	double mean = gsl_stats_mean(data, 1, data_size);
+	double variance = gsl_stats_variance(data, 1, data_size);
 	double vry[4] = { 0.5, 1.0, 1.5, 2.0 };
 
 	double mu = 1.0 / mean;
@@ -442,11 +436,11 @@ void IMT_analysis_April2017(const char *model)
 
 	    //onestagepdf2(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], l);
 	    waldpdf(data, optimizedParams[seedIdx][0],
-		    optimizedParams[seedIdx][1], l, 266);
+		    optimizedParams[seedIdx][1], l, data_size);
 
 	    /* calculate the log likelihood for our best fit */
 	    double loglikelihood = 0;
-	    for (int i = 0; i < 266; i++) {
+	    for (int i = 0; i < data_size; i++) {
 		loglikelihood += log(l[i]);
 	    }
 
@@ -477,15 +471,15 @@ void IMT_analysis_April2017(const char *model)
 	printf("onestagefitlagnomle\n\n");
 
 	/* prepare statistical variables */
-	double mean = gsl_stats_mean(data, 1, 266);
-	double variance = gsl_stats_variance(data, 1, 266);
+	double mean = gsl_stats_mean(data, 1, data_size);
+	double variance = gsl_stats_variance(data, 1, data_size);
 
 	// C3 = sum((data-C1).^3)/(length(data));
 	double c3sum = 0;
-	for (int i = 0; i < 266; i++) {
+	for (int i = 0; i < data_size; i++) {
 	    c3sum += pow(data[i] - mean, 3.0);
 	}
-	c3sum = c3sum / 266;
+	c3sum = c3sum / data_size;
 
 	double mu = c3sum / (3 * pow(variance, 2.0));
 	double sigma =
@@ -602,11 +596,11 @@ void IMT_analysis_April2017(const char *model)
 
 	    waldlagpdf(data, optimizedParams[seedIdx][0],
 		       optimizedParams[seedIdx][1],
-		       optimizedParams[seedIdx][2], l, 266);
+		       optimizedParams[seedIdx][2], l, data_size);
 
 	    /* calculate the log likelihood for our best fit */
 	    double loglikelihood = 0;
-	    for (int i = 0; i < 266; i++) {
+	    for (int i = 0; i < data_size; i++) {
 		loglikelihood += log(l[i]);
 	    }
 
@@ -631,262 +625,7 @@ void IMT_analysis_April2017(const char *model)
 #endif
 
 #ifdef _ENABLE_TWOSTAGE
-
-    if (twostagefitnomle == 1) {
-
-	printf("twostagefitnomle\n");
-
-	/* prepare statistical variables */
-	double mean = gsl_stats_mean(data, 1, 266);
-	double variance = gsl_stats_variance(data, 1, 266);
-
-	double vry[3] = { 0.25, 0.5, 0.75 };
-	//double vrys[3] = { 0.01, 1, 10 };
-
-	double m[3];
-	double s[3];
-	for (int i = 0; i < 3; i++) {
-	    m[i] = 1 / (mean * vry[i]);
-	    s[i] =
-		pow((variance * vry[i]) / (pow(mean * vry[i], 3.0)), 0.5);
-	}
-
-	double pcomb[9][2];
-	int pcomb_idx = 0;
-	for (int i = 0; i < 3; i++) {
-	    for (int j = 0; j < 3; j++) {
-		pcomb[pcomb_idx][0] = m[i];
-		pcomb[pcomb_idx][1] = s[j];
-	    }
-	}
-
-	/*  prepare parameter seeds */
-	/* get all pairs of the form [m(i),s(j)] */
-	/* these pairs represent all possible unique  */
-	/* parameter choices for each part of the cell */
-	/* cycle.   */
-	/* pcomb = allcomb(m,s) */
-	/* 'IMT_analysis_April2017:572' pcomb = [0.3397, 0.2359; 0.3397, 0.1180; 0.3397, 0.0786; 0.1699, 0.2359; 0.1699, 0.1180; 0.1699, 0.0786; 0.1132, 0.2359; 0.1132, 0.1180; 0.1132, 0.0786]; */
-	/* place paramter pairs into a cell.  The parameters choices for each part */
-	/* are now indexed */
-
-	for (itmp = 0; itmp < 2; itmp++) {
-	    pcell[0].f1[itmp] = 0.3397 + -0.1038 * (double) itmp;
-	    pcell[1].f1[itmp] = 0.3397 + -0.2217 * (double) itmp;
-	    pcell[2].f1[itmp] = 0.3397 + -0.2611 * (double) itmp;
-	    pcell[3].f1[itmp] = 0.1699 + 0.066 * (double) itmp;
-	    pcell[4].f1[itmp] = 0.1699 + -0.0519 * (double) itmp;
-	    pcell[5].f1[itmp] =
-		0.1699 + -0.091299999999999992 * (double) itmp;
-	    pcell[6].f1[itmp] = 0.1132 + 0.1227 * (double) itmp;
-	    pcell[7].f1[itmp] =
-		0.1132 + 0.0047999999999999987 * (double) itmp;
-	    pcell[8].f1[itmp] =
-		0.1132 + -0.034599999999999992 * (double) itmp;
-	}
-
-	/* get all pairs of indices for the parameter  */
-	/* choices for each part of the cycle to get all  */
-	/* parameter choices for the entire cycle */
-
-#ifdef _PARALLEL_SEEDS
-#pragma omp parallel for
-#endif
-	for (emgfitnomle = 0; emgfitnomle < 45; emgfitnomle++) {
-	    /* 'IMT_analysis_April2017:596' P(ii,:) = [pcell{id(ii,1)},pcell{id(ii,2)}]; */
-	    for (itmp = 0; itmp < 2; itmp++) {
-		c_P[emgfitnomle + 45 * itmp] =
-		    pcell[id[emgfitnomle] - 1].f1[itmp];
-		c_P[emgfitnomle + 45 * (itmp + 2)] =
-		    pcell[id[45 + emgfitnomle] - 1].f1[itmp];
-	    }
-	}
-
-#ifdef _PARALLEL_SEEDS
-#pragma omp parallel for
-#endif
-	for (emgfitnomle = 0; emgfitnomle < 10; emgfitnomle++) {
-	    //for (emgfitnomle = 0; emgfitnomle < 45; emgfitnomle++) {
-
-	    printf("i=%f\n", 1.0 + (double) emgfitnomle);
-
-	    printf("  P=[%f %f %f %f]\n", c_P[emgfitnomle],
-		   c_P[45 + emgfitnomle], c_P[90 + emgfitnomle],
-		   c_P[135 + emgfitnomle]);
-
-	    for (itmp = 0; itmp < 4; itmp++) {
-		c_p[itmp] = c_P[emgfitnomle + 45 * itmp];
-	    }
-	    // https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
-
-	    const gsl_multimin_fminimizer_type *T =
-		gsl_multimin_fminimizer_nmsimplex2;
-	    gsl_multimin_fminimizer *s = NULL;
-	    gsl_vector *ss, *x;
-	    gsl_multimin_function minex_func;
-
-	    size_t iter = 0;
-	    int status;
-	    double size;
-
-	    /* Starting point */
-	    x = gsl_vector_alloc(4);
-	    gsl_vector_set(x, 0, c_p[0]);
-	    gsl_vector_set(x, 1, c_p[1]);
-	    gsl_vector_set(x, 2, c_p[2]);
-	    gsl_vector_set(x, 3, c_p[3]);
-
-	    // Store previous state
-	    gsl_vector *prev;
-	    prev = gsl_vector_alloc(4);
-	    gsl_vector_set_all(prev, 0);
-	    int repeated = 0;
-
-	    /* Set initial step sizes to 1 */
-	    ss = gsl_vector_alloc(4);
-	    gsl_vector_set_all(ss, 1.0);
-
-	    /* Initialize method and iterate */
-	    minex_func.n = 4;
-	    minex_func.f = convolv_2invG_adapt_nov_loglikelihood;
-	    minex_func.params = (void *) data;
-
-	    s = gsl_multimin_fminimizer_alloc(T, 4);
-	    gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
-
-	    do {
-		iter++;
-
-		clock_t t;
-		t = clock();
-		status = gsl_multimin_fminimizer_iterate(s);
-		t = clock() - t;
-		//printf("It took me %d clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
-		printf("%.3f ", ((float) t) / CLOCKS_PER_SEC);
-
-		if (status)
-		    break;
-
-		size = gsl_multimin_fminimizer_size(s);
-		status = gsl_multimin_test_size(size, 1e-4);
-
-		/*
-		   // Detect repeated states
-		   gsl_vector_sub(prev, s->x);
-		   if (gsl_vector_isnull(prev))
-		   repeated++;
-		   else
-		   repeated = 0;
-		   if (repeated > 10){
-		   printf("ERROR - QUITTING BECAUSE EXCESSIVE REPEATS!!!\n");
-		   status = GSL_SUCCESS;
-		   }
-		   gsl_vector_set(prev, 0, gsl_vector_get(s->x, 0));
-		   gsl_vector_set(prev, 1, gsl_vector_get(s->x, 1));
-		   gsl_vector_set(prev, 2, gsl_vector_get(s->x, 2));
-		   gsl_vector_set(prev, 3, gsl_vector_get(s->x, 3));
-		 */
-
-#ifdef _VERBOSE
-		if (status == GSL_SUCCESS) {
-		    printf("converged to minimum at\n");
-		}
-
-		/*
-		   printf("%5d %.17f %.17f %.17f %.17f f() = %.17f size = %.3f\n",
-		   (int)iter,
-		   gsl_vector_get(s->x, 0),
-		   gsl_vector_get(s->x, 1),
-		   gsl_vector_get(s->x, 2),
-		   gsl_vector_get(s->x, 3),
-		   s->fval, size);
-		 */
-#endif
-	    }
-	    while (status == GSL_CONTINUE && iter < 10000);
-	    printf("\n");
-	    c_p[0] = fabs(gsl_vector_get(s->x, 0));
-	    c_p[1] = fabs(gsl_vector_get(s->x, 1));
-	    c_p[2] = fabs(gsl_vector_get(s->x, 2));
-	    c_p[3] = fabs(gsl_vector_get(s->x, 3));
-
-	    gsl_vector_free(x);
-	    gsl_vector_free(ss);
-	    gsl_multimin_fminimizer_free(s);
-
-	    printf("  p=[%f %f %f %f]\n", c_p[0], c_p[1], c_p[2], c_p[3]);
-
-	    for (itmp = 0; itmp < 4; itmp++) {
-		b_pd[emgfitnomle + 45 * itmp] = c_p[itmp];
-	    }
-
-	    conv2waldpdf(data, c_p[0], c_p[1], c_p[2], c_p[3], l, 0.01, 1,
-			 266);
-
-	    double l_sum = 0;
-	    for (int i = 0; i < 266; i++) {
-		l_sum += log(l[i]);
-	    }
-		/* FIXME FIXME FIXME we are not actually reporting hp, flag and E here!*/
-	    printf("  l=%f hp=%f flag=%f E=%f WARNING HP FLAG AND E ARE BOGUS NUMBERS\n\n", l_sum, 9999.0, 9999.0, 9999.0);
-	}
-
-	/*  we previously optimized with a larger step size, recalculate with */
-	/*  a smaller stepsize after the fact */
-	printf("recalculating canidate solutions with smaller stepsize\n");
-
-#ifdef _PARALLEL_SEEDS
-#pragma omp parallel for
-#endif
-	for (emgfitnomle = 0; emgfitnomle < 45; emgfitnomle++) {
-
-	    conv2waldpdf(data, b_pd[emgfitnomle], b_pd[45 + emgfitnomle],
-			 b_pd[90 + emgfitnomle], b_pd[135 + emgfitnomle],
-			 l, 0.001, 1, 266);
-
-	    double l_sum = 0;
-	    for (int i = 0; i < 266; i++)
-		l_sum += log(l[i]);
-
-	    b_flag[emgfitnomle] = l_sum;
-	}
-
-	double max_ld = DBL_MIN;
-	int row_id = 0;
-	for (emgfitnomle = 0; emgfitnomle < 45; emgfitnomle++) {
-	    if (b_flag[emgfitnomle] > max_ld) {
-		max_ld = b_flag[emgfitnomle];
-		row_id = emgfitnomle + 1;
-	    }
-	}
-
-	printf("max_ld=%f row_id=%d\n", max_ld, row_id);
-	printf("pd_max=[%f %f %f %f]\n\n", b_pd[row_id - 1],
-	       b_pd[45 + row_id - 1], b_pd[90 + row_id - 1],
-	       b_pd[135 + row_id - 1]);
-
-	/*  common to each fit, consider factoring out */
-	emgfitnomle = 1;
-	mtmp = b_flag[0];
-	itmp = 0;
-
-	if (emgfitnomle < 45) {
-	    while (emgfitnomle + 1 < 46) {
-		if (b_flag[emgfitnomle] > mtmp) {
-		    mtmp = b_flag[emgfitnomle];
-		    itmp = emgfitnomle;
-		}
-
-		emgfitnomle++;
-	    }
-	}
-
-	printf("max_ld=%f row_ld=%f\n", mtmp, (double) itmp + 1);
-	printf("pd_max=[%f %f %f %f]\n\n", b_pd[itmp], b_pd[45 + itmp],
-	       b_pd[90 + itmp], b_pd[135 + itmp]);
-
-	/*  END FUNCTION FIT_TWOSTAGE */
-    }
+	optimize_twostage(data_size,data);
 #endif
 
 #ifdef _ENABLE_THREESTAGE
@@ -1018,10 +757,10 @@ void IMT_analysis_April2017(const char *model)
 	    }
 
 	    convolv3waldpdf(d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5],
-			    data, l, 266, 0.01);
+			    data, l, data_size, 0.01);
 
 	    double l_sum = 0;
-	    for (int i = 0; i < 266; i++) {
+	    for (int i = 0; i < data_size; i++) {
 		l_sum += log(l[i]);
 	    }
 		/* FIXME FIXME FIXME we are not reporting the real values here */
@@ -1039,10 +778,10 @@ void IMT_analysis_April2017(const char *model)
 	    convolv3waldpdf(c_pd[emgfitnomle], c_pd[20 + emgfitnomle],
 			    c_pd[40 + emgfitnomle], c_pd[60 + emgfitnomle],
 			    c_pd[80 + emgfitnomle],
-			    c_pd[100 + emgfitnomle], data, l, 266, 0.001);
+			    c_pd[100 + emgfitnomle], data, l, data_size, 0.001);
 
 	    double l_sum = 0;
-	    for (int i = 0; i < 266; i++) {
+	    for (int i = 0; i < data_size; i++) {
 		l_sum += log(l[i]);
 	    }
 

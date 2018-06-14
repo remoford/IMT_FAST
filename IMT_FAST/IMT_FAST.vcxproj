@@ -140,6 +140,7 @@
     <ClCompile Include="onestagepdf2.c" />
     <ClCompile Include="onestagepdf_lag.c" />
     <ClCompile Include="onestagepdf_prime.c" />
+    <ClCompile Include="optimze_twostage.c" />
     <ClCompile Include="tailmass.c" />
     <ClCompile Include="window_conv.c" />
   </ItemGroup>
@@ -159,6 +160,7 @@
     <ClInclude Include="onestagepdf2.h" />
     <ClInclude Include="onestagepdf_lag.h" />
     <ClInclude Include="onestagepdf_prime.h" />
+    <ClInclude Include="optimze_twostage.h" />
     <ClInclude Include="tailmass.h" />
     <ClInclude Include="window_conv.h" />
   </ItemGroup>

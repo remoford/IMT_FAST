@@ -16,7 +16,7 @@
 #define _CONV2WALD
 //#define _VERBOSE
 //#define _PARALLEL_PDF
-//#define _BINNED_MODE
+#define _BINNED_MODE
 
 /* Function Definitions */
 
@@ -43,26 +43,7 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void *params)
 
     double Y_WALD[266];
 
-    
 
-#ifdef _CONV2INVG
-	double Y_INVG[266];
-#ifdef _VERBOSE
-    printf("starting convolv_2invG_adapt_nov\n");
-#endif
-    convolv_2invG_adapt_nov(m1, s1, m2, s2, Y_INVG);
-#ifdef _VERBOSE
-    printf("convolv_2invG_adapt_nov = \n");
-    for (int i = 0; i < 266; i++) {
-	if (i % 8 == 0)
-	    printf("\n");
-	printf("%f ", Y_INVG[i]);
-    }
-    printf("\n\n");
-#endif
-#endif
-
-#ifdef _CONV2WALD
 #ifdef _VERBOSE
     printf("starting conv2waldpdf\n");
 #endif
@@ -76,30 +57,12 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void *params)
     }
     printf("\n\n");
 #endif
-#endif
 
-#ifdef _CONV2INVG
-#ifdef _CONV2WALD
-    printf
-	("difference between convolv_2invG_adapt_nov and conv2wald = \n");
-    for (int i = 0; i < 266; i++) {
-	if (i % 8 == 0)
-	    printf("\n");
-	printf("%.17f ", Y_INVG[i] - Y_WALD[i]);
-    }
-    printf("\n\n");
-#endif
-#endif
 
-#ifdef _CONV2WALD
+
     for (int i = 0; i < 266; i++)
 	Y[i] = Y_WALD[i];
-#endif
 
-#ifdef _CONV2INVG
-    for (int i = 0; i < 266; i++)
-	Y[i] = Y_INVG[i];
-#endif
 
     double loglikelihood = 0;
     for (int i = 0; i < 266; i++) {

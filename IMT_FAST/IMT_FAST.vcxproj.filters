@@ -63,6 +63,9 @@
     <ClCompile Include="nn_conv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="optimze_twostage.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="approxconvolv.h">
@@ -114,6 +117,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="nn_conv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="optimze_twostage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
