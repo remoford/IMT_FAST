@@ -8,6 +8,9 @@
 #include "gsl/gsl_statistics_double.h"
 #include "time.h"
 
+//#define _PARALLEL_SEEDS
+
+
 /* Type Definitions */
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -18,62 +21,16 @@ typedef struct {
 
 #endif				/*typedef_cell_wrap_3 */
 
-void optimize_twostage(int data_size, const double data[])
+void optimize_twostage(int data_size, const double data[], int numseeds, double seeds[][4])
 {
 	printf("twostagefitnomle\n");
 
-	int numseeds = 45;
-	double seeds[45][4] = {
-		{ 0.339700, 0.235900, 0.339700, 0.235900 } ,
-		{ 0.339700, 0.235900, 0.339700, 0.118000 } ,
-		{ 0.339700, 0.235900, 0.339700, 0.078600 } ,
-		{ 0.339700, 0.235900, 0.169900, 0.235900 } ,
-		{ 0.339700, 0.235900, 0.169900, 0.118000 } ,
-		{ 0.339700, 0.235900, 0.169900, 0.078600 } ,
-		{ 0.339700, 0.235900, 0.113200, 0.235900 } ,
-		{ 0.339700, 0.235900, 0.113200, 0.118000 } ,
-		{ 0.339700, 0.235900, 0.113200, 0.078600 } ,
-		{ 0.339700, 0.118000, 0.339700, 0.118000 } ,
-		{ 0.339700, 0.118000, 0.339700, 0.078600 } ,
-		{ 0.339700, 0.118000, 0.169900, 0.235900 } ,
-		{ 0.339700, 0.118000, 0.169900, 0.118000 } ,
-		{ 0.339700, 0.118000, 0.169900, 0.078600 } ,
-		{ 0.339700, 0.118000, 0.113200, 0.235900 } ,
-		{ 0.339700, 0.118000, 0.113200, 0.118000 } ,
-		{ 0.339700, 0.118000, 0.113200, 0.078600 } ,
-		{ 0.339700, 0.078600, 0.339700, 0.078600 } ,
-		{ 0.339700, 0.078600, 0.169900, 0.235900 } ,
-		{ 0.339700, 0.078600, 0.169900, 0.118000 } ,
-		{ 0.339700, 0.078600, 0.169900, 0.078600 } ,
-		{ 0.339700, 0.078600, 0.113200, 0.235900 } ,
-		{ 0.339700, 0.078600, 0.113200, 0.118000 } ,
-		{ 0.339700, 0.078600, 0.113200, 0.078600 } ,
-		{ 0.169900, 0.235900, 0.169900, 0.235900 } ,
-		{ 0.169900, 0.235900, 0.169900, 0.118000 } ,
-		{ 0.169900, 0.235900, 0.169900, 0.078600 } ,
-		{ 0.169900, 0.235900, 0.113200, 0.235900 } ,
-		{ 0.169900, 0.235900, 0.113200, 0.118000 } ,
-		{ 0.169900, 0.235900, 0.113200, 0.078600 } ,
-		{ 0.169900, 0.118000, 0.169900, 0.118000 } ,
-		{ 0.169900, 0.118000, 0.169900, 0.078600 } ,
-		{ 0.169900, 0.118000, 0.113200, 0.235900 } ,
-		{ 0.169900, 0.118000, 0.113200, 0.118000 } ,
-		{ 0.169900, 0.118000, 0.113200, 0.078600 } ,
-		{ 0.169900, 0.078600, 0.169900, 0.078600 } ,
-		{ 0.169900, 0.078600, 0.113200, 0.235900 } ,
-		{ 0.169900, 0.078600, 0.113200, 0.118000 } ,
-		{ 0.169900, 0.078600, 0.113200, 0.078600 } ,
-		{ 0.113200, 0.235900, 0.113200, 0.235900 } ,
-		{ 0.113200, 0.235900, 0.113200, 0.118000 } ,
-		{ 0.113200, 0.235900, 0.113200, 0.078600 } ,
-		{ 0.113200, 0.118000, 0.113200, 0.118000 } ,
-		{ 0.113200, 0.118000, 0.113200, 0.078600 } ,
-		{ 0.113200, 0.078600, 0.113200, 0.078600 }
-	};
+	numseeds = 5;
 
 	double optimizedParams[45][4];
 
 	/* prepare statistical variables */
+	/*
 	double mean = gsl_stats_mean(data, 1, data_size);
 	double variance = gsl_stats_variance(data, 1, data_size);
 
@@ -86,7 +43,9 @@ void optimize_twostage(int data_size, const double data[])
 		s[i] =
 			pow((variance * vry[i]) / (pow(mean * vry[i], 3.0)), 0.5);
 	}
+	*/
 
+	/*
 	printf("\n");
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		printf("i=%d ", seedIdx);
@@ -95,16 +54,31 @@ void optimize_twostage(int data_size, const double data[])
 			seeds[seedIdx][3]);
 	}
 	printf("\n");
+	*/
 
 #ifdef _PARALLEL_SEEDS
 #pragma omp parallel for
 #endif
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++){
 
-		printf("i=%d ", seedIdx);
-		printf("  P=[%f %f %f %f]\n", seeds[seedIdx][0],
+		
+
+
+		double * seedll = (double *)malloc(sizeof(double)*data_size);
+		conv2waldpdf(data, seeds[seedIdx][0],
 			seeds[seedIdx][1], seeds[seedIdx][2],
-			seeds[seedIdx][3]);
+			seeds[seedIdx][3], seedll, 0.01, 1,
+			data_size);
+		double seedll_sum = 0;
+		for (int i = 0; i < data_size; i++) {
+			seedll_sum += log(seedll[i]);
+		}
+		free(seedll);
+
+		printf("\nstarting seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, seeds[seedIdx][0],
+			seeds[seedIdx][1], seeds[seedIdx][2],
+			seeds[seedIdx][3], seedll_sum);
+
 		
 		// https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
 
@@ -153,6 +127,9 @@ void optimize_twostage(int data_size, const double data[])
 			//printf("It took me %d clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
 			printf("%.3f ", ((float)t) / CLOCKS_PER_SEC);
 
+			if (iter % 16 == 0)
+				printf("\n");
+
 			if (status)
 				break;
 
@@ -186,52 +163,59 @@ void optimize_twostage(int data_size, const double data[])
 		gsl_vector_free(ss);
 		gsl_multimin_fminimizer_free(s);
 
-		printf("  p=[%f %f %f %f]\n", optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3]);
 
-		double l[266];
-		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], l, 0.01, 1,
+		double * ll = (double *)malloc(sizeof(double)*data_size);
+		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], ll, 0.01, 1,
 			data_size);
 
 		double l_sum = 0;
 		for (int i = 0; i < data_size; i++) {
-			l_sum += log(l[i]);
+			l_sum += log(ll[i]);
 		}
-		/* FIXME FIXME FIXME we are not actually reporting hp, flag and E here!*/
-		printf("  l=%f hp=%f flag=%f E=%f WARNING HP FLAG AND E ARE BOGUS NUMBERS\n\n", l_sum, 9999.0, 9999.0, 9999.0);
+
+		free(ll);
+
+		printf("\nfinished seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], l_sum);
 	}
 
 	/*  we previously optimized with a larger step size, recalculate with */
 	/*  a smaller stepsize after the fact */
-	printf("recalculating canidate solutions with smaller stepsize\n");
-	double loglikelihoods[45];
-	double l[266];
-#ifdef _PARALLEL_SEEDS
-#pragma omp parallel for
-#endif
-	for (int seedIdx = 0; seedIdx < 45; seedIdx++) {
-		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][0],
-			optimizedParams[seedIdx][0], optimizedParams[seedIdx][0],
-			l, 0.001, 1, data_size);
-		double l_sum = 0;
+	printf("\nrecalculating canidate solutions with smaller stepsize\n");
+
+	double * loglikelihoods = (double *)malloc(sizeof(double)*numseeds);
+	double * likelihoods = (double *)malloc(sizeof(double)*numseeds);
+
+	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
+			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3],
+			likelihoods, 0.001, 1, data_size);
+
+
+		loglikelihoods[seedIdx] = 0;
 		for (int i = 0; i < data_size; i++)
-			l_sum += log(l[i]);
+			loglikelihoods[seedIdx] += log(likelihoods[i]);
 
-		loglikelihoods[seedIdx] = l_sum;
+		printf("id=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
+			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], loglikelihoods[seedIdx]);
+
 	}
-
+	//free(likelihoods);
+	/*
 	// Find the best log likelihood
-	double max_ld = DBL_MIN;
+	double max_ld = 0;
 	int row_id = 0;
-	for (int seedIdx = 0; seedIdx < 45; seedIdx++) {
+	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		if (loglikelihoods[seedIdx] > max_ld) {
 			max_ld = loglikelihoods[seedIdx];
 			row_id = seedIdx;
 		}
 	}
 
-	printf("Best fit: row_id=%d\n", row_id + 1);
+	free(loglikelihoods);
+
+	printf("\nBest fit: row_id=%d\n", row_id);
 	printf("loglikelihood=%f ", max_ld);
 	printf("p=[ %f %f %f %f ]\n", optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3]);
-
+	*/
 	return;
 }

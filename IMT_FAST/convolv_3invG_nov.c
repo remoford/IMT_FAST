@@ -10,11 +10,14 @@
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_sort.h"
 #include "approxconvolv.h"
+#include "binned_conv.h"
 
 #define _GSL_GP_MAX_FIXED
 //#define _PARALLEL_PDF
 
 /* Function Definitions */
+
+#define _BINNED_MODE
 
 double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
 {
@@ -504,8 +507,13 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	       % as a left-hand Riemann sum
 	     */
 	    //printf("\n\ncalling approxconv_rep from conv3waldpdf partitionLength=%d size_XY=%d h=%f\n", partitionLength, size_XY, h);
-	    approxconvolv_replacement(z, y, X, x, Y, &logP0,
-				      partitionLength, size_XY, h);
+	    //approxconvolv_replacement(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+
+#ifdef _BINNED_MODE
+		binned_conv(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+#else
+		nn_conv(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+#endif
 
 #ifdef __INTEL_COMPILER
 	    _mm_free(y);
@@ -607,8 +615,13 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	       % as a left-hand Riemann sum
 	     */
 	    //printf("\n\ncalling approxconv_rep from conv3waldpdf partitionLength=%d size_XY=%d h1=%f\n", partitionLength, size_XY, h1);
-	    approxconvolv_replacement(z, y, X, x, Y, &logP1,
-				      partitionLength, size_XY, h1);
+	    approxconvolv_replacement(z, y, X, x, Y, &logP1, partitionLength, size_XY, h1);
+
+#ifdef _BINNED_MODE
+		binned_conv(z, y, X, x, Y, &logP1, partitionLength, size_XY, h);
+#else
+		nn_conv(z, y, X, x, Y, &logP1, partitionLength, size_XY, h);
+#endif
 
 #ifdef __INTEL_COMPILER
 	    _mm_free(x);
@@ -681,8 +694,12 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	 */
 	double logP0;
 	//printf("\n\ncalling approxconv_rep from conv3waldpdf partitionLength=%d size_XY=%d h=%f\n", partitionLength, size_XY, h);
-	approxconvolv_replacement(z, y, X, x, Y, &logP0, partitionLength,
-				  size_XY, h);
+	//approxconvolv_replacement(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+#ifdef _BINNED_MODE
+				  binned_conv(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+#else
+				  nn_conv(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+#endif
 
 #ifdef __INTEL_COMPILER
 	_mm_free(y);
@@ -764,8 +781,14 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	       % as a left - hand Riemann sum
 	     */
 	    //printf("\n\ncalling approxconv_rep from conv3waldpdf partitionLength=%d size_XY=%d h1=%f\n", partitionLength, size_XY, h1);
-	    approxconvolv_replacement(z, y, X, x, Y, &logP1,
-				      partitionLength, size_XY, h1);
+	    //approxconvolv_replacement(z, y, X, x, Y, &logP1, partitionLength, size_XY, h1);
+#ifdef _BINNED_MODE
+		binned_conv(z, y, X, x, Y, &logP1, partitionLength, size_XY, h);
+#else
+		nn_conv(z, y, X, x, Y, &logP1, partitionLength, size_XY, h);
+#endif
+
+
 #ifdef __INTEL_COMPILER
 	    _mm_free(x);
 	    _mm_free(y);

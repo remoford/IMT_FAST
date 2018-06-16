@@ -11,6 +11,9 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
     //
     int size_conv = 2 * size_xyz;
 	
+	//double threshold = DBL_MIN * 2;
+	double threshold = 0;
+
 #ifdef _VERBOSE
 	printf("\nsize_xyz = %d ", size_xyz);
 #endif
@@ -23,8 +26,8 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
     /* Find the highest zero-valued index */
     int firstIdx = 0;
     for (int i = 0; i < size_xyz; i++) {
-        if (z[i] > 0)
-		break;
+        if (z[i] > threshold)
+			break;
         else
             firstIdx = i;
 
@@ -35,7 +38,7 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 
 	int lastIdx = size_xyz - 1;
 	for (int i = size_xyz; i >= 0; i--) {
-		if (z[i] > 0)
+		if (z[i] > threshold)
 			break;
 		else
 			lastIdx = i;
@@ -47,7 +50,7 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 	/* Find the highest zero-valued index */
 	int firstYIdx = 0;
 	for (int i = 0; i < size_xyz; i++) {
-		if (y[i] > 0)
+		if (y[i] > threshold)
 			break;
 		else
 			firstYIdx = i;
@@ -59,32 +62,41 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 
 	int lastYIdx = size_xyz - 1;
 	for (int i = size_xyz; i >= 0; i--) {
-		if (z[i] > 0)
+		if (y[i] > threshold)
 			break;
 		else
 			lastYIdx = i;
 	}
 #ifdef _VERBOSE
 	printf("Last y idx = %d ", lastYIdx);
+
+
+	int zspeedup = lastIdx - firstIdx - size_xyz;
+	int yspeedup = lastYIdx - firstYIdx - size_xyz;
+
+	//if (speedup>1)
+		printf(" [%d %d]", zspeedup, yspeedup);
+
+		if (abs(zspeedup) + abs(yspeedup) > 2)
+			printf("!!!!!!!!!!! ");
+		else
+			printf(" ");
 #endif
-
-	int speedup = (lastIdx - firstIdx - size_xyz) + (lastYIdx - firstYIdx - size_xyz);
-
-	if (speedup>1)
-		printf(" Window Speedup=%d ", speedup);
 
 #ifdef _VERBOSE
-	printf("\n");
+	//printf("\n");
 #endif
-
+	int tripcount = 0;
     /* do the lopsided convolution */
-    for (int i = firstIdx; i < size_xyz; i++) {
-	for (int j = 0; j < size_xyz; j++) {
+    for (int i = firstIdx; i < lastIdx; i++) {
+	for (int j = firstYIdx; j < lastYIdx; j++) {
 	    C[i + j] += z[i] * y[j] * h;
+		tripcount++;
 	}
     }
 
 
+	printf("[%d] ", size_xyz*size_xyz - tripcount);
 
 
 

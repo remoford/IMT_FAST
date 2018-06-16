@@ -118,7 +118,7 @@
       <SuppressStartupBanner>false</SuppressStartupBanner>
       <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
       <EmitGAPDiagnosticsToFile>true</EmitGAPDiagnosticsToFile>
-      <Parallelization>false</Parallelization>
+      <Parallelization>true</Parallelization>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
