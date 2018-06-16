@@ -11,6 +11,7 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
     //
     int size_conv = 2 * size_xyz;
 	
+	//double threshold = DBL_MIN;
 	//double threshold = DBL_MIN * 2;
 	double threshold = 0;
 
@@ -98,7 +99,11 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 
 	printf("[%d] ", size_xyz*size_xyz - tripcount);
 
+	for (int i = 0; i < size_conv; i++) {
+		if (C[i] == 0)
+			C[i] == DBL_MIN;
 
+	}
 
 
 }

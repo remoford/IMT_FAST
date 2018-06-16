@@ -51,8 +51,8 @@ waldpdf(const double X[], double mu, double s, double Y[], int size_XY)
 	//b = (pow(mu*X[i] - 1, 2)) / (2.0 * s * s * X[i]);
 	b = (pow(mu * X[i] - 1.0, 2.0)) / (2.0 * s * s * X[i]);
 	Y[i] = a * exp(-b);
-	if (Y[i] == 0)
-	    Y[i] = 2.2250738585072014E-308;
+	//if (Y[i] == 0)
+	//    Y[i] = 2.2250738585072014E-308;
 	//Y[i] = DBL_MIN;
 
 	if (isnan(Y[i]))

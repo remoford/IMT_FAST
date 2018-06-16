@@ -45,12 +45,13 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void *params)
 
 
 #ifdef _VERBOSE
-    printf("starting conv2waldpdf\n");
+    printf("\nstarting conv2waldpdf");
 #endif
 
     conv2waldpdf(data, m1, s1, m2, s2, Y_WALD, 0.01, 1, 266);
 
 #ifdef _VERBOSE
+	/*
     printf("conv2waldpdf = \n");
     for (int i = 0; i < 266; i++) {
 	if (i % 8 == 0)
@@ -58,6 +59,7 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void *params)
 	printf("%f ", Y_WALD[i]);
     }
     printf("\n\n");
+	*/
 #endif
 
 

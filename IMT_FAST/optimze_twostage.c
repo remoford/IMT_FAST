@@ -127,7 +127,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 			//printf("It took me %d clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
 			printf("%.3f ", ((float)t) / CLOCKS_PER_SEC);
 
-			if (iter % 16 == 0)
+			if (iter % 2 == 0)
 				printf("\n");
 
 			if (status)

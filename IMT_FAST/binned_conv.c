@@ -10,7 +10,7 @@
 //#define _VERBOSE
 //#define _FASTIDXMETHOD
 #define _SLOWIDXMETHOD
-//#define _WINDOW_MODE
+#define _WINDOW_MODE
 
 /* Function Definitions */
 
