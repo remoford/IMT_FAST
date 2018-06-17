@@ -96,8 +96,20 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 	}
     }
 
+	printf("[");
 
-	printf("[%d] ", size_xyz*size_xyz - tripcount);
+	if (firstIdx != 0)
+		printf("fz=%d ", firstIdx);
+	if (lastIdx != size_xyz)
+		printf("lz=%d ", lastIdx);
+	if (firstYIdx != 0)
+		printf("fy=%d ", firstYIdx);
+	if (lastYIdx != size_xyz)
+		printf("ly=%d ", lastYIdx);
+	if (tripcount != size_xyz * size_xyz)
+		printf("sz=%d ", size_xyz);
+
+	printf("skp=%d] ", size_xyz*size_xyz - tripcount);
 
 	for (int i = 0; i < size_conv; i++) {
 		if (C[i] == 0)

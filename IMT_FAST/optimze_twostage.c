@@ -25,7 +25,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 {
 	printf("twostagefitnomle\n");
 
-	numseeds = 5;
+	//numseeds = 5;
 
 	double optimizedParams[45][4];
 
@@ -127,7 +127,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 			//printf("It took me %d clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
 			printf("%.3f ", ((float)t) / CLOCKS_PER_SEC);
 
-			if (iter % 2 == 0)
+			if (iter % 1 == 0)
 				printf("\n");
 
 			if (status)
@@ -183,7 +183,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 	printf("\nrecalculating canidate solutions with smaller stepsize\n");
 
 	double * loglikelihoods = (double *)malloc(sizeof(double)*numseeds);
-	double * likelihoods = (double *)malloc(sizeof(double)*numseeds);
+	double * likelihoods = (double *)malloc(sizeof(double)*data_size);
 
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
@@ -200,7 +200,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 
 	}
 	//free(likelihoods);
-	/*
+	
 	// Find the best log likelihood
 	double max_ld = 0;
 	int row_id = 0;
@@ -216,6 +216,6 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 	printf("\nBest fit: row_id=%d\n", row_id);
 	printf("loglikelihood=%f ", max_ld);
 	printf("p=[ %f %f %f %f ]\n", optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3]);
-	*/
+	
 	return;
 }
