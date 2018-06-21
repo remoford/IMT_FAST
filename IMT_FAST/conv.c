@@ -1,9 +1,10 @@
 
  /* Include files */
 #include "float.h"
+#include "main.h"
 
 
-void conv (const double z[], const double y[], double C[], double h, int size_xyz)
+void conv (const distType z[], const distType y[], distType C[], double h, int size_xyz)
 {
     for (int i = 0; i < 2*size_xyz; i++) {
 	C[i] = 0;

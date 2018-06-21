@@ -6,6 +6,7 @@
 #include "stdio.h"
 #include "conv.h"
 #include "window_conv.h"
+#include "main.h"
 
 //#define _VERBOSE
 //#define _FASTIDXMETHOD
@@ -15,8 +16,8 @@
 /* Function Definitions */
 
 void
-binned_conv(const double z[], const double y[],
-			  const double X[], const double x[], double Y[],
+binned_conv(const distType z[], const distType y[],
+			  const double X[], const double x[], distType Y[],
 			  double *logP0, int size_xyz, int size_XY,
 			  double h)
 {
@@ -43,9 +44,9 @@ binned_conv(const double z[], const double y[],
     // Initialize C big enough for the convolution
     int size_conv = 2 * size_xyz;
 #ifdef __INTEL_COMPILER
-    double *C = (double *) _mm_malloc(size_conv * sizeof(double), 32);
+    distType *C = (distType *) _mm_malloc(size_conv * sizeof(distType), 32);
 #else
-    double *C = (double *) malloc(size_conv * sizeof(double));
+    distType *C = (distType *) malloc(size_conv * sizeof(distType));
 #endif
     for (int i = 0; i < size_conv; i++) {
 	C[i] = 0;
@@ -99,14 +100,15 @@ binned_conv(const double z[], const double y[],
 
 	
 	// Replace all zero values with DBL_MIN to abvoid unbounded numbers when taking a logarithm
+	/*
 	for (int i = 0; i < size_XY; i++) {
 		if (Y[i] == 0){
 			//Y[i] = 2.2250738585072014E-308;
 			//printf("OMG OMG OMG OMG WE GOT A NUMBER THTS REALLY DAMN CLOSE TO ZERO!!!!!!!!!!!!!!!!!!!!!!\n");
-			Y[i] = DBL_MIN;
+			Y[i] = distMin;
 		}
 	}
-	
+	*/
 
 	// FIX ME FIX ME FIX ME THIS IS BROKEN AND NEEDS FIXING ALWAYS RETURNS HTE SAME DMANED THING
 

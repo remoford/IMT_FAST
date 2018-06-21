@@ -11,6 +11,8 @@
 #include "math.h"
 #include "binned_conv.h"
 #include "nn_conv.h"
+#include "main.h"
+#include "loglikelihood.h"
 
 //#define _CONV2INVG
 #define _CONV2WALD
@@ -21,7 +23,7 @@
 /* Function Definitions */
 
 double
-convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void *params)
+convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params)
 {
     double *data = (double *) params;
 
@@ -41,7 +43,7 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void *params)
 
     double Y[266];
 
-    double Y_WALD[266];
+    distType Y_WALD[266];
 
 
 #ifdef _VERBOSE
@@ -63,27 +65,32 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void *params)
 #endif
 
 
-
+	/*
     for (int i = 0; i < 266; i++)
 	Y[i] = Y_WALD[i];
+	*/
 
-
+	/*
     double loglikelihood = 0;
     for (int i = 0; i < 266; i++) {
 	loglikelihood += log(Y[i]);
+	*/
+
+	double ll = (double) loglikelihood(Y_WALD, 266);
+
 	//printf("data[%d]=%.17f Y[%d]=%.17f log(%.17f)=%.17f\n", i, data[i], i, Y[i], Y[i], log(Y[i]));
 
-    }
+    //}
     //printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nloglikelihood = %f\n\n\n", loglikelihood);
 
     //exit(1);
 
-    return penalty - loglikelihood;
+    return penalty - ll;
 }
 
 void
 conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
-	double Y[], double h, int adaptiveMode, int size_XY) {
+	distType Y[], double h, int adaptiveMode, int size_XY) {
 
 	int flag = 0;		// remember if we applied the approximation
 	double eps = 0.01;		// a constant that is used in determining if the Dirac approximation should be applied.
@@ -180,17 +187,17 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
 
 	// There are our two wald distributions
 #ifdef __INTEL_COMPILER
-	double *y =
-	    (double *) _mm_malloc(partitionLength * sizeof(double), 32);
+	distType *y =
+	    (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
 #else
-	double *y = (double *) malloc(partitionLength * sizeof(double));
+	distType *y = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 
 #ifdef __INTEL_COMPILER
-	double *z =
-	    (double *) _mm_malloc(partitionLength * sizeof(double), 32);
+	distType *z =
+	    (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
 #else
-	double *z = (double *) malloc(partitionLength * sizeof(double));
+	distType *z = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 
 	// fill the partition
@@ -210,7 +217,7 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
 	   waldpdf(x, m_a, s_a, y, partitionLength);
 	   waldpdf(x, m_b, s_b, z, partitionLength);
 	 */
-	double *w[2];
+	distType *w[2];
 
 	w[0] = y;
 	w[1] = z;
@@ -255,19 +262,19 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
 	    double *x =
 		(double *) _mm_malloc(partitionLength * sizeof(double),
 				      32);
-	    double *y =
-		(double *) _mm_malloc(partitionLength * sizeof(double),
+	    distType *y =
+		(distType *) _mm_malloc(partitionLength * sizeof(distType),
 				      32);
-	    double *z =
-		(double *) _mm_malloc(partitionLength * sizeof(double),
+	    distType *z =
+		(distType *) _mm_malloc(partitionLength * sizeof(distType),
 				      32);
 #else
 	    double *x =
 		(double *) malloc(partitionLength * sizeof(double));
-	    double *y =
-		(double *) malloc(partitionLength * sizeof(double));
-	    double *z =
-		(double *) malloc(partitionLength * sizeof(double));
+	    distType *y =
+		(distType *) malloc(partitionLength * sizeof(distType));
+	    distType *z =
+		(distType *) malloc(partitionLength * sizeof(distType));
 #endif
 
 	    // fill the partition
@@ -296,7 +303,7 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
 #pragma omp parallel for
 #endif
 	    for (int i = 0; i < 2; i++) {
-		waldpdf(x, m[i], s[i], w[i], partitionLength);
+			waldpdf(x, m[i], s[i], w[i], partitionLength);
 	    }
 
 

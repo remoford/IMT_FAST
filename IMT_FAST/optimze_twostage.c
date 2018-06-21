@@ -7,8 +7,10 @@
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_statistics_double.h"
 #include "time.h"
+#include "main.h"
+#include "loglikelihood.h"
 
-//#define _PARALLEL_SEEDS
+#define _PARALLEL_SEEDS
 
 
 /* Type Definitions */
@@ -18,6 +20,8 @@
 typedef struct {
 	double f1[2];
 } cell_wrap_3;
+
+
 
 #endif				/*typedef_cell_wrap_3 */
 
@@ -64,15 +68,21 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 		
 
 
-		double * seedll = (double *)malloc(sizeof(double)*data_size);
+		distType * seedll = (distType *)malloc(sizeof(distType)*data_size);
 		conv2waldpdf(data, seeds[seedIdx][0],
 			seeds[seedIdx][1], seeds[seedIdx][2],
 			seeds[seedIdx][3], seedll, 0.01, 1,
 			data_size);
+
+		/*
 		double seedll_sum = 0;
 		for (int i = 0; i < data_size; i++) {
 			seedll_sum += log(seedll[i]);
 		}
+		*/
+
+		double seedll_sum = (double) loglikelihood(seedll, data_size);
+
 		free(seedll);
 
 		printf("\nstarting seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, seeds[seedIdx][0],
@@ -164,14 +174,18 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 		gsl_multimin_fminimizer_free(s);
 
 
-		double * ll = (double *)malloc(sizeof(double)*data_size);
+		distType * ll = (distType *)malloc(sizeof(distType)*data_size);
 		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], ll, 0.01, 1,
 			data_size);
 
+		/*
 		double l_sum = 0;
 		for (int i = 0; i < data_size; i++) {
 			l_sum += log(ll[i]);
 		}
+		*/
+
+		double l_sum = (double) loglikelihood(ll, data_size);
 
 		free(ll);
 
@@ -182,31 +196,33 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 	/*  a smaller stepsize after the fact */
 	printf("\nrecalculating canidate solutions with smaller stepsize\n");
 
-	double * loglikelihoods = (double *)malloc(sizeof(double)*numseeds);
-	double * likelihoods = (double *)malloc(sizeof(double)*data_size);
+	distType * loglikelihoods = (distType *)malloc(sizeof(distType)*numseeds);
+	distType * likelihoods = (distType *)malloc(sizeof(distType)*data_size);
 
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3],
 			likelihoods, 0.001, 1, data_size);
 
-
+		/*
 		loglikelihoods[seedIdx] = 0;
 		for (int i = 0; i < data_size; i++)
 			loglikelihoods[seedIdx] += log(likelihoods[i]);
+		*/
+		loglikelihoods[seedIdx] = loglikelihood(likelihoods, data_size);
 
 		printf("id=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], loglikelihoods[seedIdx]);
 
 	}
-	//free(likelihoods);
+	free(likelihoods);
 	
 	// Find the best log likelihood
-	double max_ld = 0;
+	double max_ld = 0.0;
 	int row_id = 0;
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		if (loglikelihoods[seedIdx] > max_ld) {
-			max_ld = loglikelihoods[seedIdx];
+			max_ld = (double) loglikelihoods[seedIdx];
 			row_id = seedIdx;
 		}
 	}

@@ -135,6 +135,7 @@
     <ClCompile Include="gp_max.c" />
     <ClCompile Include="IMT_analysis_April2017.c" />
     <ClCompile Include="IMT_analysis_April2017_data.c" />
+    <ClCompile Include="loglikelihood.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="nn_conv.c" />
     <ClCompile Include="onestagepdf2.c" />
@@ -155,6 +156,7 @@
     <ClInclude Include="gp_max.h" />
     <ClInclude Include="IMT_analysis_April2017.h" />
     <ClInclude Include="IMT_analysis_April2017_data.h" />
+    <ClInclude Include="loglikelihood.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="nn_conv.h" />
     <ClInclude Include="onestagepdf2.h" />

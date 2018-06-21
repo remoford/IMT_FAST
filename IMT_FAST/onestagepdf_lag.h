@@ -10,13 +10,14 @@
 #include <string.h>
 #include "omp.h"
 #include "gsl/gsl_multimin.h"
+#include "main.h"
 
 /* Function Declarations */
 
 
 extern double waldlag_loglikelihood(const gsl_vector *v, void *params);
 
-extern void waldlagpdf(const double X[266], double mu, double s, double l, double Y[266], int size_XY);
+extern void waldlagpdf(const double X[266], double mu, double s, double l, distType Y[266], int size_XY);
 
 
 

@@ -11,6 +11,8 @@
 #include "gsl/gsl_sort.h"
 #include "approxconvolv.h"
 #include "binned_conv.h"
+#include "main.h"
+#include "loglikelihood.h"
 
 #define _GSL_GP_MAX_FIXED
 //#define _PARALLEL_PDF
@@ -41,7 +43,7 @@ double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
     m3 = fabs(m3);
     s3 = fabs(s3);
 
-    double Y[266];
+    distType Y[266];
     double Y_replacement[266];
     for (int i = 0; i < 266; i++) {
 	Y[i] = 0;
@@ -70,6 +72,7 @@ double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
        printf("\n");
      */
 
+	/*
     double loglikelihood = 0;
     double elementLogLikelihood;
     for (int i = 0; i < 266; i++) {
@@ -78,10 +81,13 @@ double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
 	//printf("elementLogLikelihood=inf Y[%d]=%f\n", i, Y[i]);
 	loglikelihood += elementLogLikelihood;
     }
+	*/
+
+	double ll = (double) loglikelihood(Y, 266);
 
     //exit(1);
 
-    double objective = penalty - loglikelihood;
+    double objective = penalty - ll;
     //printf("\nobjective = %f\n\n", objective);
 
     return objective;
@@ -95,7 +101,7 @@ function [P,h,flag,E]=convolv_3invG_nov(t,m1,s1,m2,s2,m3,s3,h)
 //void convolv3waldpdf(double m1, double s1, double m2, double s2, double m3, double s3, const double X[266], double Y[266], int size_XY, double h)
 void
 convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
-		double s3, const double X[], double Y[], int size_XY,
+		double s3, const double X[], distType Y[], int size_XY,
 		double h)
 {
     /*
@@ -228,7 +234,7 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	(pow(1 + (9.0 / 4.0) * (pow(s[2], 4) / pow(m[2], 2)), 0.5) -
 	 (3.0 / 2.0) * (pow(s[2], 2) / m[2]));
 
-    double *w[2];
+    distType *w[2];
 
     /*
        if sd(1)<.01
@@ -277,8 +283,8 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	double checkval = DBL_MAX;
 	double check_domain[1];
 	check_domain[0] = r;
-	double check_Y1[1];
-	double check_Y2[1];
+	distType check_Y1[1];
+	distType check_Y2[1];
 	waldpdf(check_domain, m[1], s[1], check_Y1, 1);
 	waldpdf(check_domain, m[2], s[2], check_Y2, 1);
 	if (check_Y1[0] < checkval)
@@ -310,11 +316,11 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	double gm = DBL_MAX;
 	double T2_domain[1];
 	T2_domain[0] = T2;
-	double T2_Y[1];
+	distType T2_Y[1];
 	waldpdf(T2_domain, m[1], s[1], T2_Y, 1);
 	double T3_domain[1];
 	T3_domain[0] = T3;
-	double T3_Y[1];
+	distType T3_Y[1];
 	waldpdf(T3_domain, m[2], s[2], T3_Y, 1);
 	if (T2_Y[0] < gm)
 	    gm = T2_Y[0];
@@ -356,10 +362,10 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	    (double *) malloc(partitionLength1 * sizeof(double));
 	double *check1_X2 =
 	    (double *) malloc(partitionLength2 * sizeof(double));
-	double *check1_Y1 =
-	    (double *) malloc(partitionLength1 * sizeof(double));
-	double *check1_Y2 =
-	    (double *) malloc(partitionLength2 * sizeof(double));
+	distType *check1_Y1 =
+	    (distType *) malloc(partitionLength1 * sizeof(distType));
+	distType *check1_Y2 =
+	    (distType *) malloc(partitionLength2 * sizeof(distType));
 	double tally = 0;
 	for (int i = 0; i < partitionLength1; i++) {
 	    check1_X1[i] = tally;
@@ -402,10 +408,10 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 		(double *) malloc(partitionLength1 * sizeof(double));
 	    double *ck1_X2 =
 		(double *) malloc(partitionLength2 * sizeof(double));
-	    double *ck1_Y1 =
-		(double *) malloc(partitionLength1 * sizeof(double));
-	    double *ck1_Y2 =
-		(double *) malloc(partitionLength2 * sizeof(double));
+	    distType *ck1_Y1 =
+		(distType *) malloc(partitionLength1 * sizeof(distType));
+	    distType *ck1_Y2 =
+		(distType *) malloc(partitionLength2 * sizeof(distType));
 	    tally = 0;
 	    for (int i = 0; i < partitionLength1; i++) {
 		ck1_X1[i] = tally;
@@ -468,11 +474,11 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	       [y,flag]=convolv_2invG_nov(x',m(2),s(2),m(3),s(3),h);
 	     */
 #ifdef __INTEL_COMPILER
-	    double *y =
-		(double *) _mm_malloc(partitionLength * sizeof(double),
+	    distType *y =
+		(distType *) _mm_malloc(partitionLength * sizeof(distType),
 				      32);
 #else
-	    double *y = malloc(partitionLength * sizeof(double));
+	    distType *y = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 	    w[0] = y;
 	    //conv2waldpdf(x, m[1], s[1], m[2], s[2], y, h, 0, partitionLength);
@@ -481,11 +487,11 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	       z=onestagepdf2(x',m(1),s(1));
 	     */
 #ifdef __INTEL_COMPILER
-	    double *z =
-		(double *) _mm_malloc(partitionLength * sizeof(double),
+	    distType *z =
+		(distType *) _mm_malloc(partitionLength * sizeof(distType),
 				      32);
 #else
-	    double *z = malloc(partitionLength * sizeof(double));
+	    distType *z = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 
 	    w[1] = z;
@@ -531,11 +537,15 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	   P0=max(realmin,P);
 	   logP0=sum(log(P0));
 	 */
+	/*
 	for (int i = 0; i < size_XY; i++) {
-	    if (Y[i] < DBL_MIN)
-		Y[i] = DBL_MIN;
+	    //if (Y[i] < DBL_MIN)
+		//Y[i] = DBL_MIN;
 	    logP0 += log(Y[i]);;
 	}
+	*/
+
+	logP0 = loglikelihood(Y, size_XY);
 
 	/*
 	   while E>=.001*abs(logP0)
@@ -576,11 +586,11 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	       [y,flag]=convolv_2invG_nov(x',m(2),s(2),m(3),s(3),h1);
 	     */
 #ifdef __INTEL_COMPILER
-	    double *y =
-		(double *) _mm_malloc(partitionLength * sizeof(double),
+	    distType *y =
+		(distType *) _mm_malloc(partitionLength * sizeof(distType),
 				      32);
 #else
-	    double *y = malloc(partitionLength * sizeof(double));
+	    distType *y = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 	    w[0] = y;
 	    //conv2waldpdf(x, m[1], s[1], m[2], s[2], y, h1, 0, partitionLength);
@@ -589,11 +599,11 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	       z=onestagepdf2(x',m(1),s(1));
 	     */
 #ifdef __INTEL_COMPILER
-	    double *z =
-		(double *) _mm_malloc(partitionLength * sizeof(double),
+	    distType *z =
+		(distType *) _mm_malloc(partitionLength * sizeof(distType),
 				      32);
 #else
-	    double *z = malloc(partitionLength * sizeof(double));
+	    distType *z = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 	    w[1] = z;
 	    //waldpdf(x, m[0], s[0], z, partitionLength);
@@ -615,7 +625,7 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	       % as a left-hand Riemann sum
 	     */
 	    //printf("\n\ncalling approxconv_rep from conv3waldpdf partitionLength=%d size_XY=%d h1=%f\n", partitionLength, size_XY, h1);
-	    approxconvolv_replacement(z, y, X, x, Y, &logP1, partitionLength, size_XY, h1);
+	    //approxconvolv_replacement(z, y, X, x, Y, &logP1, partitionLength, size_XY, h1);
 
 #ifdef _BINNED_MODE
 		binned_conv(z, y, X, x, Y, &logP1, partitionLength, size_XY, h);
@@ -655,10 +665,10 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 
 	 */
 #ifdef __INTEL_COMPILER
-	double *y =
-	    (double *) _mm_malloc(partitionLength * sizeof(double), 32);
+	distType *y =
+	    (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
 #else
-	double *y = malloc(partitionLength * sizeof(double));
+	distType *y = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 	w[0] = y;
 	//conv2waldpdf(x, m[1], s[1], m[2], s[2], y, h, 0, partitionLength);
@@ -668,10 +678,10 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 
 	 */
 #ifdef __INTEL_COMPILER
-	double *z =
-	    (double *) _mm_malloc(partitionLength * sizeof(double), 32);
+	distType *z =
+	    (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
 #else
-	double *z = malloc(partitionLength * sizeof(double));
+	distType *z = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 	w[1] = z;
 	//waldpdf(x, m[0], s[0], z, partitionLength);
@@ -741,11 +751,11 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	       [y, flag] = convolv_2invG_nov(x',m(2),s(2),m(3),s(3),h1);
 	     */
 #ifdef __INTEL_COMPILER
-	    double *y =
-		(double *) _mm_malloc(partitionLength * sizeof(double),
+	    distType *y =
+		(distType *) _mm_malloc(partitionLength * sizeof(distType),
 				      32);
 #else
-	    double *y = malloc(partitionLength * sizeof(double));
+	    distType *y = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 	    w[0] = y;
 	    //conv2waldpdf(x, m[1], s[1], m[2], s[2], y, h1, 0, partitionLength);
@@ -754,11 +764,11 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 	       z = onestagepdf2(x',m(1),s(1));
 	     */
 #ifdef __INTEL_COMPILER
-	    double *z =
-		(double *) _mm_malloc(partitionLength * sizeof(double),
+	    distType *z =
+		(distType *) _mm_malloc(partitionLength * sizeof(distType),
 				      32);
 #else
-	    double *z = malloc(partitionLength * sizeof(double));
+	    distType *z = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 	    w[1] = z;
 	    //waldpdf(x, m[0], s[0], z, partitionLength);

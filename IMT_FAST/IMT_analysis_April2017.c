@@ -10,6 +10,8 @@
 #include "gsl/gsl_statistics_double.h"
 #include "time.h"
 #include "optimze_twostage.h"
+#include "main.h"
+#include "loglikelihood.h"
 
 #define _VERBOSE
 #define _CONV2WALD
@@ -101,7 +103,7 @@ void IMT_analysis_April2017(const char *model)
     //int ix;
     //double p[3];
     //double ep[81];
-    double l[266];
+    
     //double b_P[32];
     double ld[16];
     //double b_p[2];
@@ -133,6 +135,7 @@ void IMT_analysis_April2017(const char *model)
     double c_flag[20];
     double d_p[6];
 
+	distType l[266];
 	
 
     printf("FUCCI Data\n\n");
@@ -171,298 +174,13 @@ void IMT_analysis_April2017(const char *model)
 	printf("No valid model was selected, quitting.\n");
     }
 
-#ifdef _ENABLE_EMG
-    /* Fit the EMG model */
-    if (emgfitnomle == 1) {
-
-	printf("emgfitnomle\n\n");
-
-	/* prepare statistical variables */
-	double mean = gsl_stats_mean(data, 1, data_size);
-	double variance = gsl_stats_variance(data, 1, data_size);
-	double vry[3] = { 0.25, 0.5, 0.75 };
-
-	/*we vary the parameters so the the Gaussian and exponential parts of
-	   the cell cycle are responsible for a fraction of the total mean and
-	   variance in the IMT.
-	 */
-	double lambda[3];
-	for (int i = 0; i < 3; i++)
-	    lambda[i] = 1.0 / (mean * vry[i]);
-
-	double mu[3];
-	for (int i = 0; i < 3; i++)
-	    mu[i] = mean * vry[i];
-
-	double sigma[3];
-	for (int i = 0; i < 3; i++)
-	    sigma[i] = pow(variance * vry[i], 0.5);
-
-	/* prepare parameter seeds */
-	int seedIdx = 0;
-	double paramSeeds[27][3];
-	for (int i = 0; i < 3; i++) {
-	    for (int j = 0; j < 3; j++) {
-		for (int k = 0; k < 3; k++) {
-		    paramSeeds[seedIdx][0] = lambda[i];
-		    paramSeeds[seedIdx][1] = sigma[j];
-		    paramSeeds[seedIdx][2] = mu[k];
-		    seedIdx++;
-		}
-	    }
+	if (emgfitnomle == 1) {
+		optimize_emg(data, data_size);
 	}
 
-	/* optimize parameters */
-	double optimizedParams[27][3];
-	double le[27];
-#ifdef _PARALLEL_SEEDS
-#pragma omp parallel for
-#endif
-	for (seedIdx = 0; seedIdx < 27; seedIdx++) {
-
-	    printf("i = %d\n", 1 + seedIdx);
-	    printf("  P=[%.17f %.17f %.17f]\n", paramSeeds[seedIdx][0],
-		   paramSeeds[seedIdx][1], paramSeeds[seedIdx][2]);
-
-	    /* select our working seed */
-	    double paramSeed[3];
-	    for (int i = 0; i < 3; i++)
-		paramSeed[i] = paramSeeds[seedIdx][i];
-
-	    // https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
-
-	    const gsl_multimin_fminimizer_type *T =
-		gsl_multimin_fminimizer_nmsimplex2;
-	    gsl_multimin_fminimizer *s = NULL;
-	    gsl_vector *ss, *x;
-	    gsl_multimin_function minex_func;
-
-	    size_t iter = 0;
-	    int status;
-	    double size;
-
-	    /* Starting point */
-	    x = gsl_vector_alloc(3);
-	    gsl_vector_set(x, 0, paramSeed[0]);
-	    gsl_vector_set(x, 1, paramSeed[1]);
-	    gsl_vector_set(x, 2, paramSeed[2]);
-
-	    /* Set initial step sizes to 1 */
-	    ss = gsl_vector_alloc(3);
-	    gsl_vector_set_all(ss, 1.0);
-
-	    /* Initialize method and iterate */
-	    minex_func.n = 3;
-	    minex_func.f = emgpdf_loglikelihood;
-	    minex_func.params = (void *) data;
-
-	    s = gsl_multimin_fminimizer_alloc(T, 3);
-	    gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
-
-	    do {
-		iter++;
-		status = gsl_multimin_fminimizer_iterate(s);
-
-		if (status)
-		    break;
-
-		size = gsl_multimin_fminimizer_size(s);
-		status = gsl_multimin_test_size(size, 1e-4);
-
-#ifdef _VERBOSE
-		if (status == GSL_SUCCESS) {
-		    printf("converged to minimum at\n");
-		}
-
-		printf("%5d %.17f %.17f %.17f f() = %.17f size = %.3f\n",
-		       (int) iter,
-		       gsl_vector_get(s->x, 0),
-		       gsl_vector_get(s->x, 1),
-		       gsl_vector_get(s->x, 2), s->fval, size);
-#endif
-	    }
-	    while (status == GSL_CONTINUE && iter < 10000);
-
-	    optimizedParams[seedIdx][0] = fabs(gsl_vector_get(s->x, 0));
-	    optimizedParams[seedIdx][1] = fabs(gsl_vector_get(s->x, 1));
-	    optimizedParams[seedIdx][2] = fabs(gsl_vector_get(s->x, 2));
-
-	    gsl_vector_free(x);
-	    gsl_vector_free(ss);
-	    gsl_multimin_fminimizer_free(s);
-
-	    printf("  ep=[%.17f %.17f %.17f]\n",
-		   optimizedParams[seedIdx][0],
-		   optimizedParams[seedIdx][1],
-		   optimizedParams[seedIdx][2]);
-
-	    /* recalculate our best fit */
-	    emgpdf(data, optimizedParams[seedIdx][0],
-		   optimizedParams[seedIdx][1],
-		   optimizedParams[seedIdx][2], l);
-
-	    /* calculate the log likelihood for our best fit */
-	    double loglikelihood = 0;
-	    for (int i = 0; i < data_size; i++) {
-		loglikelihood += log(l[i]);
-	    }
-
-	    printf("  l=%.17f\n\n", loglikelihood);
-	    le[seedIdx] = loglikelihood;
+	if (onestagefitnomle == 1) {
+		optimize_onestage(data, data_size);
 	}
-
-	/* find the best optimized parameter set for all starting seeds tried */
-	double maxLikelihood = 0;
-	int ind_le = 0;
-	for (int i = 0; i < 27; i++) {
-	    if (le[i] < maxLikelihood) {
-		maxLikelihood = le[i];
-		ind_le = i;
-	    }
-	}
-
-	printf("max_le=%.17f ind_le=%d\n", maxLikelihood, ind_le + 1);
-	printf("ep_max=[%.17f %.17f %.17f]\n\n",
-	       optimizedParams[ind_le][0], optimizedParams[ind_le][1],
-	       optimizedParams[ind_le][2]);
-    }
-#endif
-
-#ifdef _ENABLE_ONESTAGE
-
-    if (onestagefitnomle == 1) {
-
-	printf("onestagefitnomle\n\n");
-
-	/* prepare statistical variables */
-	double mean = gsl_stats_mean(data, 1, data_size);
-	double variance = gsl_stats_variance(data, 1, data_size);
-	double vry[4] = { 0.5, 1.0, 1.5, 2.0 };
-
-	double mu = 1.0 / mean;
-	double sigma = pow((variance / pow(mean, 3)), 0.5);
-
-	double m[4];
-	for (int i = 0; i < 4; i++)
-	    m[i] = mu * vry[i];
-
-	double s[4];
-	for (int i = 0; i < 4; i++)
-	    s[i] = sigma * vry[i];
-
-	/* prepare parameter seeds */
-	int seedIdx = 0;
-	double paramSeeds[16][2];
-	for (int i = 0; i < 4; i++) {
-	    for (int j = 0; j < 4; j++) {
-		paramSeeds[seedIdx][0] = m[i];
-		paramSeeds[seedIdx][1] = s[j];
-		seedIdx++;
-	    }
-	}
-
-	/* optimize parameters */
-	double optimizedParams[27][3];
-	//double le[27];
-#ifdef _PARALLEL_SEEDS
-#pragma omp parallel for
-#endif
-	for (seedIdx = 0; seedIdx < 16; seedIdx++) {
-	    printf("i=%d\n", 1 + seedIdx);
-	    printf("  P=[%f %f]\n", paramSeeds[seedIdx][0],
-		   paramSeeds[seedIdx][1]);
-
-	    // https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
-
-	    const gsl_multimin_fminimizer_type *T =
-		gsl_multimin_fminimizer_nmsimplex2;
-	    gsl_multimin_fminimizer *s = NULL;
-	    gsl_vector *ss, *x;
-	    gsl_multimin_function minex_func;
-
-	    size_t iter = 0;
-	    int status;
-	    double size;
-
-	    /* Starting point */
-	    x = gsl_vector_alloc(2);
-	    gsl_vector_set(x, 0, paramSeeds[seedIdx][0]);
-	    gsl_vector_set(x, 1, paramSeeds[seedIdx][1]);
-
-	    /* Set initial step sizes to 1 */
-	    ss = gsl_vector_alloc(2);
-	    gsl_vector_set_all(ss, 1.0);
-
-	    /* Initialize method and iterate */
-	    minex_func.n = 2;
-	    minex_func.f = wald_loglikelihood;
-	    minex_func.params = (void *) data;
-
-	    s = gsl_multimin_fminimizer_alloc(T, 2);
-	    gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
-
-	    do {
-		iter++;
-		status = gsl_multimin_fminimizer_iterate(s);
-
-		if (status)
-		    break;
-
-		size = gsl_multimin_fminimizer_size(s);
-		status = gsl_multimin_test_size(size, 1e-4);
-
-#ifdef _VERBOSE
-		if (status == GSL_SUCCESS) {
-		    printf("converged to minimum at\n");
-		}
-
-		printf("%5d %.17f %.17f f() = %.17f size = %.3f\n",
-		       (int) iter,
-		       gsl_vector_get(s->x, 0),
-		       gsl_vector_get(s->x, 1), s->fval, size);
-#endif
-	    }
-	    while (status == GSL_CONTINUE && iter < 10000);
-
-	    optimizedParams[seedIdx][0] = fabs(gsl_vector_get(s->x, 0));
-	    optimizedParams[seedIdx][1] = fabs(gsl_vector_get(s->x, 1));
-
-	    gsl_vector_free(x);
-	    gsl_vector_free(ss);
-	    gsl_multimin_fminimizer_free(s);
-
-	    printf("  p=[%f %f]\n", optimizedParams[seedIdx][0],
-		   optimizedParams[seedIdx][1]);
-
-	    //onestagepdf2(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], l);
-	    waldpdf(data, optimizedParams[seedIdx][0],
-		    optimizedParams[seedIdx][1], l, data_size);
-
-	    /* calculate the log likelihood for our best fit */
-	    double loglikelihood = 0;
-	    for (int i = 0; i < data_size; i++) {
-		loglikelihood += log(l[i]);
-	    }
-
-	    printf("  l=%.17f\n\n", loglikelihood);
-	    ld[seedIdx] = loglikelihood;
-	}
-
-	/* find the best optimized parameter set for all starting seeds tried */
-	double maxLikelihood = 0;
-	int ind_ld = 0;
-	for (int i = 0; i < 16; i++) {
-	    if (ld[i] < maxLikelihood) {
-		maxLikelihood = ld[i];
-		ind_ld = i;
-	    }
-	}
-
-	printf("max_ld=%f row_ld=%d\n", maxLikelihood, ind_ld);
-	printf("pd_max=[%f %f]\n\n", optimizedParams[ind_ld][0],
-	       optimizedParams[ind_ld][1]);
-    }
-#endif
 
 #ifdef _ENABLE_ONESTAGELAG
     /* Fit one-stage model with lag with fminsearch */
@@ -599,13 +317,17 @@ void IMT_analysis_April2017(const char *model)
 		       optimizedParams[seedIdx][2], l, data_size);
 
 	    /* calculate the log likelihood for our best fit */
+		/*
 	    double loglikelihood = 0;
 	    for (int i = 0; i < data_size; i++) {
 		loglikelihood += log(l[i]);
 	    }
+		*/
 
-	    printf("  l=%.17f\n\n", loglikelihood);
-	    le[seedIdx] = loglikelihood;
+		double ll = (double) loglikelihood(l, data_size);
+
+	    printf("  l=%.17f\n\n", ll);
+	    le[seedIdx] = ll;
 	}
 
 	/* find the best optimized parameter set for all starting seeds tried */
@@ -625,57 +347,58 @@ void IMT_analysis_April2017(const char *model)
 #endif
 
 #ifdef _ENABLE_TWOSTAGE
+	if (twostagefitnomle) {
+		int numseeds_twostage = 45;
+		double seeds_twostage[45][4] = {
+			{ 0.339700, 0.235900, 0.339700, 0.235900 } ,
+		{ 0.339700, 0.235900, 0.339700, 0.118000 } ,
+		{ 0.339700, 0.235900, 0.339700, 0.078600 } ,
+		{ 0.339700, 0.235900, 0.169900, 0.235900 } ,
+		{ 0.339700, 0.235900, 0.169900, 0.118000 } ,
+		{ 0.339700, 0.235900, 0.169900, 0.078600 } ,
+		{ 0.339700, 0.235900, 0.113200, 0.235900 } ,
+		{ 0.339700, 0.235900, 0.113200, 0.118000 } ,
+		{ 0.339700, 0.235900, 0.113200, 0.078600 } ,
+		{ 0.339700, 0.118000, 0.339700, 0.118000 } ,
+		{ 0.339700, 0.118000, 0.339700, 0.078600 } ,
+		{ 0.339700, 0.118000, 0.169900, 0.235900 } ,
+		{ 0.339700, 0.118000, 0.169900, 0.118000 } ,
+		{ 0.339700, 0.118000, 0.169900, 0.078600 } ,
+		{ 0.339700, 0.118000, 0.113200, 0.235900 } ,
+		{ 0.339700, 0.118000, 0.113200, 0.118000 } ,
+		{ 0.339700, 0.118000, 0.113200, 0.078600 } ,
+		{ 0.339700, 0.078600, 0.339700, 0.078600 } ,
+		{ 0.339700, 0.078600, 0.169900, 0.235900 } ,
+		{ 0.339700, 0.078600, 0.169900, 0.118000 } ,
+		{ 0.339700, 0.078600, 0.169900, 0.078600 } ,
+		{ 0.339700, 0.078600, 0.113200, 0.235900 } ,
+		{ 0.339700, 0.078600, 0.113200, 0.118000 } ,
+		{ 0.339700, 0.078600, 0.113200, 0.078600 } ,
+		{ 0.169900, 0.235900, 0.169900, 0.235900 } ,
+		{ 0.169900, 0.235900, 0.169900, 0.118000 } ,
+		{ 0.169900, 0.235900, 0.169900, 0.078600 } ,
+		{ 0.169900, 0.235900, 0.113200, 0.235900 } ,
+		{ 0.169900, 0.235900, 0.113200, 0.118000 } ,
+		{ 0.169900, 0.235900, 0.113200, 0.078600 } ,
+		{ 0.169900, 0.118000, 0.169900, 0.118000 } ,
+		{ 0.169900, 0.118000, 0.169900, 0.078600 } ,
+		{ 0.169900, 0.118000, 0.113200, 0.235900 } ,
+		{ 0.169900, 0.118000, 0.113200, 0.118000 } ,
+		{ 0.169900, 0.118000, 0.113200, 0.078600 } ,
+		{ 0.169900, 0.078600, 0.169900, 0.078600 } ,
+		{ 0.169900, 0.078600, 0.113200, 0.235900 } ,
+		{ 0.169900, 0.078600, 0.113200, 0.118000 } ,
+		{ 0.169900, 0.078600, 0.113200, 0.078600 } ,
+		{ 0.113200, 0.235900, 0.113200, 0.235900 } ,
+		{ 0.113200, 0.235900, 0.113200, 0.118000 } ,
+		{ 0.113200, 0.235900, 0.113200, 0.078600 } ,
+		{ 0.113200, 0.118000, 0.113200, 0.118000 } ,
+		{ 0.113200, 0.118000, 0.113200, 0.078600 } ,
+		{ 0.113200, 0.078600, 0.113200, 0.078600 }
+		};
 
-	int numseeds_twostage = 45;
-	double seeds_twostage[45][4] = {
-		{ 0.339700, 0.235900, 0.339700, 0.235900 } ,
-	{ 0.339700, 0.235900, 0.339700, 0.118000 } ,
-	{ 0.339700, 0.235900, 0.339700, 0.078600 } ,
-	{ 0.339700, 0.235900, 0.169900, 0.235900 } ,
-	{ 0.339700, 0.235900, 0.169900, 0.118000 } ,
-	{ 0.339700, 0.235900, 0.169900, 0.078600 } ,
-	{ 0.339700, 0.235900, 0.113200, 0.235900 } ,
-	{ 0.339700, 0.235900, 0.113200, 0.118000 } ,
-	{ 0.339700, 0.235900, 0.113200, 0.078600 } ,
-	{ 0.339700, 0.118000, 0.339700, 0.118000 } ,
-	{ 0.339700, 0.118000, 0.339700, 0.078600 } ,
-	{ 0.339700, 0.118000, 0.169900, 0.235900 } ,
-	{ 0.339700, 0.118000, 0.169900, 0.118000 } ,
-	{ 0.339700, 0.118000, 0.169900, 0.078600 } ,
-	{ 0.339700, 0.118000, 0.113200, 0.235900 } ,
-	{ 0.339700, 0.118000, 0.113200, 0.118000 } ,
-	{ 0.339700, 0.118000, 0.113200, 0.078600 } ,
-	{ 0.339700, 0.078600, 0.339700, 0.078600 } ,
-	{ 0.339700, 0.078600, 0.169900, 0.235900 } ,
-	{ 0.339700, 0.078600, 0.169900, 0.118000 } ,
-	{ 0.339700, 0.078600, 0.169900, 0.078600 } ,
-	{ 0.339700, 0.078600, 0.113200, 0.235900 } ,
-	{ 0.339700, 0.078600, 0.113200, 0.118000 } ,
-	{ 0.339700, 0.078600, 0.113200, 0.078600 } ,
-	{ 0.169900, 0.235900, 0.169900, 0.235900 } ,
-	{ 0.169900, 0.235900, 0.169900, 0.118000 } ,
-	{ 0.169900, 0.235900, 0.169900, 0.078600 } ,
-	{ 0.169900, 0.235900, 0.113200, 0.235900 } ,
-	{ 0.169900, 0.235900, 0.113200, 0.118000 } ,
-	{ 0.169900, 0.235900, 0.113200, 0.078600 } ,
-	{ 0.169900, 0.118000, 0.169900, 0.118000 } ,
-	{ 0.169900, 0.118000, 0.169900, 0.078600 } ,
-	{ 0.169900, 0.118000, 0.113200, 0.235900 } ,
-	{ 0.169900, 0.118000, 0.113200, 0.118000 } ,
-	{ 0.169900, 0.118000, 0.113200, 0.078600 } ,
-	{ 0.169900, 0.078600, 0.169900, 0.078600 } ,
-	{ 0.169900, 0.078600, 0.113200, 0.235900 } ,
-	{ 0.169900, 0.078600, 0.113200, 0.118000 } ,
-	{ 0.169900, 0.078600, 0.113200, 0.078600 } ,
-	{ 0.113200, 0.235900, 0.113200, 0.235900 } ,
-	{ 0.113200, 0.235900, 0.113200, 0.118000 } ,
-	{ 0.113200, 0.235900, 0.113200, 0.078600 } ,
-	{ 0.113200, 0.118000, 0.113200, 0.118000 } ,
-	{ 0.113200, 0.118000, 0.113200, 0.078600 } ,
-	{ 0.113200, 0.078600, 0.113200, 0.078600 }
-	};
-
-	optimize_twostage(data_size,data, numseeds_twostage, seeds_twostage);
+		optimize_twostage(data_size, data, numseeds_twostage, seeds_twostage);
+	}
 #endif
 
 #ifdef _ENABLE_THREESTAGE
@@ -809,10 +532,15 @@ void IMT_analysis_April2017(const char *model)
 	    convolv3waldpdf(d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5],
 			    data, l, data_size, 0.01);
 
+		/*
 	    double l_sum = 0;
 	    for (int i = 0; i < data_size; i++) {
 		l_sum += log(l[i]);
 	    }
+		*/
+
+		double l_sum = (double) loglikelihood(l, data_size);
+
 		/* FIXME FIXME FIXME we are not reporting the real values here */
 	    printf("  l=%f hp=%f flag=%f E=%f WARNING HP FLAG AND E ARE BOGUS\n\n", l_sum, 9999.0, 9999.0, 9999.0);
 
@@ -830,10 +558,14 @@ void IMT_analysis_April2017(const char *model)
 			    c_pd[80 + emgfitnomle],
 			    c_pd[100 + emgfitnomle], data, l, data_size, 0.001);
 
+		/*
 	    double l_sum = 0;
 	    for (int i = 0; i < data_size; i++) {
 		l_sum += log(l[i]);
 	    }
+		*/
+
+		double l_sum = (double) loglikelihood(l, data_size);
 
 	    c_flag[emgfitnomle] = l_sum;
 	}

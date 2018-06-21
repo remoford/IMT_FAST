@@ -2,10 +2,12 @@
  /* Include files */
 #include "float.h"
 #include "stdio.h"
+#include "main.h"
 
-//#define _VERBOSE
+#define _VERBOSE
 
-void window_conv (const double z[], const double y[], double C[], double h, int size_xyz)
+
+void window_conv (const distType z[], const distType y[], distType C[], double h, int size_xyz)
 {
     // Assume z is hte concentrated pdf
     //
@@ -13,14 +15,11 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 	
 	//double threshold = DBL_MIN;
 	//double threshold = DBL_MIN * 2;
-	double threshold = 0;
-
-#ifdef _VERBOSE
-	printf("\nsize_xyz = %d ", size_xyz);
-#endif
+	distType threshold = 0;
+	//distType threshold = distMin;
 
     for (int i = 0; i < size_conv; i++) {
-	C[i] = 0;
+		C[i] = 0.0;
     }
 
 
@@ -33,9 +32,6 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
             firstIdx = i;
 
     }
-#ifdef _VERBOSE
-	printf("First z idx = %d ", firstIdx);
-#endif
 
 	int lastIdx = size_xyz - 1;
 	for (int i = size_xyz; i >= 0; i--) {
@@ -44,9 +40,6 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 		else
 			lastIdx = i;
 	}
-#ifdef _VERBOSE
-	printf("Last z idx = %d ", lastIdx);
-#endif
 
 	/* Find the highest zero-valued index */
 	int firstYIdx = 0;
@@ -57,9 +50,6 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 			firstYIdx = i;
 
 	}
-#ifdef _VERBOSE
-	printf("First y idx = %d ", firstYIdx);
-#endif
 
 	int lastYIdx = size_xyz - 1;
 	for (int i = size_xyz; i >= 0; i--) {
@@ -68,25 +58,7 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 		else
 			lastYIdx = i;
 	}
-#ifdef _VERBOSE
-	printf("Last y idx = %d ", lastYIdx);
 
-
-	int zspeedup = lastIdx - firstIdx - size_xyz;
-	int yspeedup = lastYIdx - firstYIdx - size_xyz;
-
-	//if (speedup>1)
-		printf(" [%d %d]", zspeedup, yspeedup);
-
-		if (abs(zspeedup) + abs(yspeedup) > 2)
-			printf("!!!!!!!!!!! ");
-		else
-			printf(" ");
-#endif
-
-#ifdef _VERBOSE
-	//printf("\n");
-#endif
 	int tripcount = 0;
     /* do the lopsided convolution */
     for (int i = firstIdx; i < lastIdx; i++) {
@@ -96,6 +68,7 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 	}
     }
 
+#ifdef _VERBOSE
 	printf("[");
 
 	if (firstIdx != 0)
@@ -110,12 +83,15 @@ void window_conv (const double z[], const double y[], double C[], double h, int 
 		printf("sz=%d ", size_xyz);
 
 	printf("skp=%d] ", size_xyz*size_xyz - tripcount);
+#endif
 
+	/*
 	for (int i = 0; i < size_conv; i++) {
 		if (C[i] == 0)
-			C[i] == DBL_MIN;
+			C[i] = distMin;
 
 	}
+	*/
 
 
 }

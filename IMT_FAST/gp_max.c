@@ -5,6 +5,7 @@
 #include "onestagepdf2.h"
 #include "emgpdf.h"
 #include <gsl/gsl_poly.h>
+#include "main.h"
 
 /* Function Definitions */
 
@@ -39,7 +40,7 @@ double gp_max_fixed(double m, double s)
 	    }
 	}
     }
-    double y[10];
+    distType y[10];
 
     waldpdf(realRoots, m, s, y, numRealRoots);
 

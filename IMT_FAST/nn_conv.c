@@ -6,6 +6,8 @@
 #include "stdio.h"
 #include "conv.h"
 #include "window_conv.h"
+#include "loglikelihood.h"
+#include "main.h"
 
 //#define _VERBOSE
 //#define _FASTIDXMETHOD
@@ -14,8 +16,8 @@
 /* Function Definitions */
 
 void
-nn_conv(const double z[], const double y[],
-			  const double X[], const double x[], double Y[],
+nn_conv(const distType z[], const distType y[],
+			  const double X[], const double x[], distType Y[],
 			  double *logP0, int size_xyz, int size_XY,
 			  double h)
 {
@@ -42,17 +44,22 @@ nn_conv(const double z[], const double y[],
     // Initialize C big enough for the convolution
     int size_conv = 2 * size_xyz;
 #ifdef __INTEL_COMPILER
-    double *C = (double *) _mm_malloc(size_conv * sizeof(double), 32);
+    distType *C = (distType *) _mm_malloc(size_conv * sizeof(distType), 32);
 #else
-    double *C = (double *) malloc(size_conv * sizeof(double));
+    distType *C = (distType *) malloc(size_conv * sizeof(distType));
 #endif
+
+
     for (int i = 0; i < size_conv; i++) {
-	C[i] = 0;
+		C[i] = 0;
     }
 
-
+#ifdef _WINDOW_MODE
+	window_conv(y, z, C, h, size_xyz);
+#else
     conv(y,z,C,h,size_xyz);
-    //window_conv(y,z,C,h,size_xyz);
+#endif
+
 
     // Display the convolution
 #ifdef _VERBOSE
@@ -158,28 +165,36 @@ nn_conv(const double z[], const double y[],
 
 	    // WHY????
 	} else if (X[i] == 0) {
-	    Y[i] = DBL_MIN;
+	    //Y[i] = DBL_MIN;
+		Y[i] = 0;
 	} else {
 	    printf
 		("WARNING OUT OF RANGE X[%d]=%f nearestNeighborIdx=%d size_conv=%d size_XY=%d\n",
 		 i, X[i], nearestNeighborIdx, size_conv, size_XY);
-	    Y[i] = DBL_MIN;
+	    //Y[i] = DBL_MIN;
+		Y[i] = 0;
 	}
     }
 #ifdef _VERBOSE
     printf("\n\n");
 #endif
 
+	/*
     *logP0 = 0;
     for (int i = 0; i < size_XY; i++) {
 	*logP0 += log(Y[i]);
     }
+	*/
 
+	*logP0 = (double) loglikelihood(Y, size_XY);
+
+	/*
     for (int i = 0; i < size_XY; i++) {
 	if (Y[i] == 0)
 	    //Y[i] = 2.2250738585072014E-308;
 	    Y[i] = DBL_MIN;
     }
+	*/
 
 #ifdef _VERBOSE
     printf("approxconvolv_replacement = \n");
