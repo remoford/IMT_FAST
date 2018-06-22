@@ -79,7 +79,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 		gsl_vector *prev;
 		prev = gsl_vector_alloc(4);
 		gsl_vector_set_all(prev, 0);
-		int repeated = 0;
+		//int repeated = 0;
 
 		/* Set initial step sizes to 1 */
 		ss = gsl_vector_alloc(4);

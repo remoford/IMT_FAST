@@ -352,10 +352,12 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
     sd[1] = pow(v[1], 0.5);
     sd[2] = pow(v[2], 0.5);
 
+    /*
     double T1 =
 	(1.0 / m[0]) *
 	(pow(1 + (9.0 / 4.0) * (pow(s[0], 4) / pow(m[0], 2)), 0.5) -
 	 (3.0 / 2.0) * (pow(s[0], 2) / m[0]));
+    */
     double T2 =
 	(1.0 / m[1]) *
 	(pow(1 + (9.0 / 4.0) * (pow(s[1], 4) / pow(m[1], 2)), 0.5) -

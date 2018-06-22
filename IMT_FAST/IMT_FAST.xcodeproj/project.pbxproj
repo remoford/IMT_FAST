@@ -1,0 +1,766 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		41D5668FD89E4AA4BE57A026 /* ZERO_CHECK */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 9EFD7988BE3C431286613F05 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
+			buildPhases = (
+				FE0241C481074D639E8EAB9B /* CMake Rules */,
+			);
+			dependencies = (
+			);
+			name = ZERO_CHECK;
+			productName = ZERO_CHECK;
+		};
+		58FC762CD5A44FE18C892634 /* ALL_BUILD */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = DB72E8FDF7D7433DA5DC4A5B /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+			buildPhases = (
+				C1A2BC0274534C2EB67B949C /* CMake Rules */,
+			);
+			dependencies = (
+				CD384BEFEB1A4B489B774502 /* PBXTargetDependency */,
+				29929C7B628E47EB8A5243CE /* PBXTargetDependency */,
+			);
+			name = ALL_BUILD;
+			productName = ALL_BUILD;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		B6F2E48B20DBA2D900B5CB17 /* libgsl.23.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B6F2E48A20DBA2D900B5CB17 /* libgsl.23.dylib */; };
+		B6F2E48D20DBA2F000B5CB17 /* libgslcblas.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B6F2E48C20DBA2F000B5CB17 /* libgslcblas.0.dylib */; };
+		B6F2E4A020DCC3A200B5CB17 /* binned_conv.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49720DCC2F500B5CB17 /* binned_conv.c */; };
+		B6F2E4A120DCC3A200B5CB17 /* conv.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49620DCC2F400B5CB17 /* conv.c */; };
+		B6F2E4A220DCC3A200B5CB17 /* emgpdf.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49A20DCC2F500B5CB17 /* emgpdf.c */; };
+		B6F2E4A320DCC3A200B5CB17 /* gp_max.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49B20DCC2F600B5CB17 /* gp_max.c */; };
+		B6F2E4A420DCC3A200B5CB17 /* imt_analysis.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49920DCC2F500B5CB17 /* imt_analysis.c */; };
+		B6F2E4A520DCC3A200B5CB17 /* loglikelihood.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49320DCC2F400B5CB17 /* loglikelihood.c */; };
+		B6F2E4A620DCC3A200B5CB17 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49F20DCC2F700B5CB17 /* main.c */; };
+		B6F2E4A720DCC3A200B5CB17 /* nn_conv.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49C20DCC2F600B5CB17 /* nn_conv.c */; };
+		B6F2E4A820DCC3A200B5CB17 /* onestage.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49D20DCC2F600B5CB17 /* onestage.c */; };
+		B6F2E4A920DCC3A200B5CB17 /* onestagepdf_lag.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49120DCC2F300B5CB17 /* onestagepdf_lag.c */; };
+		B6F2E4AA20DCC3A200B5CB17 /* onestagepdf_prime.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49520DCC2F400B5CB17 /* onestagepdf_prime.c */; };
+		B6F2E4AB20DCC3A200B5CB17 /* tailmass.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49220DCC2F400B5CB17 /* tailmass.c */; };
+		B6F2E4AC20DCC3A200B5CB17 /* threestage.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49E20DCC2F700B5CB17 /* threestage.c */; };
+		B6F2E4AD20DCC3A200B5CB17 /* twostage.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49820DCC2F500B5CB17 /* twostage.c */; };
+		B6F2E4AE20DCC3A200B5CB17 /* window_conv.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F2E49420DCC2F400B5CB17 /* window_conv.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		121D5110063C4A9391422F4E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B709982444134DA0B8AFC6D0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 41D5668FD89E4AA4BE57A026;
+			remoteInfo = ZERO_CHECK;
+		};
+		56E05D243F0646F2B5547BFF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B709982444134DA0B8AFC6D0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 41D5668FD89E4AA4BE57A026;
+			remoteInfo = ZERO_CHECK;
+		};
+		D7689E3119D946428098C174 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B709982444134DA0B8AFC6D0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8FBD3929E8094B51AA36F8A7;
+			remoteInfo = MyExecutable;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		71AF1E68BEAE4033A5908573 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		79F04B72E6EF439C9DF52616 /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		9E61C229322C4481BDE8E132 /* MyExecutable */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = MyExecutable; sourceTree = BUILT_PRODUCTS_DIR; };
+		B6F2E48320DBA19700B5CB17 /* IMT_FAST */ = {isa = PBXFileReference; lastKnownFileType = folder; path = IMT_FAST; sourceTree = "<group>"; };
+		B6F2E48520DBA1AE00B5CB17 /* Debug */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Debug; sourceTree = "<group>"; };
+		B6F2E48720DBA27100B5CB17 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../../../../../usr/local/Cellar/gsl/2.5/lib; sourceTree = "<group>"; };
+		B6F2E48A20DBA2D900B5CB17 /* libgsl.23.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgsl.23.dylib; path = ../../../../../usr/local/Cellar/gsl/2.5/lib/libgsl.23.dylib; sourceTree = "<group>"; };
+		B6F2E48C20DBA2F000B5CB17 /* libgslcblas.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgslcblas.0.dylib; path = ../../../../../usr/local/Cellar/gsl/2.5/lib/libgslcblas.0.dylib; sourceTree = "<group>"; };
+		B6F2E49120DCC2F300B5CB17 /* onestagepdf_lag.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = onestagepdf_lag.c; sourceTree = "<group>"; };
+		B6F2E49220DCC2F400B5CB17 /* tailmass.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tailmass.c; sourceTree = "<group>"; };
+		B6F2E49320DCC2F400B5CB17 /* loglikelihood.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = loglikelihood.c; sourceTree = "<group>"; };
+		B6F2E49420DCC2F400B5CB17 /* window_conv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = window_conv.c; sourceTree = "<group>"; };
+		B6F2E49520DCC2F400B5CB17 /* onestagepdf_prime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = onestagepdf_prime.c; sourceTree = "<group>"; };
+		B6F2E49620DCC2F400B5CB17 /* conv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = conv.c; sourceTree = "<group>"; };
+		B6F2E49720DCC2F500B5CB17 /* binned_conv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = binned_conv.c; sourceTree = "<group>"; };
+		B6F2E49820DCC2F500B5CB17 /* twostage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = twostage.c; sourceTree = "<group>"; };
+		B6F2E49920DCC2F500B5CB17 /* imt_analysis.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = imt_analysis.c; sourceTree = "<group>"; };
+		B6F2E49A20DCC2F500B5CB17 /* emgpdf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = emgpdf.c; sourceTree = "<group>"; };
+		B6F2E49B20DCC2F600B5CB17 /* gp_max.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gp_max.c; sourceTree = "<group>"; };
+		B6F2E49C20DCC2F600B5CB17 /* nn_conv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nn_conv.c; sourceTree = "<group>"; };
+		B6F2E49D20DCC2F600B5CB17 /* onestage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = onestage.c; sourceTree = "<group>"; };
+		B6F2E49E20DCC2F700B5CB17 /* threestage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = threestage.c; sourceTree = "<group>"; };
+		B6F2E49F20DCC2F700B5CB17 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B6F2E48120DBA05E00B5CB17 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B6F2E48D20DBA2F000B5CB17 /* libgslcblas.0.dylib in Frameworks */,
+				B6F2E48B20DBA2D900B5CB17 /* libgsl.23.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		01123143DF3C4800963B021B /* MyExecutable */ = {
+			isa = PBXGroup;
+			children = (
+				FFD08D17437443B389FB8001 /* Source Files */,
+				79F04B72E6EF439C9DF52616 /* CMakeLists.txt */,
+			);
+			name = MyExecutable;
+			sourceTree = "<group>";
+		};
+		2C54D7EAB18C447F8EA090F8 /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		87E6CE58CFE84D938A0624F1 = {
+			isa = PBXGroup;
+			children = (
+				B6F2E49720DCC2F500B5CB17 /* binned_conv.c */,
+				B6F2E49620DCC2F400B5CB17 /* conv.c */,
+				B6F2E49A20DCC2F500B5CB17 /* emgpdf.c */,
+				B6F2E49B20DCC2F600B5CB17 /* gp_max.c */,
+				B6F2E49920DCC2F500B5CB17 /* imt_analysis.c */,
+				B6F2E49320DCC2F400B5CB17 /* loglikelihood.c */,
+				B6F2E49F20DCC2F700B5CB17 /* main.c */,
+				B6F2E49C20DCC2F600B5CB17 /* nn_conv.c */,
+				B6F2E49D20DCC2F600B5CB17 /* onestage.c */,
+				B6F2E49120DCC2F300B5CB17 /* onestagepdf_lag.c */,
+				B6F2E49520DCC2F400B5CB17 /* onestagepdf_prime.c */,
+				B6F2E49220DCC2F400B5CB17 /* tailmass.c */,
+				B6F2E49E20DCC2F700B5CB17 /* threestage.c */,
+				B6F2E49820DCC2F500B5CB17 /* twostage.c */,
+				B6F2E49420DCC2F400B5CB17 /* window_conv.c */,
+				01123143DF3C4800963B021B /* MyExecutable */,
+				FA04F097578245539A2EBCA4 /* ALL_BUILD */,
+				93541283A39647B6BFBD1ABB /* Products */,
+				B6F2E48220DBA19600B5CB17 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		93541283A39647B6BFBD1ABB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9E61C229322C4481BDE8E132 /* MyExecutable */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B6F2E48220DBA19600B5CB17 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B6F2E48C20DBA2F000B5CB17 /* libgslcblas.0.dylib */,
+				B6F2E48A20DBA2D900B5CB17 /* libgsl.23.dylib */,
+				B6F2E48720DBA27100B5CB17 /* lib */,
+				B6F2E48520DBA1AE00B5CB17 /* Debug */,
+				B6F2E48320DBA19700B5CB17 /* IMT_FAST */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		FA04F097578245539A2EBCA4 /* ALL_BUILD */ = {
+			isa = PBXGroup;
+			children = (
+				2C54D7EAB18C447F8EA090F8 /* CMake Rules */,
+				71AF1E68BEAE4033A5908573 /* CMakeLists.txt */,
+			);
+			name = ALL_BUILD;
+			sourceTree = "<group>";
+		};
+		FFD08D17437443B389FB8001 /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8FBD3929E8094B51AA36F8A7 /* MyExecutable */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B2DE09620FE548D8B8919DF4 /* Build configuration list for PBXNativeTarget "MyExecutable" */;
+			buildPhases = (
+				9247E0379DE64FC9A490CE3D /* Sources */,
+				B6F2E48120DBA05E00B5CB17 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9F744E36504446F692BC7C84 /* PBXTargetDependency */,
+			);
+			name = MyExecutable;
+			productName = MyExecutable;
+			productReference = 9E61C229322C4481BDE8E132 /* MyExecutable */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B709982444134DA0B8AFC6D0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 0940;
+			};
+			buildConfigurationList = DA69684820A448B3BC9C3545 /* Build configuration list for PBXProject "IMT_FAST" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 87E6CE58CFE84D938A0624F1;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				58FC762CD5A44FE18C892634 /* ALL_BUILD */,
+				8FBD3929E8094B51AA36F8A7 /* MyExecutable */,
+				41D5668FD89E4AA4BE57A026 /* ZERO_CHECK */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C1A2BC0274534C2EB67B949C /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/remoford/Documents/IMT_FAST/IMT_FAST -f /Users/remoford/Documents/IMT_FAST/IMT_FAST/CMakeScripts/ALL_BUILD_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		FE0241C481074D639E8EAB9B /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/remoford/Documents/IMT_FAST/IMT_FAST -f /Users/remoford/Documents/IMT_FAST/IMT_FAST/CMakeScripts/ZERO_CHECK_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9247E0379DE64FC9A490CE3D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B6F2E4A020DCC3A200B5CB17 /* binned_conv.c in Sources */,
+				B6F2E4A120DCC3A200B5CB17 /* conv.c in Sources */,
+				B6F2E4A220DCC3A200B5CB17 /* emgpdf.c in Sources */,
+				B6F2E4A320DCC3A200B5CB17 /* gp_max.c in Sources */,
+				B6F2E4A420DCC3A200B5CB17 /* imt_analysis.c in Sources */,
+				B6F2E4A520DCC3A200B5CB17 /* loglikelihood.c in Sources */,
+				B6F2E4A620DCC3A200B5CB17 /* main.c in Sources */,
+				B6F2E4A720DCC3A200B5CB17 /* nn_conv.c in Sources */,
+				B6F2E4A820DCC3A200B5CB17 /* onestage.c in Sources */,
+				B6F2E4A920DCC3A200B5CB17 /* onestagepdf_lag.c in Sources */,
+				B6F2E4AA20DCC3A200B5CB17 /* onestagepdf_prime.c in Sources */,
+				B6F2E4AB20DCC3A200B5CB17 /* tailmass.c in Sources */,
+				B6F2E4AC20DCC3A200B5CB17 /* threestage.c in Sources */,
+				B6F2E4AD20DCC3A200B5CB17 /* twostage.c in Sources */,
+				B6F2E4AE20DCC3A200B5CB17 /* window_conv.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		29929C7B628E47EB8A5243CE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8FBD3929E8094B51AA36F8A7 /* MyExecutable */;
+			targetProxy = D7689E3119D946428098C174 /* PBXContainerItemProxy */;
+		};
+		9F744E36504446F692BC7C84 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 41D5668FD89E4AA4BE57A026 /* ZERO_CHECK */;
+			targetProxy = 56E05D243F0646F2B5547BFF /* PBXContainerItemProxy */;
+		};
+		CD384BEFEB1A4B489B774502 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 41D5668FD89E4AA4BE57A026 /* ZERO_CHECK */;
+			targetProxy = 121D5110063C4A9391422F4E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		00F1A5747A9A411BACF0E3CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/gsl/2.5/lib;
+				OTHER_CFLAGS = "    ";
+				OTHER_LDFLAGS = (
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = MyExecutable;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = Debug;
+		};
+		08524402246E40788D80547A /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = MinSizeRel;
+		};
+		0B53A98CAF284D97A07319ED /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CC = /usr/local/opt/llvm/bin/clang;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_LINK_OBJC_RUNTIME = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = "";
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "-fopenmp=libomp";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USER_HEADER_SEARCH_PATHS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = RelWithDebInfo;
+		};
+		277D1C286B64451DAA257004 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/gsl/lib;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk;
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST/build;
+				USER_HEADER_SEARCH_PATHS = "/usr/local/opt/libomp/include /usr/local/opt/gsl/include";
+			};
+			name = MinSizeRel;
+		};
+		289DD2D006794AEF86DABFB6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/gsl/lib;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk;
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST/build;
+				USER_HEADER_SEARCH_PATHS = "/usr/local/opt/libomp/include /usr/local/opt/gsl/include";
+			};
+			name = Release;
+		};
+		3541AC77F88C4B13929BF633 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = RelWithDebInfo;
+		};
+		711D059AC81E4013B5CB4492 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/gsl/2.5/lib;
+				OTHER_CFLAGS = "    -DNDEBUG  ";
+				OTHER_LDFLAGS = (
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = MyExecutable;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = MinSizeRel;
+		};
+		933F91F1479140A7897D86AA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CC = /usr/local/opt/llvm/bin/clang;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_LINK_OBJC_RUNTIME = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = "";
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "-fopenmp=libomp";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USER_HEADER_SEARCH_PATHS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = Release;
+		};
+		AF7E830FF3C3461884654AFD /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/gsl/2.5/lib;
+				OTHER_CFLAGS = "       -DNDEBUG  ";
+				OTHER_LDFLAGS = (
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = MyExecutable;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = RelWithDebInfo;
+		};
+		B7132338DFF5423DB24100DA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = Release;
+		};
+		B9CC6C6A0C6D4AAA9F5C0755 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CC = /usr/local/opt/llvm/bin/clang;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_LINK_OBJC_RUNTIME = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = "";
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "-fopenmp=libomp";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USER_HEADER_SEARCH_PATHS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = Debug;
+		};
+		CED0FE177448423190D6F2FE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = Debug;
+		};
+		E382C3D5C39E4DFC8CF8FB72 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CC = /usr/local/opt/llvm/bin/clang;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_LINK_OBJC_RUNTIME = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = "";
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "-fopenmp=libomp";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USER_HEADER_SEARCH_PATHS = "";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = MinSizeRel;
+		};
+		F0137EAE601846DCA00C2AFF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_PREFIX = "";
+				EXECUTABLE_SUFFIX = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = "'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'";
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = "";
+				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/gsl/2.5/lib;
+				OTHER_CFLAGS = "    -DNDEBUG  ";
+				OTHER_LDFLAGS = (
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = MyExecutable;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"$(inherited)",
+				);
+			};
+			name = Release;
+		};
+		F12BC9A7192A4A0EAC73CB63 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/gsl/lib;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk;
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST/build;
+				USER_HEADER_SEARCH_PATHS = "/usr/local/opt/libomp/include /usr/local/opt/gsl/include";
+			};
+			name = RelWithDebInfo;
+		};
+		F5C0DF60119D44C7B149A2BF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/gsl/lib;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk;
+				SYMROOT = /Users/remoford/Documents/IMT_FAST/IMT_FAST/build;
+				USER_HEADER_SEARCH_PATHS = "/usr/local/opt/libomp/include /usr/local/opt/gsl/include";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9EFD7988BE3C431286613F05 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CED0FE177448423190D6F2FE /* Debug */,
+				B7132338DFF5423DB24100DA /* Release */,
+				08524402246E40788D80547A /* MinSizeRel */,
+				3541AC77F88C4B13929BF633 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B2DE09620FE548D8B8919DF4 /* Build configuration list for PBXNativeTarget "MyExecutable" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00F1A5747A9A411BACF0E3CD /* Debug */,
+				F0137EAE601846DCA00C2AFF /* Release */,
+				711D059AC81E4013B5CB4492 /* MinSizeRel */,
+				AF7E830FF3C3461884654AFD /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DA69684820A448B3BC9C3545 /* Build configuration list for PBXProject "IMT_FAST" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F5C0DF60119D44C7B149A2BF /* Debug */,
+				289DD2D006794AEF86DABFB6 /* Release */,
+				277D1C286B64451DAA257004 /* MinSizeRel */,
+				F12BC9A7192A4A0EAC73CB63 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DB72E8FDF7D7433DA5DC4A5B /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B9CC6C6A0C6D4AAA9F5C0755 /* Debug */,
+				933F91F1479140A7897D86AA /* Release */,
+				E382C3D5C39E4DFC8CF8FB72 /* MinSizeRel */,
+				0B53A98CAF284D97A07319ED /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B709982444134DA0B8AFC6D0 /* Project object */;
+}
