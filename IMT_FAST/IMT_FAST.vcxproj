@@ -126,43 +126,36 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="approxconvolv.c" />
     <ClCompile Include="binned_conv.c" />
     <ClCompile Include="conv.c" />
-    <ClCompile Include="convolv_2invG_adapt_nov.c" />
-    <ClCompile Include="convolv_3invG_nov.c" />
+    <ClCompile Include="twostage.c" />
+    <ClCompile Include="threestage.c" />
     <ClCompile Include="emgpdf.c" />
     <ClCompile Include="gp_max.c" />
-    <ClCompile Include="IMT_analysis_April2017.c" />
-    <ClCompile Include="IMT_analysis_April2017_data.c" />
+    <ClCompile Include="imt_analysis.c" />
     <ClCompile Include="loglikelihood.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="nn_conv.c" />
-    <ClCompile Include="onestagepdf2.c" />
+    <ClCompile Include="onestage.c" />
     <ClCompile Include="onestagepdf_lag.c" />
     <ClCompile Include="onestagepdf_prime.c" />
-    <ClCompile Include="optimze_twostage.c" />
     <ClCompile Include="tailmass.c" />
     <ClCompile Include="window_conv.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="approxconvolv.h" />
     <ClInclude Include="binned_conv.h" />
     <ClInclude Include="conv.h" />
-    <ClInclude Include="convolv_2invG_adapt_nov.h" />
-    <ClInclude Include="convolv_2invG_nov.h" />
-    <ClInclude Include="convolv_3invG_nov.h" />
+    <ClInclude Include="twostage.h" />
+    <ClInclude Include="threestage.h" />
     <ClInclude Include="emgpdf.h" />
     <ClInclude Include="gp_max.h" />
-    <ClInclude Include="IMT_analysis_April2017.h" />
-    <ClInclude Include="IMT_analysis_April2017_data.h" />
+    <ClInclude Include="imt_analysis.h" />
     <ClInclude Include="loglikelihood.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="nn_conv.h" />
-    <ClInclude Include="onestagepdf2.h" />
+    <ClInclude Include="onestage.h" />
     <ClInclude Include="onestagepdf_lag.h" />
     <ClInclude Include="onestagepdf_prime.h" />
-    <ClInclude Include="optimze_twostage.h" />
     <ClInclude Include="tailmass.h" />
     <ClInclude Include="window_conv.h" />
   </ItemGroup>

@@ -1,13 +1,9 @@
-
-/* Include files */
-#include "IMT_analysis_April2017.h"
+#include "imt_analysis.h"
 #include "gp_max.h"
-#include "onestagepdf2.h"
+#include "onestage.h"
 #include "emgpdf.h"
 #include <gsl/gsl_poly.h>
 #include "main.h"
-
-/* Function Definitions */
 
 double gp_max_fixed(double m, double s)
 {
@@ -30,15 +26,15 @@ double gp_max_fixed(double m, double s)
     double re;
     double im;
     for (int i = 0; i < 4; i++) {
-	re = foundRoots[2 * i];
-	im = foundRoots[2 * i + 1];
+		re = foundRoots[2 * i];
+		im = foundRoots[2 * i + 1];
 
-	if (im <= 0.000000000000001) {
-	    if (re >= 0) {
-		realRoots[numRealRoots] = re;
-		numRealRoots++;
-	    }
-	}
+		if (im <= 0.000000000000001) {
+			if (re >= 0) {
+				realRoots[numRealRoots] = re;
+				numRealRoots++;
+			}
+		}
     }
     distType y[10];
 
@@ -46,9 +42,9 @@ double gp_max_fixed(double m, double s)
 
     double largest = 0;
     for (int i = 0; i < numRealRoots; i++) {
-	if (y[i] > largest) {
-	    largest = y[i];
-	}
+		if (y[i] > largest) {
+			largest = y[i];
+		}
     }
 
     return largest;

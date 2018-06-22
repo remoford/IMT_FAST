@@ -1,6 +1,4 @@
-
-/* Include files */
-#include "IMT_analysis_April2017.h"
+#include "imt_analysis.h"
 #include "onestagepdf_prime.h"
 #include "emgpdf.h"
 #include "gp_max.h"

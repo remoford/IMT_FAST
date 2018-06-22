@@ -1,20 +1,15 @@
-
- /* Include files */
 #include "float.h"
 #include "main.h"
-
 
 void conv (const distType z[], const distType y[], distType C[], double h, int size_xyz)
 {
     for (int i = 0; i < 2*size_xyz; i++) {
-	C[i] = 0;
+		C[i] = 0;
     }
 
     for (int i = 0; i < size_xyz; i++) {
-	for (int j = 0; j < size_xyz; j++) {
-	    C[i + j] += z[i] * y[j] * h;
-	}
+		for (int j = 0; j < size_xyz; j++) {
+			C[i + j] += z[i] * y[j] * h;
+		}
     }
-
-
 }

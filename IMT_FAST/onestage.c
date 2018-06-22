@@ -1,7 +1,5 @@
-
-/* Include files */
-#include "IMT_analysis_April2017.h"
-#include "onestagepdf2.h"
+#include "imt_analysis.h"
+#include "onestage.h"
 #include "emgpdf.h"
 #include "gsl/gsl_multimin.h"
 #include "float.h"
@@ -13,12 +11,11 @@
 
 //#define _VERBOSE
 
-/* Function Definitions */
-
-void optimize_onestage(const double data[], int data_size) {
+void optimize_onestage(const double data[], int data_size, configStruct config) {
 	printf("onestagefitnomle\n\n");
 
-	distType l[266];
+	distType * l = (distType *)malloc(sizeof(distType)*data_size);
+
 	double ld[16];
 
 	/* prepare statistical variables */
@@ -61,7 +58,6 @@ void optimize_onestage(const double data[], int data_size) {
 			paramSeeds[seedIdx][1]);
 
 		// https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
-
 		const gsl_multimin_fminimizer_type *T =
 			gsl_multimin_fminimizer_nmsimplex2;
 		gsl_multimin_fminimizer *s = NULL;
@@ -84,7 +80,7 @@ void optimize_onestage(const double data[], int data_size) {
 		/* Initialize method and iterate */
 		minex_func.n = 2;
 		minex_func.f = wald_loglikelihood;
-		minex_func.params = (void *)data;
+		minex_func.params = (void *) &config;
 
 		s = gsl_multimin_fminimizer_alloc(T, 2);
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
@@ -124,14 +120,6 @@ void optimize_onestage(const double data[], int data_size) {
 		waldpdf(data, optimizedParams[seedIdx][0],
 			optimizedParams[seedIdx][1], l, data_size);
 
-		/* calculate the log likelihood for our best fit */
-		/*
-		double loglikelihood = 0;
-		for (int i = 0; i < data_size; i++) {
-		loglikelihood += log(l[i]);
-		}
-		*/
-
 		double ll = (double)loglikelihood(l, data_size);
 
 		printf("  l=%.17f\n\n", ll);
@@ -152,11 +140,15 @@ void optimize_onestage(const double data[], int data_size) {
 	printf("pd_max=[%f %f]\n\n", optimizedParams[ind_ld][0],
 		optimizedParams[ind_ld][1]);
 
+	free(l);
 }
 
 double wald_loglikelihood(const gsl_vector * v, void *params)
 {
-    double *data = (double *) params;
+	configStruct config = *(configStruct *)params;
+
+	distType * data = config.data;
+	int data_size = config.data_size;
 
     double m = gsl_vector_get(v, 0);
     double s = gsl_vector_get(v, 1);
@@ -168,19 +160,13 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
     m = fabs(m);
     s = fabs(s);
 
-    distType Y[266];
+	distType * Y = (distType *)malloc(sizeof(distType)*data_size);
 
-    waldpdf(data, m, s, Y, 266);
-    //onestagepdf2(data, m, s, Y);
+    waldpdf(data, m, s, Y, data_size);
+ 
+	double ll = (double) loglikelihood(Y, data_size);
 
-	/*
-    double loglikelihood = 0;
-    for (int i = 0; i < 266; i++) {
-	loglikelihood += log(Y[i]);
-    }
-	*/
-
-	double ll = (double) loglikelihood(Y, 266);
+	free(Y);
 
     return penalty - ll;
 }
@@ -198,11 +184,6 @@ waldpdf(const double X[], double mu, double s, distType Y[], int size_XY)
 		//b = (pow(mu*X[i] - 1, 2)) / (2.0 * s * s * X[i]);
 		b = (pow(mu * X[i] - 1.0, 2.0)) / (2.0 * s * s * X[i]);
 		Y[i] = a * exp(-b);
-		
-		//if (Y[i] == 0)
-		//    Y[i] = distMin;
-		//Y[i] = DBL_MIN;
-
 
 		if (isnan(Y[i]))
 			Y[i] = 0;

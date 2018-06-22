@@ -15,25 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="approxconvolv.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="convolv_2invG_adapt_nov.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="convolv_3invG_nov.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="emgpdf.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="gp_max.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IMT_analysis_April2017.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IMT_analysis_April2017_data.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.c">
@@ -43,9 +28,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="onestagepdf_prime.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="onestagepdf2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tailmass.c">
@@ -63,36 +45,27 @@
     <ClCompile Include="nn_conv.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="optimze_twostage.c">
+    <ClCompile Include="loglikelihood.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="loglikelihood.c">
+    <ClCompile Include="onestage.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="twostage.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="threestage.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="imt_analysis.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="approxconvolv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="convolv_2invG_adapt_nov.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="convolv_2invG_nov.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="convolv_3invG_nov.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="emgpdf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gp_max.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMT_analysis_April2017.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IMT_analysis_April2017_data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="main.h">
@@ -102,9 +75,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="onestagepdf_prime.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="onestagepdf2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tailmass.h">
@@ -122,10 +92,19 @@
     <ClInclude Include="nn_conv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="optimze_twostage.h">
+    <ClInclude Include="loglikelihood.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="loglikelihood.h">
+    <ClInclude Include="onestage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="twostage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="threestage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="imt_analysis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

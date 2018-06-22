@@ -1,6 +1,4 @@
-
-/* Include files */
-#include "IMT_analysis_April2017.h"
+#include "imt_analysis.h"
 #include "emgpdf.h"
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_sf_erf.h"
@@ -9,13 +7,10 @@
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_statistics_double.h"
 
-/* Function Definitions */
-
 /* Fit the EMG model */
-void optimize_emg(const double data[], int data_size) {
+void optimize_emg(const double data[], int data_size, configStruct config) {
 	
-	
-	distType l[266];
+	distType * l = (distType *)malloc(sizeof(distType)*data_size);
 
 	printf("emgfitnomle\n\n");
 
@@ -96,7 +91,7 @@ void optimize_emg(const double data[], int data_size) {
 		/* Initialize method and iterate */
 		minex_func.n = 3;
 		minex_func.f = emgpdf_loglikelihood;
-		minex_func.params = (void *)data;
+		minex_func.params = (void *) &config;
 
 		s = gsl_multimin_fminimizer_alloc(T, 3);
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
@@ -139,7 +134,7 @@ void optimize_emg(const double data[], int data_size) {
 		/* recalculate our best fit */
 		emgpdf(data, optimizedParams[seedIdx][0],
 			optimizedParams[seedIdx][1],
-			optimizedParams[seedIdx][2], l);
+			optimizedParams[seedIdx][2], l, data_size);
 
 		/* calculate the log likelihood for our best fit */
 		/*
@@ -169,11 +164,15 @@ void optimize_emg(const double data[], int data_size) {
 		optimizedParams[ind_le][0], optimizedParams[ind_le][1],
 		optimizedParams[ind_le][2]);
 	
+	free(l);
 }
 
 double emgpdf_loglikelihood(const gsl_vector * v, void *params)
 {
-    double *data = (double *) params;
+	configStruct config = *(configStruct *)params;
+
+	distType * data = config.data;
+	int data_size = config.data_size;
 
     double l = gsl_vector_get(v, 0);
     double m = gsl_vector_get(v, 1);
@@ -187,30 +186,24 @@ double emgpdf_loglikelihood(const gsl_vector * v, void *params)
     m = fabs(m);
     s = fabs(s);
 
-    distType Y[266];
+	distType * Y = (distType *)malloc(sizeof(distType)*data_size);
 
-    // emgpdf_replacement(data, l, m, s, Y);
-    emgpdf(data, l, m, s, Y);
+    emgpdf(data, l, m, s, Y, data_size);
 
-	/*
-    double loglikelihood = 0;
-    for (int i = 0; i < 266; i++) {
-	loglikelihood += log(Y[i]);
-    }
-	*/
+	double ll = (double) loglikelihood(Y, data_size);
 
-	double ll = (double) loglikelihood(Y, 266);
+	free(Y);
 
     return penalty - ll;
 }
 
 void
-emgpdf(const double X[266], double l, double m, double s, distType Y[266])
+emgpdf(const distType X[], double l, double m, double s, distType Y[], int data_size)
 {
     // Y=(l/2)*erfc((-X+m+l*s^2)/(s*2^(1/2))).*exp((l/2)*(-2*X+2*m+l*s^2));
     // https://en.wikipedia.org/wiki/Exponentially_modified_Gaussian_distribution
     distType a, b;
-    for (int i = 0; i < 266; i++) {
+    for (int i = 0; i < data_size; i++) {
 		a = 0.5 * l * (2 * m + l * pow(s, 2.0) - 2 * X[i]);
 
 		b = (m + l * pow(s, 2.0) - X[i]) / (s * pow(2, 0.5));
@@ -218,5 +211,3 @@ emgpdf(const double X[266], double l, double m, double s, distType Y[266])
 		Y[i] = 0.5 * l * exp(a) * gsl_sf_erfc(b);
     }
 }
-
-/* End of code generation (emgpdf.c) */

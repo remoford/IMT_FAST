@@ -1,27 +1,18 @@
-
- /* Include files */
 #include "float.h"
 #include "stdio.h"
 #include "main.h"
 
 #define _VERBOSE
 
-
 void window_conv (const distType z[], const distType y[], distType C[], double h, int size_xyz)
 {
-    // Assume z is hte concentrated pdf
-    //
     int size_conv = 2 * size_xyz;
 	
-	//double threshold = DBL_MIN;
-	//double threshold = DBL_MIN * 2;
 	distType threshold = 0;
-	//distType threshold = distMin;
 
     for (int i = 0; i < size_conv; i++) {
 		C[i] = 0.0;
     }
-
 
     /* Find the highest zero-valued index */
     int firstIdx = 0;
@@ -41,7 +32,6 @@ void window_conv (const distType z[], const distType y[], distType C[], double h
 			lastIdx = i;
 	}
 
-	/* Find the highest zero-valued index */
 	int firstYIdx = 0;
 	for (int i = 0; i < size_xyz; i++) {
 		if (y[i] > threshold)
@@ -62,10 +52,10 @@ void window_conv (const distType z[], const distType y[], distType C[], double h
 	int tripcount = 0;
     /* do the lopsided convolution */
     for (int i = firstIdx; i < lastIdx; i++) {
-	for (int j = firstYIdx; j < lastYIdx; j++) {
-	    C[i + j] += z[i] * y[j] * h;
-		tripcount++;
-	}
+		for (int j = firstYIdx; j < lastYIdx; j++) {
+			C[i + j] += z[i] * y[j] * h;
+			tripcount++;
+		}
     }
 
 #ifdef _VERBOSE
@@ -84,14 +74,5 @@ void window_conv (const distType z[], const distType y[], distType C[], double h
 
 	printf("skp=%d] ", size_xyz*size_xyz - tripcount);
 #endif
-
-	/*
-	for (int i = 0; i < size_conv; i++) {
-		if (C[i] == 0)
-			C[i] = distMin;
-
-	}
-	*/
-
 
 }

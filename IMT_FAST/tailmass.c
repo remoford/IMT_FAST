@@ -1,13 +1,9 @@
-
-/* Include files */
-#include "IMT_analysis_April2017.h"
+#include "imt_analysis.h"
 #include "tailmass.h"
-#include "onestagepdf2.h"
+#include "onestage.h"
 #include "gp_max.h"
 
 #define _GSL_GP_MAX_FIXED
-
-/* Function Definitions */
 
 int
 checktailmass(const double m_a, const double s_a, const double m_b,

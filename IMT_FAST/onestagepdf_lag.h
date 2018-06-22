@@ -1,9 +1,6 @@
-
-
 #ifndef ONESTAGEPDF_LAG_H
 #define ONESTAGEPDF_LAG_H
 
-/* Include files */
 #include <math.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -12,14 +9,10 @@
 #include "gsl/gsl_multimin.h"
 #include "main.h"
 
-/* Function Declarations */
-
+extern void optimize_onestagelag(const double data[], int data_size, configStruct config);
 
 extern double waldlag_loglikelihood(const gsl_vector *v, void *params);
 
-extern void waldlagpdf(const double X[266], double mu, double s, double l, distType Y[266], int size_XY);
-
-
+extern void waldlagpdf(const distType X[], double mu, double s, double l, distType Y[], int size_XY);
 
 #endif
-

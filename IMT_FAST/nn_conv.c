@@ -1,6 +1,4 @@
-
- /* Include files */
-#include "IMT_analysis_April2017.h"
+#include "imt_analysis.h"
 #include "nn_conv.h"
 #include "float.h"
 #include "stdio.h"
@@ -13,25 +11,12 @@
 //#define _FASTIDXMETHOD
 #define _SLOWIDXMETHOD
 
-/* Function Definitions */
-
 void
 nn_conv(const distType z[], const distType y[],
 			  const double X[], const double x[], distType Y[],
 			  double *logP0, int size_xyz, int size_XY,
 			  double h)
 {
-    // function [P0, logP0] = approxconvolv( z, y, h, n, t, I, x )
-
-    /*
-       printf("X = \n");
-       for (int i = 0; i < size_XY; i++) {
-       if (i % 8 == 0)
-       printf("\n");
-       printf("%f ", X[i]);
-       }
-       printf("\n");
-     */
 
     int allZero = 1;
     for (int i = 0; i < size_XY; i++) {
@@ -72,15 +57,6 @@ nn_conv(const distType z[], const distType y[],
     printf("\n\n");
 #endif
 
-    // Find the largest value in X
-	// Is this actually used anywhere?
-	/*
-    int MaxX = 0;
-    for (int i = 0; i < size_XY; i++) {
-	if (X[i] > MaxX)
-	    MaxX = X[i];
-    }
-	*/
 
 #ifdef _VERBOSE
     printf("approxconvolv_replacement_indices = \n");
@@ -121,13 +97,6 @@ nn_conv(const distType z[], const distType y[],
 	    }
 	}
 #endif
-
-	/*
-	   printf("index check X[i]=%f x[%d]=%f x[%d]=%f X[i]/h=%f h=%f computedIdx=%d",
-	   X[i], computedIdxLower, x[computedIdxLower], computedIdxUpper, x[computedIdxUpper], X[i] / h, h, computedIdx);
-
-	   printf(" foundIdx=%d minDelta=%f x[%d]=%f\n", foundIdx, minDelta, foundIdx, x[foundIdx]);
-	 */
 
 #ifdef _FASTIDXMETHOD
 #ifdef _SLOWIDXMETHOD
@@ -179,22 +148,8 @@ nn_conv(const distType z[], const distType y[],
     printf("\n\n");
 #endif
 
-	/*
-    *logP0 = 0;
-    for (int i = 0; i < size_XY; i++) {
-	*logP0 += log(Y[i]);
-    }
-	*/
-
 	*logP0 = (double) loglikelihood(Y, size_XY);
 
-	/*
-    for (int i = 0; i < size_XY; i++) {
-	if (Y[i] == 0)
-	    //Y[i] = 2.2250738585072014E-308;
-	    Y[i] = DBL_MIN;
-    }
-	*/
 
 #ifdef _VERBOSE
     printf("approxconvolv_replacement = \n");

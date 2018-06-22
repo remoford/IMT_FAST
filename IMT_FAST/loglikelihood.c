@@ -1,6 +1,3 @@
-
-
-
 #include "main.h"
 #include <float.h>
 
