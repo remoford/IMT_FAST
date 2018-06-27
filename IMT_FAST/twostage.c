@@ -20,7 +20,7 @@
 #define _VERBOSE
 //#define _PARALLEL_PDF
 #define _BINNED_MODE
-//#define _PARALLEL_SEEDS
+#define _PARALLEL_SEEDS
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3

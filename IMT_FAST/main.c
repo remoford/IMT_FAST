@@ -2,14 +2,14 @@
 #include "main.h"
 #include "stdio.h"
 
-static void main_IMT_analysis_April2017(const char *);
+static void main_IMT_analysis_April2017(const char *, const char * data_filename);
 
-static void main_IMT_analysis_April2017(const char *model, char * data_filename)
+static void main_IMT_analysis_April2017(const char *model, const char * data_filename)
 {
 
 	//char filename[1000] = "C:\\Users\\remoford\\source\\repos\\IMT_FAST\\IMT_FAST\\data\\erlotinib_data.txt";
 	//char data_filename[1000] = "";
-    IMT_analysis_April2017(model, data_filename);
+    IMT_analysis_April2017(model, (char *) data_filename);
 }
 
 int main(int argc, const char *const argv[])

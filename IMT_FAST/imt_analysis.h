@@ -7,6 +7,6 @@
 #include <string.h>
 #include "omp.h"
 
-extern void IMT_analysis_April2017(const char *model);
+extern void IMT_analysis_April2017(const char *model, char * data_filename);
 
 #endif
