@@ -1,3 +1,3 @@
 #include "main.h"
 
-extern void readfile(const distType z[], const distType y[], distType C[], double h, int size_xyz);
+extern distType * readfile(char * filename, int * arraySize);

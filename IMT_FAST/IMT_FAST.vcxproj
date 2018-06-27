@@ -140,6 +140,7 @@
     <ClCompile Include="onestagepdf_lag.c" />
     <ClCompile Include="onestagepdf_prime.c" />
     <ClCompile Include="tailmass.c" />
+    <ClCompile Include="utility.c" />
     <ClCompile Include="window_conv.c" />
   </ItemGroup>
   <ItemGroup>
@@ -157,10 +158,14 @@
     <ClInclude Include="onestagepdf_lag.h" />
     <ClInclude Include="onestagepdf_prime.h" />
     <ClInclude Include="tailmass.h" />
+    <ClInclude Include="utility.h" />
     <ClInclude Include="window_conv.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="data\erlotinib_data.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
