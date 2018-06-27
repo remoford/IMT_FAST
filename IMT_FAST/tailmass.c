@@ -20,9 +20,12 @@ checktailmass(const double m_a, const double s_a, const double m_b,
     sd[0] = sd_a;
     sd[1] = sd_b;
 
+	/*
     if (tailmass(m, s, T2, sd) <= (T2 / 3.0))
-	return 1;
+		return 1;
     else
+		return 0;
+		*/
 	return 0;
 }
 

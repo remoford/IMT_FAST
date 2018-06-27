@@ -17,10 +17,10 @@
 
 //#define _CONV2INVG
 #define _CONV2WALD
-//#define _VERBOSE
+#define _VERBOSE
 //#define _PARALLEL_PDF
 #define _BINNED_MODE
-#define _PARALLEL_SEEDS
+//#define _PARALLEL_SEEDS
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -362,7 +362,7 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
 	    h = h * 0.5;	// Shrink the step size
 
 #ifdef _VERBOSE
-	    printf("h=%f logP0=%f ", h, logP0);
+	    printf("h=%f ", h);
 #endif
 
 	    int partitionLength = (int) (maxX / h);
@@ -418,5 +418,7 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
 
 	}
     }
-
+#ifdef _VERBOSE
+	printf("\n");
+#endif
 }

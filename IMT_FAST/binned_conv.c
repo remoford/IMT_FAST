@@ -11,6 +11,7 @@
 //#define _FASTIDXMETHOD
 #define _SLOWIDXMETHOD
 #define _WINDOW_MODE
+//#define _LAZY_MODE
 
 void
 binned_conv(const distType z[], const distType y[],
@@ -47,6 +48,63 @@ binned_conv(const distType z[], const distType y[],
 	conv(y, z, C, h, size_xyz);
 #endif
 
+
+#ifdef _LAZY_MODE
+
+	int maxX = 0;
+	for (int i = 0; i < size_XY; i++) {
+		if (X[i] > maxX)
+			maxX = X[i];
+	}
+
+	int maxIdx = maxX * 10;
+
+	int * weights = malloc(sizeof(int)*maxIdx);
+
+	int * value = malloc(sizeof(int)*maxIdx);
+	
+	for (int i = 0; i <= maxIdx; i++)
+		weights[i] = 0;
+	
+	for (int i = 0; i < size_XY; i++)
+		weights[(int)(X[i] * 10)]++;
+
+	/*
+	printf("(");
+	for (int i = 0; i <= maxIdx; i++)
+		printf("%d ", weights[i]);
+	printf(") ");
+	*/
+
+	for (int i = 0; i <= maxIdx; i++) {
+		value[i] = 0;
+		if (weights[i] > 0) {
+			double dataPoint = ( (double) i ) / 10.0;
+
+			// rightmost boundry of integration for this particular bin
+			int rightBound = (int)(dataPoint / h);
+
+			// the bin width in terms of indices
+			int goback = (int)(0.1 / h);
+
+			// the leftmost boundry of integration
+			int leftBound = rightBound - goback;
+
+			// Calculate the right handed riemann sum
+			
+			for (int j = leftBound + 1; j <= rightBound; j++) 
+				value[i] += C[j] * h;
+		}
+	}
+
+	for (int i = 0; i < size_XY; i++)
+		Y[i] = value[(int)(X[i] * 10)];
+	
+	free(weights);
+	free(value);
+
+#else
+
 	// Calculate the probability integral over the bin for each point in the data
 	for (int i = 0; i < size_XY; i++) {
 		// rightmost boundry of integration for this particular bin
@@ -64,6 +122,8 @@ binned_conv(const distType z[], const distType y[],
 			Y[i] += C[j] * h;
 		}
 	}
+	
+#endif
 
 	*logP0 = (double) loglikelihood(Y, size_XY);
 }
