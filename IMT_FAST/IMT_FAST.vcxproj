@@ -165,7 +165,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="data\AT1.txt" />
+    <Text Include="data\CHX.txt" />
+    <Text Include="data\DMSO.txt" />
     <Text Include="data\erlotinib_data.txt" />
+    <Text Include="data\FUCCI.txt" />
+    <Text Include="data\MCF.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

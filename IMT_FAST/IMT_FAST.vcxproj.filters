@@ -121,5 +121,20 @@
     <Text Include="data\erlotinib_data.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="data\AT1.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="data\CHX.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="data\DMSO.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="data\FUCCI.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="data\MCF.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
