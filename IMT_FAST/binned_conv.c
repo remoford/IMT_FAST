@@ -126,4 +126,10 @@ binned_conv(const distType z[], const distType y[],
 #endif
 
 	*logP0 = (double) loglikelihood(Y, size_XY);
+
+#ifdef __INTEL_COMPILER
+	_mm_free(C);
+#else
+	free(C);
+#endif
 }

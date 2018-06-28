@@ -191,4 +191,7 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
 	if (threestagefitnomle == 1) {
 		optimize_threestage(data, data_size, config);
 	}
+
+
+	free(data);
 }

@@ -75,10 +75,13 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 		gsl_vector_set(x, 2, seeds[seedIdx][2]);
 		gsl_vector_set(x, 3, seeds[seedIdx][3]);
 
+		/*
 		// Store previous state
 		gsl_vector *prev;
 		prev = gsl_vector_alloc(4);
 		gsl_vector_set_all(prev, 0);
+		*/
+
 		//int repeated = 0;
 
 		/* Set initial step sizes to 1 */
