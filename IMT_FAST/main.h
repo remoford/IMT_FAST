@@ -8,11 +8,12 @@
 
 extern int main(int argc, const char * const argv[]);
 
-#define _DIST_SINGLE
+//#define _DIST_SINGLE
 
 #ifdef _DIST_SINGLE
 typedef float distType;
 #define distMin FLT_MIN
+
 #else
 typedef double distType;
 #define distMin DBL_MIN

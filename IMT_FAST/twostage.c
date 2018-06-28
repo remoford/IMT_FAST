@@ -53,7 +53,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 
 		free(seedll);
 
-		printf("\nstarting seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, seeds[seedIdx][0],
+		printf("\nstarting seedIdx=%d p=[%e %e %e %e] ll=%e\n", seedIdx, seeds[seedIdx][0],
 			seeds[seedIdx][1], seeds[seedIdx][2],
 			seeds[seedIdx][3], seedll_sum);
 
@@ -104,7 +104,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 			status = gsl_multimin_fminimizer_iterate(s);
 			t = clock() - t;
 			//printf("It took me %d clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
-			printf("ll=%f [%f %f %f %f] %.3fs ", s->fval, gsl_vector_get(s->x, 0),
+			printf("ll=%e [%e %e %e %e] %.3fs ", s->fval, gsl_vector_get(s->x, 0),
 				gsl_vector_get(s->x, 1),
 				gsl_vector_get(s->x, 2),
 				gsl_vector_get(s->x, 3), ((float)t) / CLOCKS_PER_SEC);
@@ -153,7 +153,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 
 		free(ll);
 
-		printf("\nfinished seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], l_sum);
+		printf("\nfinished seedIdx=%d p=[%e %e %e %e] ll=%e\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], l_sum);
 	}
 
 	/*  we previously optimized with a larger step size, recalculate with */
@@ -170,7 +170,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 
 		loglikelihoods[seedIdx] = loglikelihood(likelihoods, data_size);
 
-		printf("id=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
+		printf("id=%d p=[%e %e %e %e] ll=%e\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], loglikelihoods[seedIdx]);
 	}
 	free(likelihoods);
@@ -188,8 +188,8 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 	free(loglikelihoods);
 
 	printf("\nBest fit: row_id=%d\n", row_id);
-	printf("loglikelihood=%f ", max_ld);
-	printf("p=[ %f %f %f %f ]\n", optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3]);
+	printf("loglikelihood=%e ", max_ld);
+	printf("p=[ %e %e %e %e ]\n", optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3]);
 
 	return;
 }
