@@ -61,7 +61,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 #ifdef _VERBOSE
 	printf("[");
 
-	/*
+	
 	if (firstIdx != 0)
 		printf("fz=%lld ", firstIdx);
 	if (lastIdx != size_xyz)
@@ -74,9 +74,9 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 		printf("sz=%lld ", size_xyz);
 
 	printf("skp=%lld ", size_xyz*size_xyz - tripcount);
-	*/
+	
 
-	printf("%f%%] ", 100 * ((double)(size_xyz*size_xyz) - (double)tripcount) / ((double)(size_xyz*size_xyz)));
+	printf("%g%%] ", 100 * ((double)(size_xyz*size_xyz) - (double)tripcount) / ((double)(size_xyz*size_xyz)));
 #endif
 
 }

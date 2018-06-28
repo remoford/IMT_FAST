@@ -163,6 +163,7 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
 	distType * Y = (distType *)malloc(sizeof(distType)*data_size);
 
     waldpdf(data, m, s, Y, data_size);
+	//wald_bin(data, m, s, Y, data_size);
  
 	double ll = (double) loglikelihood(Y, data_size);
 
@@ -171,18 +172,67 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
     return penalty - ll;
 }
 
+void wald_adapt(const double data[], double mu, double s, distType Y[], int size_XY) {
+
+	return;
+
+
+}
+
+void wald_bin(const double data[], double mu, double s, distType Y[], int size_XY) {
+
+	double binSize = 0.1;
+
+	double gridSize = 0.01;
+
+	int maxData = 0;
+	for (int i = 0; i < size_XY; i++) {
+		if (data[i] > maxData)
+			maxData = data[i];
+	}
+
+	int partitionLength = maxData / gridSize;
+
+	distType * partition = (distType *)malloc(sizeof(distType)*partitionLength);
+
+	for (int i = 0; i < partitionLength; i++) {
+		partition[i] = i * gridSize;
+	}
+
+	distType * C = (distType *)malloc(sizeof(distType)*partitionLength);
+
+	waldpdf(data, mu, s, C, size_XY);
+
+
+	// Calculate the probability integral over the bin for each point in the data
+	for (int i = 0; i < size_XY; i++) {
+		// rightmost boundry of integration for this particular bin
+		int rightBound = (int)(data[i] / gridSize);
+
+		// the bin width in terms of indices
+		int goback = (int)(binSize / gridSize);
+
+		// the leftmost boundry of integration
+		int leftBound = rightBound - goback;
+
+		// Calculate the right handed riemann sum
+		Y[i] = 0;
+		for (int j = leftBound + 1; j <= rightBound; j++) {
+			Y[i] += C[j] * gridSize;
+		}
+	}
+}
+
 void
-waldpdf(const double X[], double mu, double s, distType Y[], int size_XY)
+waldpdf(const double data[], double mu, double s, distType Y[], int size_XY)
 {
     // Y=(1./(s*(2*pi*t.^3).^(.5))).*exp(-((mu*t-1).^2)./(2*s^2*(t)));
     // https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution
 
     double a, b;
     for (int i = 0; i < size_XY; i++) {
-		//a = 1.0 / (s*pow(2 * M_PI  * pow(X[i], 3.0), 0.5));
-		a = 1.0 / (s * pow(6.2831853071795862 * pow(X[i], 3.0), 0.5));
-		//b = (pow(mu*X[i] - 1, 2)) / (2.0 * s * s * X[i]);
-		b = (pow(mu * X[i] - 1.0, 2.0)) / (2.0 * s * s * X[i]);
+		a = 1.0 / (s * pow(6.2831853071795862 * pow(data[i], 3.0), 0.5));
+		b = (pow(mu * data[i] - 1.0, 2.0)) / (2.0 * s * s * data[i]);
 		Y[i] = a * exp(-b);
 
 		if (isnan(Y[i]))
