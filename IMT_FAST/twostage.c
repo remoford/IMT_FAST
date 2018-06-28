@@ -20,7 +20,7 @@
 #define _VERBOSE
 //#define _PARALLEL_PDF
 #define _BINNED_MODE
-#define _PARALLEL_SEEDS
+//#define _PARALLEL_SEEDS
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -104,7 +104,10 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 			status = gsl_multimin_fminimizer_iterate(s);
 			t = clock() - t;
 			//printf("It took me %d clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
-			printf("%.3f ", ((float)t) / CLOCKS_PER_SEC);
+			printf("ll=%f [%f %f %f %f] %.3fs ", s->fval, gsl_vector_get(s->x, 0),
+				gsl_vector_get(s->x, 1),
+				gsl_vector_get(s->x, 2),
+				gsl_vector_get(s->x, 3), ((float)t) / CLOCKS_PER_SEC);
 
 			if (iter % 1 == 0)
 				printf("\n\n");
@@ -225,8 +228,8 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params)
 }
 
 void
-conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
-	distType Y[], double h, int adaptiveMode, int size_XY) {
+conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2,
+	distType convolvedPDF[], double h, int adaptiveMode, int size_XY) {
 
 	int flag = 0;		// remember if we applied the approximation
 	double eps = 0.01;		// a constant that is used in determining if the Dirac approximation should be applied.
@@ -278,10 +281,10 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
     }
 
     // find the largest point in t
-    double maxX = 0;
+    double maxData = 0;
     for (int i = 0; i < size_XY; i++) {
-	if (X[i] > maxX)
-	    maxX = X[i];
+	if (data[i] > maxData)
+	    maxData = data[i];
     }
 
     // These represent our loglikelihoods
@@ -292,134 +295,114 @@ conv2waldpdf(const double X[], double m1, double s1, double m2, double s2,
        approximated as a point-mass distribution */
     if (sd_a < 0.01 && checktailmass(m_a, s_a, m_b, s_b, eps, sd_a, sd_b)) {
 #ifdef _VERBOSE
-	printf("using dirac delta approximation\n");
+		printf("using dirac delta approximation\n");
 #endif
 
-	/* If there is not much probability in the tails of the convolution,
-	   we use a Dirac Delta for part 1.
-	   Flag is set to 1 to indicate this. */
-	double lag = 1 / m_a;
+		/* If there is not much probability in the tails of the convolution,
+		   we use a Dirac Delta for part 1.
+		   Flag is set to 1 to indicate this. */
+		double lag = 1 / m_a;
 
-	waldlagpdf(X, m_b, s_b, lag, Y, size_XY);
-	flag = 1;
+		waldlagpdf(data, m_b, s_b, lag, convolvedPDF, size_XY);
+		flag = 1;
     } else {
 
-	/* produce a range of evenly spaced points to evaluate at between
-	   0 and Maxt with step size h. the even spacing is important when
-	   calculating the convolution later */
-	int partitionLength = (int) (maxX / h);
+		/* produce a range of evenly spaced points to evaluate at between
+		   0 and Maxt with step size h. the even spacing is important when
+		   calculating the convolution later */
+		int partitionLength = (int) (maxData / h);
 
-	// This represents the partition
+		// This represents the partition
 #ifdef __INTEL_COMPILER
-	double *x =
-	    (double *) _mm_malloc(partitionLength * sizeof(double), 32);
+		double *partition = (double *) _mm_malloc(partitionLength * sizeof(double), 32);
+		distType *y = (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
+		distType *z = (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
 #else
-	double *x = (double *) malloc(partitionLength * sizeof(double));
+		double *partition = (double *) malloc(partitionLength * sizeof(double));
+		distType *y = (distType *) malloc(partitionLength * sizeof(distType));
+		distType *z = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 
-	// There are our two wald distributions
-#ifdef __INTEL_COMPILER
-	distType *y =
-	    (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
-#else
-	distType *y = (distType *) malloc(partitionLength * sizeof(distType));
-#endif
+		double tally = 0;
+		for (int i = 0; i < partitionLength; i++) {
+			partition[i] = tally;
+			tally += h;
+		}
 
-#ifdef __INTEL_COMPILER
-	distType *z =
-	    (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
-#else
-	distType *z = (distType *) malloc(partitionLength * sizeof(distType));
-#endif
+		// evaluate the sub-distributions at each point in x
+		waldpdf(partition, m[0], s[0], y, partitionLength);
+		waldpdf(partition, m[1], s[1], z, partitionLength);
 
-	double tally = 0;
-	for (int i = 0; i < partitionLength; i++) {
-	    x[i] = tally;
-	    tally += h;
-	}
-
-	// evaluate the sub-distributions at each point in x
-	waldpdf(x, m[0], s[0], y, partitionLength);
-	waldpdf(x, m[1], s[1], z, partitionLength);
-
-	//approxconvolv_replacement(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+		//approxconvolv_replacement(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
 
 #ifdef _BINNED_MODE
-	binned_conv(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+		binned_conv(z, y, data, partition, convolvedPDF, &logP0, partitionLength, size_XY, h);
 #else
-	nn_conv(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
+		nn_conv(z, y, data, partition, convolvedPDF, &logP0, partitionLength, size_XY, h);
 #endif
 
 #ifdef __INTEL_COMPILER
-	_mm_free(x);
-	_mm_free(y);
-	_mm_free(z);
+		_mm_free(partition);
+		_mm_free(y);
+		_mm_free(z);
 #else
-	free(x);
-	free(y);
-	free(z);
+		free(partition);
+		free(y);
+		free(z);
 #endif
 
-	while (E >= 0.001 * fabs(logP0)) {
+		while (E >= 0.001 * fabs(logP0)) {
 
-	    h = h * 0.5;	// Shrink the step size
+			h = h * 0.5;	// Shrink the step size
 
 #ifdef _VERBOSE
-	    printf("h=%f ", h);
+			printf("h=%f ", h);
 #endif
 
-	    int partitionLength = (int) (maxX / h);
+			int partitionLength = (int) (maxData / h);
+
 #ifdef __INTEL_COMPILER
-	    double *x =
-		(double *) _mm_malloc(partitionLength * sizeof(double),
-				      32);
-	    distType *y =
-		(distType *) _mm_malloc(partitionLength * sizeof(distType),
-				      32);
-	    distType *z =
-		(distType *) _mm_malloc(partitionLength * sizeof(distType),
-				      32);
+			double *partition = (double *) _mm_malloc(partitionLength * sizeof(double), 32);
+			distType *y = (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
+			distType *z = (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
 #else
-	    double *x =
-		(double *) malloc(partitionLength * sizeof(double));
-	    distType *y =
-		(distType *) malloc(partitionLength * sizeof(distType));
-	    distType *z =
-		(distType *) malloc(partitionLength * sizeof(distType));
+			double *partition = (double *) malloc(partitionLength * sizeof(double));
+			distType *y = (distType *) malloc(partitionLength * sizeof(distType));
+			distType *z = (distType *) malloc(partitionLength * sizeof(distType));
 #endif
 
-	    // fill the partition
-	    double tally = 0;
-	    for (int i = 0; i < partitionLength; i++) {
-			x[i] = tally;
-			tally += h;
-	    }
+			// fill the partition
+			double tally = 0;
+			for (int i = 0; i < partitionLength; i++) {
+				partition[i] = tally;
+				tally += h;
+			}
 
-	    // evaluate the sub-distributions at each point in x
-		waldpdf(x, m[0], s[0], y, partitionLength);
-		waldpdf(x, m[1], s[1], z, partitionLength);
+			// evaluate the sub-distributions at each point in x
+			waldpdf(partition, m[0], s[0], y, partitionLength);
+			waldpdf(partition, m[1], s[1], z, partitionLength);
 
 #ifdef _BINNED_MODE
-		binned_conv(z, y, X, x, Y, &logP1, partitionLength, size_XY, h);
+			binned_conv(z, y, data, partition, convolvedPDF, &logP1, partitionLength, size_XY, h);
 #else
-		nn_conv(z, y, X, x, Y, &logP1, partitionLength, size_XY, h);
+			nn_conv(z, y, data, partition, convolvedPDF, &logP1, partitionLength, size_XY, h);
 #endif
 
 #ifdef __INTEL_COMPILER
-	    _mm_free(x);
-	    _mm_free(y);
-	    _mm_free(z);
+			_mm_free(partition);
+			_mm_free(y);
+			_mm_free(z);
 #else
-	    free(x);
-	    free(y);
-	    free(z);
+			free(partition);
+			free(y);
+			free(z);
 #endif
 
-	    E = fabs(logP1 - logP0);
+			E = fabs(logP1 - logP0);
 
-	    logP0 = logP1;
+			logP0 = logP1;
 
-	}
+		}
     }
 #ifdef _VERBOSE
 	printf("\n");

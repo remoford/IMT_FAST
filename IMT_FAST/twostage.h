@@ -13,6 +13,6 @@ extern void optimize_twostage(int data_size, const double data[], int numseeds, 
 
 extern double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector *v, void *params);
 
-extern void conv2waldpdf(const double X[], double m1, double s1, double m2, double s2, distType Y[], double h, int adaptiveMode, int size_XY);
+extern void conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2, distType convolvedPDF[], double h, int adaptiveMode, int size_XY);
 
 #endif

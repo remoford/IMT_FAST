@@ -15,18 +15,18 @@
 
 void
 binned_conv(const distType z[], const distType y[],
-			  const double X[], const double x[], distType Y[],
+			  const distType data[], const double x[], distType Y[],
 			  double *logP0, int size_xyz, int size_XY,
 			  double h)
 {
 	// Sanity checking
     int allZero = 1;
     for (int i = 0; i < size_XY; i++) {
-	if (X[i] > 0)
+	if (data[i] > 0)
 	    allZero = 0;
     }
     if (allZero)
-	printf("X[] is not all positive!\n");
+	printf("data[] is not all positive!\n");
 
     // Initialize C big enough for the convolution
     int size_conv = 2 * size_xyz;
@@ -53,8 +53,8 @@ binned_conv(const distType z[], const distType y[],
 
 	int maxX = 0;
 	for (int i = 0; i < size_XY; i++) {
-		if (X[i] > maxX)
-			maxX = X[i];
+		if (data[i] > maxX)
+			maxX = data[i];
 	}
 
 	int maxIdx = maxX * 10;
@@ -67,7 +67,7 @@ binned_conv(const distType z[], const distType y[],
 		weights[i] = 0;
 	
 	for (int i = 0; i < size_XY; i++)
-		weights[(int)(X[i] * 10)]++;
+		weights[(int)(data[i] * 10)]++;
 
 	/*
 	printf("(");
@@ -98,7 +98,7 @@ binned_conv(const distType z[], const distType y[],
 	}
 
 	for (int i = 0; i < size_XY; i++)
-		Y[i] = value[(int)(X[i] * 10)];
+		Y[i] = value[(int)(data[i] * 10)];
 	
 	free(weights);
 	free(value);
@@ -108,7 +108,7 @@ binned_conv(const distType z[], const distType y[],
 	// Calculate the probability integral over the bin for each point in the data
 	for (int i = 0; i < size_XY; i++) {
 		// rightmost boundry of integration for this particular bin
-		int rightBound = (int) (X[i] / h);
+		int rightBound = (int) (data[i] / h);
 
 		// the bin width in terms of indices
 		int goback = (int) (0.1 / h);
