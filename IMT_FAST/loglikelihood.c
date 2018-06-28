@@ -1,14 +1,14 @@
 #include "main.h"
 #include <float.h>
 
-distType loglikelihood(distType likelihood[], int data_size){
+distType loglikelihood(distType likelihood[], long long int data_size){
 
-	double ll = 0;
-	for (int i = 0; i < data_size; i++) {
+	distType ll = 0;
+	for (long long int i = 0; i < data_size; i++) {
 		if (likelihood[i] == 0)
-			ll += log(distMin);
+			ll += (distType) log((long double)distMin);
 		else
-			ll += log(likelihood[i]);
+			ll += (distType) log((long double)likelihood[i]);
 	}
 	return ll;
 }

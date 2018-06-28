@@ -11,7 +11,9 @@
 
 extern void optimize_onestage(const double data[], int data_size, configStruct config);
 
-extern void wald_bin(const double data[], double mu, double s, distType Y[], int size_XY);
+extern void wald_adapt(const double data[], double mu, double s, distType Y[], int data_size);
+
+extern void wald_bin(const double data[], double mu, double s, distType Y[], int size_XY, double gridSize);
 
 extern void waldpdf(const double data[], double mu, double s, distType Y[], int size_XY);
 

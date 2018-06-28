@@ -8,6 +8,7 @@
 #include "loglikelihood.h"
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_statistics_double.h"
+#include "stdio.h"
 
 //#define _VERBOSE
 
@@ -162,8 +163,8 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
 
 	distType * Y = (distType *)malloc(sizeof(distType)*data_size);
 
-    waldpdf(data, m, s, Y, data_size);
-	//wald_bin(data, m, s, Y, data_size);
+    //waldpdf(data, m, s, Y, data_size);
+	wald_adapt(data, m, s, Y, data_size);
  
 	double ll = (double) loglikelihood(Y, data_size);
 
@@ -172,21 +173,50 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
     return penalty - ll;
 }
 
-void wald_adapt(const double data[], double mu, double s, distType Y[], int size_XY) {
+void wald_adapt(const distType data[], double mu, double s, distType Y[], int data_size) {
 
+	printf("[");
+
+	distType gridSize = 0.01;
+	distType E = 2000000000;
+	distType ll_previous;
+	distType ll_current;
+
+	wald_bin(data, mu, s, Y, data_size, gridSize);
+
+	ll_previous = loglikelihood(Y, data_size);
+	printf("ll=%f ", ll_previous);
+
+	while (E >= 0.001 * fabs(ll_previous)) {
+		gridSize = gridSize * 0.5;
+
+		printf("(gridSize=%f ", gridSize);
+
+		wald_bin(data, mu, s, Y, data_size, gridSize);
+
+		ll_current = loglikelihood(Y, data_size);
+
+		printf("ll=%f ", ll_current);
+
+		E = fabs(ll_current - ll_previous);
+
+		printf("E=%f) ", E);
+
+		ll_previous = ll_current;
+	}
+
+	printf("]\n");
 	return;
-
-
 }
 
-void wald_bin(const double data[], double mu, double s, distType Y[], int size_XY) {
+void wald_bin(const distType data[], double mu, double s, distType Y[], long long int dataSize, double gridSize) {
 
 	double binSize = 0.1;
 
-	double gridSize = 0.01;
+	//double gridSize = 0.01;
 
 	int maxData = 0;
-	for (int i = 0; i < size_XY; i++) {
+	for (long long int i = 0; i < dataSize; i++) {
 		if (data[i] > maxData)
 			maxData = data[i];
 	}
@@ -195,42 +225,46 @@ void wald_bin(const double data[], double mu, double s, distType Y[], int size_X
 
 	distType * partition = (distType *)malloc(sizeof(distType)*partitionLength);
 
-	for (int i = 0; i < partitionLength; i++) {
+	for (long long int i = 0; i < partitionLength; i++) {
 		partition[i] = i * gridSize;
 	}
 
 	distType * C = (distType *)malloc(sizeof(distType)*partitionLength);
 
-	waldpdf(data, mu, s, C, size_XY);
+	waldpdf(data, mu, s, C, dataSize);
 
 
 	// Calculate the probability integral over the bin for each point in the data
-	for (int i = 0; i < size_XY; i++) {
+	for (long long int i = 0; i < dataSize; i++) {
 		// rightmost boundry of integration for this particular bin
-		int rightBound = (int)(data[i] / gridSize);
+		long long int rightBound = (long long int)(data[i] / gridSize);
 
 		// the bin width in terms of indices
-		int goback = (int)(binSize / gridSize);
+		long long int goback = (long long int)(binSize / gridSize);
 
 		// the leftmost boundry of integration
-		int leftBound = rightBound - goback;
+		long long int leftBound = rightBound - goback;
 
 		// Calculate the right handed riemann sum
 		Y[i] = 0;
-		for (int j = leftBound + 1; j <= rightBound; j++) {
+		for (long long int j = leftBound + 1; j <= rightBound; j++) {
 			Y[i] += C[j] * gridSize;
 		}
 	}
+
+	free(partition);
+
+	free(C);
 }
 
 void
-waldpdf(const double data[], double mu, double s, distType Y[], int size_XY)
+waldpdf(const distType data[], double mu, double s, distType Y[], long long int size_XY)
 {
     // Y=(1./(s*(2*pi*t.^3).^(.5))).*exp(-((mu*t-1).^2)./(2*s^2*(t)));
     // https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution
 
     double a, b;
-    for (int i = 0; i < size_XY; i++) {
+    for (long long int i = 0; i < size_XY; i++) {
 		a = 1.0 / (s * pow(6.2831853071795862 * pow(data[i], 3.0), 0.5));
 		b = (pow(mu * data[i] - 1.0, 2.0)) / (2.0 * s * s * data[i]);
 		Y[i] = a * exp(-b);
@@ -238,15 +272,4 @@ waldpdf(const double data[], double mu, double s, distType Y[], int size_XY)
 		if (isnan(Y[i]))
 			Y[i] = 0;
     }
-
-#ifdef _VERBOSE
-    printf("waldpdf = \n");
-    for (int i = 0; i < size_XY; i++) {
-	if (i % 8 == 0)
-	    printf("\n");
-	printf("%.17f ", Y[i]);
-    }
-    printf("\n\n");
-#endif
-
 }
