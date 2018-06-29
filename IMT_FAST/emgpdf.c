@@ -8,15 +8,26 @@
 #include "gsl/gsl_statistics_double.h"
 
 /* Fit the EMG model */
-void optimize_emg(const double data[], int data_size, configStruct config) {
+void optimize_emg(const distType data[], int data_size, configStruct config) {
 	
 	distType * l = (distType *)malloc(sizeof(distType)*data_size);
 
 	printf("emgfitnomle\n\n");
 
+
+
+	double * doubleData = (double *)malloc(sizeof(double)*data_size);
+	for (int i = 0; i < data_size; i++)
+		doubleData[i] = (double)data[i];
+
+
 	/* prepare statistical variables */
-	double mean = gsl_stats_mean(data, 1, data_size);
-	double variance = gsl_stats_variance(data, 1, data_size);
+	double mean = gsl_stats_mean(doubleData, 1, data_size);
+	double variance = gsl_stats_variance(doubleData, 1, data_size);
+
+	free(doubleData);
+
+
 	double vry[3] = { 0.25, 0.5, 0.75 };
 
 	/*we vary the parameters so the the Gaussian and exponential parts of

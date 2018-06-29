@@ -110,11 +110,17 @@ binned_conv(const distType z[], const distType y[],
 		// rightmost boundry of integration for this particular bin
 		int rightBound = (int) (data[i] / h);
 
+		if (rightBound >= size_conv)
+			printf("ERROR: rightBound=%d>=size_conv=%d ", rightBound, size_conv);
+
 		// the bin width in terms of indices
 		int goback = (int) (0.1 / h);
 
 		// the leftmost boundry of integration
 		int leftBound = rightBound - goback;
+
+		if (leftBound < 0)
+			printf("ERROR: leftBound=%d<0 ", leftBound);
 
 		// Calculate the right handed riemann sum
 		Y[i] = 0;

@@ -22,7 +22,7 @@ double gp_max_fixed(double m, double s)
     gsl_poly_complex_workspace_free(workspace);
 
     int numRealRoots = 0;
-    double realRoots[10];
+    distType realRoots[10];
     double re;
     double im;
     for (int i = 0; i < 4; i++) {

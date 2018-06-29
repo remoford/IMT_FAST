@@ -4,19 +4,19 @@
 
 #define _VERBOSE
 
-void window_conv(const distType z[], const distType y[], distType C[], double h, long long int size_xyz)
+void window_conv(const distType z[], const distType y[], distType C[], double h, long size_xyz)
 {
-    long long int size_conv = 2 * size_xyz;
+    long size_conv = 2 * size_xyz;
 	
 	distType threshold = 0;
 
-    for (long long int i = 0; i < size_conv; i++) {
+    for (long i = 0; i < size_conv; i++) {
 		C[i] = 0.0;
     }
 
     /* Find the highest zero-valued index */
-    long long int firstIdx = 0;
-    for (long long int i = 0; i < size_xyz; i++) {
+    long firstIdx = 0;
+    for (long i = 0; i < size_xyz; i++) {
         if (z[i] > threshold)
 			break;
         else
@@ -24,16 +24,16 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 
     }
 
-	long long int lastIdx = size_xyz - 1;
-	for (long long int i = size_xyz; i >= 0; i--) {
+	long lastIdx = size_xyz - 1;
+	for (long i = size_xyz; i >= 0; i--) {
 		if (z[i] > threshold)
 			break;
 		else
 			lastIdx = i;
 	}
 
-	long long int firstYIdx = 0;
-	for (long long int i = 0; i < size_xyz; i++) {
+	long firstYIdx = 0;
+	for (long i = 0; i < size_xyz; i++) {
 		if (y[i] > threshold)
 			break;
 		else
@@ -41,18 +41,18 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 
 	}
 
-	long long int lastYIdx = size_xyz - 1;
-	for (long long int i = size_xyz; i >= 0; i--) {
+	long lastYIdx = size_xyz - 1;
+	for (long i = size_xyz; i >= 0; i--) {
 		if (y[i] > threshold)
 			break;
 		else
 			lastYIdx = i;
 	}
 
-	long long int tripcount = 0;
+	long tripcount = 0;
     /* do the lopsided convolution */
-    for (long long int i = firstIdx; i < lastIdx; i++) {
-		for (long long int j = firstYIdx; j < lastYIdx; j++) {
+    for (long i = firstIdx; i < lastIdx; i++) {
+		for (long j = firstYIdx; j < lastYIdx; j++) {
 			C[i + j] += z[i] * y[j] * h;
 			tripcount++;
 		}

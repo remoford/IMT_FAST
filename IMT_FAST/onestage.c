@@ -9,10 +9,11 @@
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_statistics_double.h"
 #include "stdio.h"
+#include "time.h"
 
-//#define _VERBOSE
+#define _VERBOSE
 
-void optimize_onestage(const double data[], int data_size, configStruct config) {
+void optimize_onestage(const distType data[], long data_size, configStruct config) {
 	printf("onestagefitnomle\n\n");
 
 	distType * l = (distType *)malloc(sizeof(distType)*data_size);
@@ -20,8 +21,17 @@ void optimize_onestage(const double data[], int data_size, configStruct config) 
 	double ld[16];
 
 	/* prepare statistical variables */
-	double mean = gsl_stats_mean(data, 1, data_size);
-	double variance = gsl_stats_variance(data, 1, data_size);
+
+
+	double * doubleData = (double *)malloc(sizeof(double)*data_size);
+	for (int i = 0; i < data_size; i++) 
+		doubleData[i] = (double)data[i];
+
+	double mean = gsl_stats_mean(doubleData, 1, data_size);
+	double variance = gsl_stats_variance(doubleData, 1, data_size);
+
+	free(doubleData);
+
 	double vry[4] = { 0.5, 1.0, 1.5, 2.0 };
 
 	double mu = 1.0 / mean;
@@ -88,7 +98,13 @@ void optimize_onestage(const double data[], int data_size, configStruct config) 
 
 		do {
 			iter++;
+
+			clock_t t;
+			t = clock();
+
 			status = gsl_multimin_fminimizer_iterate(s);
+
+			t = clock() - t;
 
 			if (status)
 				break;
@@ -100,10 +116,10 @@ void optimize_onestage(const double data[], int data_size, configStruct config) 
 				printf("converged to minimum at\n");
 			}
 
-			printf("%5d %.17f %.17f f() = %.17f size = %.3f\n",
+			printf("%5d %.17f %.17f f() = %.17f size = %.3f  %.3fs\n\n",
 				(int)iter,
 				gsl_vector_get(s->x, 0),
-				gsl_vector_get(s->x, 1), s->fval, size);
+				gsl_vector_get(s->x, 1), s->fval, size, ((float)t) / CLOCKS_PER_SEC);
 
 		} while (status == GSL_CONTINUE && iter < 10000);
 
@@ -118,7 +134,7 @@ void optimize_onestage(const double data[], int data_size, configStruct config) 
 			optimizedParams[seedIdx][1]);
 
 		//onestagepdf2(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], l);
-		waldpdf(data, optimizedParams[seedIdx][0],
+		wald_adapt(data, optimizedParams[seedIdx][0],
 			optimizedParams[seedIdx][1], l, data_size);
 
 		double ll = (double)loglikelihood(l, data_size);
@@ -173,9 +189,11 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
     return penalty - ll;
 }
 
-void wald_adapt(const distType data[], double mu, double s, distType Y[], int data_size) {
+void wald_adapt(const distType data[], double mu, double s, distType Y[], long data_size) {
 
-	printf("[");
+#ifdef _VERBOSE
+	printf("[mu=%f s=%f ", mu, s);
+#endif
 
 	distType gridSize = 0.01;
 	distType E = 2000000000;
@@ -185,91 +203,143 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], int da
 	wald_bin(data, mu, s, Y, data_size, gridSize);
 
 	ll_previous = loglikelihood(Y, data_size);
-	printf("ll=%f ", ll_previous);
 
-	while (E >= 0.001 * fabs(ll_previous)) {
+#ifdef _VERBOSE
+	printf("ll=%f ", ll_previous);
+#endif
+	double errorThreshold = 0.001 * fabs(ll_previous);
+
+	while (E >= errorThreshold) {
 		gridSize = gridSize * 0.5;
 
+#ifdef _VERBOSE
 		printf("(gridSize=%f ", gridSize);
+#endif
 
 		wald_bin(data, mu, s, Y, data_size, gridSize);
 
 		ll_current = loglikelihood(Y, data_size);
 
-		printf("ll=%f ", ll_current);
-
 		E = fabs(ll_current - ll_previous);
 
-		printf("E=%f) ", E);
+		errorThreshold = 0.001 * fabs(ll_current);
+
+#ifdef _VERBOSE
+		printf("E=%f eThr=%f ll=%f) ", E, errorThreshold, ll_current);
+#endif
 
 		ll_previous = ll_current;
 	}
 
+#ifdef _VERBOSE
 	printf("]\n");
+#endif
 	return;
 }
 
-void wald_bin(const distType data[], double mu, double s, distType Y[], long long int dataSize, double gridSize) {
+void wald_bin(const distType data[], double mu, double s, distType Y[], long dataSize, double gridSize) {
+
 
 	double binSize = 0.1;
 
-	//double gridSize = 0.01;
-
-	int maxData = 0;
-	for (long long int i = 0; i < dataSize; i++) {
+	double maxData = 0;
+	for (long i = 0; i < dataSize; i++) {
 		if (data[i] > maxData)
 			maxData = data[i];
 	}
 
-	int partitionLength = maxData / gridSize;
+	long partitionLength = maxData / gridSize;
 
 	distType * partition = (distType *)malloc(sizeof(distType)*partitionLength);
 
-	for (long long int i = 0; i < partitionLength; i++) {
+	for (long i = 0; i < partitionLength; i++) {
 		partition[i] = i * gridSize;
 	}
 
 	distType * C = (distType *)malloc(sizeof(distType)*partitionLength);
 
-	waldpdf(data, mu, s, C, dataSize);
-
+	waldpdf(partition, mu, s, C, partitionLength);
 
 	// Calculate the probability integral over the bin for each point in the data
-	for (long long int i = 0; i < dataSize; i++) {
+	for (long i = 0; i < dataSize; i++) {
 		// rightmost boundry of integration for this particular bin
-		long long int rightBound = (long long int)(data[i] / gridSize);
+		long rightBound = (long)(((double)data[i]) / gridSize);
+
+		
+		if (rightBound > partitionLength)
+			printf("ERROR: rightBound=%d>partitionLength=%d ",rightBound,partitionLength);
+			
 
 		// the bin width in terms of indices
-		long long int goback = (long long int)(binSize / gridSize);
+		long goback = (long)(binSize / gridSize);
 
 		// the leftmost boundry of integration
-		long long int leftBound = rightBound - goback;
+		long leftBound = rightBound - goback;
+
+		
+		if (leftBound < 0)
+			printf("ERROR: leftBound=%d<0 ", leftBound);
+			
 
 		// Calculate the right handed riemann sum
 		Y[i] = 0;
-		for (long long int j = leftBound + 1; j <= rightBound; j++) {
+		for (long j = leftBound + 1; j < rightBound; j++) {
 			Y[i] += C[j] * gridSize;
 		}
+
+		
+		if (Y[i] < -1000) {
+			printf("i=%d partitionLength=%d Y[i]=%f C[%d:%d]={", i, partitionLength, Y[i], leftBound+1, rightBound);
+
+			for (long j = leftBound + 1; j <= rightBound; j++) {
+				printf("%f ", C[j]);
+			}
+
+			printf("}");
+
+		}
+		
+
 	}
 
 	free(partition);
-
 	free(C);
 }
 
 void
-waldpdf(const distType data[], double mu, double s, distType Y[], long long int size_XY)
+waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 {
     // Y=(1./(s*(2*pi*t.^3).^(.5))).*exp(-((mu*t-1).^2)./(2*s^2*(t)));
     // https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution
 
-    double a, b;
-    for (long long int i = 0; i < size_XY; i++) {
-		a = 1.0 / (s * pow(6.2831853071795862 * pow(data[i], 3.0), 0.5));
-		b = (pow(mu * data[i] - 1.0, 2.0)) / (2.0 * s * s * data[i]);
-		Y[i] = a * exp(-b);
+	if (mu <= 0 || s <= 0)
+		printf("ERROR: nonpositive mu or s!\n");
 
-		if (isnan(Y[i]))
+    double a, b;
+	for (long i = 0; i < dataSize; i++) {
+
+		a = 1.0 / (s * pow(6.2831853071795862 * pow((double)data[i], 3.0), 0.5));
+
+		b = exp(-((pow(mu * (double)data[i] - 1.0, 2.0)) / (2.0 * s * s * (double)data[i])));
+
+		if (errno == ERANGE)
+			printf("ERROR: range error!\n");
+
+		if (errno == EDOM)
+			printf("ERROR: domain error!\n");
+
+		Y[i] = (distType)(a * b);
+
+		if (!(isfinite(a) && isfinite(b))) {
+			/* Ok this fixup requires some explaination. Strictly wald(0) is indeterminate.
+			We replace it here with zero as that is the practical value and this avoids
+			blowing up a log likelihood calculation later! */
+			//printf("{a=%f b=%f data[i]=%f Y[i]=%f} ", a, b, data[i], (double)Y[i]);
 			Y[i] = 0;
+		}
+
+		if (Y[i] < -1000)
+			printf("waldpdf:Y[i]<-1000=%f ", Y[i]);
+
     }
 }

@@ -10,12 +10,16 @@
 #include "main.h"
 #include "loglikelihood.h"
 #include "utility.h"
+#include "time.h"
 
 #define _VERBOSE
 #define _CONV2WALD
 
 void IMT_analysis_April2017(const char *model, char * data_filename) {
 	printf("Using GSL minimizer\n");
+
+	clock_t t;
+	t = clock();
 
 	int data_size;
 	distType * data;
@@ -194,4 +198,8 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
 
 
 	free(data);
+
+
+	t = clock() - t;
+	printf("total runtime = %fs\n", ((float)t) / CLOCKS_PER_SEC);
 }
