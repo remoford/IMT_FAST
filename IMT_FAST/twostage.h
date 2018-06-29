@@ -15,4 +15,6 @@ extern double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector *v, void *p
 
 extern void conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2, distType convolvedPDF[], double h, int adaptiveMode, int size_XY);
 
+extern twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize);
+
 #endif

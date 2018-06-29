@@ -53,7 +53,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 
 		free(seedll);
 
-		printf("\nstarting seedIdx=%d p=[%e %e %e %e] ll=%e\n", seedIdx, seeds[seedIdx][0],
+		printf("\nstarting seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, seeds[seedIdx][0],
 			seeds[seedIdx][1], seeds[seedIdx][2],
 			seeds[seedIdx][3], seedll_sum);
 
@@ -104,7 +104,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 			status = gsl_multimin_fminimizer_iterate(s);
 			t = clock() - t;
 			//printf("It took me %d clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
-			printf("ll=%e [%e %e %e %e] %.3fs ", s->fval, gsl_vector_get(s->x, 0),
+			printf("ll=%f [%f %f %f %f] %.3fs ", s->fval, gsl_vector_get(s->x, 0),
 				gsl_vector_get(s->x, 1),
 				gsl_vector_get(s->x, 2),
 				gsl_vector_get(s->x, 3), ((float)t) / CLOCKS_PER_SEC);
@@ -153,7 +153,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 
 		free(ll);
 
-		printf("\nfinished seedIdx=%d p=[%e %e %e %e] ll=%e\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], l_sum);
+		printf("\nfinished seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], l_sum);
 	}
 
 	/*  we previously optimized with a larger step size, recalculate with */
@@ -170,7 +170,7 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 
 		loglikelihoods[seedIdx] = loglikelihood(likelihoods, data_size);
 
-		printf("id=%d p=[%e %e %e %e] ll=%e\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
+		printf("id=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], loglikelihoods[seedIdx]);
 	}
 	free(likelihoods);
@@ -188,8 +188,8 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 	free(loglikelihoods);
 
 	printf("\nBest fit: row_id=%d\n", row_id);
-	printf("loglikelihood=%e ", max_ld);
-	printf("p=[ %e %e %e %e ]\n", optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3]);
+	printf("loglikelihood=%f ", max_ld);
+	printf("p=[ %f %f %f %f ]\n", optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3]);
 
 	return;
 }
@@ -304,107 +304,85 @@ conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2,
 		double lag = 1 / m_a;
 
 		waldlagpdf(data, m_b, s_b, lag, convolvedPDF, size_XY);
+
 		flag = 1;
     } else {
 
-		/* produce a range of evenly spaced points to evaluate at between
-		   0 and Maxt with step size h. the even spacing is important when
-		   calculating the convolution later */
-		int partitionLength = (int) (maxData / h);
+		twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h);
 
-		// This represents the partition
-#ifdef __INTEL_COMPILER
-		double *partition = (double *) _mm_malloc(partitionLength * sizeof(double), 32);
-		distType *y = (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
-		distType *z = (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
-#else
-		double *partition = (double *) malloc(partitionLength * sizeof(double));
-		distType *y = (distType *) malloc(partitionLength * sizeof(distType));
-		distType *z = (distType *) malloc(partitionLength * sizeof(distType));
-#endif
-
-		double tally = 0;
-		for (int i = 0; i < partitionLength; i++) {
-			partition[i] = tally;
-			tally += h;
-		}
-
-		// evaluate the sub-distributions at each point in x
-		waldpdf(partition, m[0], s[0], y, partitionLength);
-		waldpdf(partition, m[1], s[1], z, partitionLength);
-
-		//approxconvolv_replacement(z, y, X, x, Y, &logP0, partitionLength, size_XY, h);
-
-#ifdef _BINNED_MODE
-		binned_conv(z, y, data, partition, convolvedPDF, &logP0, partitionLength, size_XY, h);
-#else
-		nn_conv(z, y, data, partition, convolvedPDF, &logP0, partitionLength, size_XY, h);
-#endif
-
-#ifdef __INTEL_COMPILER
-		_mm_free(partition);
-		_mm_free(y);
-		_mm_free(z);
-#else
-		free(partition);
-		free(y);
-		free(z);
-#endif
+		logP0 = (double)loglikelihood(convolvedPDF, size_XY);
 
 		while (E >= 0.001 * fabs(logP0)) {
 
 			h = h * 0.5;	// Shrink the step size
 
 #ifdef _VERBOSE
-			printf("h=%f ", h);
+			printf("h=%g ", h);
 #endif
 
-			int partitionLength = (int) (maxData / h);
+			twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h);
 
-#ifdef __INTEL_COMPILER
-			double *partition = (double *) _mm_malloc(partitionLength * sizeof(double), 32);
-			distType *y = (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
-			distType *z = (distType *) _mm_malloc(partitionLength * sizeof(distType), 32);
-#else
-			double *partition = (double *) malloc(partitionLength * sizeof(double));
-			distType *y = (distType *) malloc(partitionLength * sizeof(distType));
-			distType *z = (distType *) malloc(partitionLength * sizeof(distType));
-#endif
-
-			// fill the partition
-			double tally = 0;
-			for (int i = 0; i < partitionLength; i++) {
-				partition[i] = tally;
-				tally += h;
-			}
-
-			// evaluate the sub-distributions at each point in x
-			waldpdf(partition, m[0], s[0], y, partitionLength);
-			waldpdf(partition, m[1], s[1], z, partitionLength);
-
-#ifdef _BINNED_MODE
-			binned_conv(z, y, data, partition, convolvedPDF, &logP1, partitionLength, size_XY, h);
-#else
-			nn_conv(z, y, data, partition, convolvedPDF, &logP1, partitionLength, size_XY, h);
-#endif
-
-#ifdef __INTEL_COMPILER
-			_mm_free(partition);
-			_mm_free(y);
-			_mm_free(z);
-#else
-			free(partition);
-			free(y);
-			free(z);
-#endif
+			logP1 = (double)loglikelihood(convolvedPDF, size_XY);
 
 			E = fabs(logP1 - logP0);
 
 			logP0 = logP1;
-
 		}
     }
 #ifdef _VERBOSE
 	printf("\n");
+#endif
+}
+
+
+
+
+twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize) {
+
+	double maxData = 0;
+	for (long i = 0; i < dataSize; i++) {
+		if (data[i] > maxData)
+			maxData = data[i];
+	}
+
+	int partitionLength = (int)(maxData / gridSize);
+
+#ifdef __INTEL_COMPILER
+	double *partition = (double *)_mm_malloc(partitionLength * sizeof(double), 32);
+	distType *y = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
+	distType *z = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
+#else
+	double *partition = (double *)malloc(partitionLength * sizeof(double));
+	distType *y = (distType *)malloc(partitionLength * sizeof(distType));
+	distType *z = (distType *)malloc(partitionLength * sizeof(distType));
+#endif
+
+	// fill the partition
+	double tally = 0;
+	for (int i = 0; i < partitionLength; i++) {
+		partition[i] = tally;
+		tally += gridSize;
+	}
+
+	// evaluate the sub-distributions at each point in x
+	waldpdf(partition, m1, s1, y, partitionLength);
+	waldpdf(partition, m2, s2, z, partitionLength);
+
+	double logP1;
+
+#ifdef _BINNED_MODE
+	binned_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
+#else
+	nn_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
+#endif
+
+#ifdef __INTEL_COMPILER
+	_mm_free(partition);
+	_mm_free(y);
+	_mm_free(z);
+#else
+	free(partition);
+	free(y);
+	free(z);
 #endif
 }

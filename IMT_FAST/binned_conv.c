@@ -139,3 +139,70 @@ binned_conv(const distType z[], const distType y[],
 	free(C);
 #endif
 }
+
+
+
+void threestage_binconv(const distType x[], const distType y[], const distType z[], const distType data[], distType Y[], double *logP0, int size_xyz, int dataSize, double h) {
+
+	// Initialize C1 big enough for the first convolution
+	int size_conv1 = 2 * size_xyz;
+
+	// C stores the result of the convolution
+	distType *C1 = (distType *)_mm_malloc(size_conv1 * sizeof(distType), 32);
+
+	for (int i = 0; i < size_conv1; i++)
+		C1[i] = 0;
+
+	window_conv(x, y, C1, h, size_xyz);
+
+	// Copy z pdf into an expanded array
+	distType *expandedZ = (distType *)_mm_malloc(size_conv1 * sizeof(distType), 32);
+
+	for (int i = 0; i < size_conv1; i++)
+		expandedZ[i] = 0;
+
+	for (int i = 0; i < size_xyz; i++)
+		expandedZ[i] = z[i];
+
+	// Initialize C2 big enough for the second convolution
+	int size_conv2 = 2 * size_conv1;
+	distType *C2 = (distType *)_mm_malloc(size_conv2 * sizeof(distType), 32);
+
+	window_conv(C1, expandedZ, C2, h, size_conv1);
+
+	// Calculate the probability integral over the bin for each point in the data
+	for (int i = 0; i < dataSize; i++) {
+		// rightmost boundry of integration for this particular bin
+		int rightBound = (int)(data[i] / h);
+
+		if (rightBound >= size_conv2)
+			printf("ERROR: rightBound=%d>=size_conv2=%d ", rightBound, size_conv2);
+
+		// the bin width in terms of indices
+		int goback = (int)(0.1 / h);
+
+		// the leftmost boundry of integration
+		int leftBound = rightBound - goback;
+
+		if (leftBound < 0)
+			printf("ERROR: leftBound=%d<0 ", leftBound);
+
+		// Calculate the right handed riemann sum
+		Y[i] = 0;
+		for (int j = leftBound + 1; j <= rightBound; j++) {
+			Y[i] += C2[j] * h;
+		}
+
+		//printf("Y[%d]=%f ", i, Y[i]);
+	}
+
+	*logP0 = (double)loglikelihood(Y, dataSize);
+
+	printf("logP0=%f ", *logP0);
+
+	_mm_free(C1);
+	_mm_free(C2);
+	_mm_free(expandedZ);
+
+	return;
+}

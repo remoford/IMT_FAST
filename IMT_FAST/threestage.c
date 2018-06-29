@@ -9,6 +9,7 @@
 #include "binned_conv.h"
 #include "main.h"
 #include "loglikelihood.h"
+#include "time.h"
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -126,7 +127,13 @@ void optimize_threestage(const double data[], int data_size, configStruct config
 
 		do {
 			iter++;
+
+			clock_t t;
+			t = clock();
+
 			status = gsl_multimin_fminimizer_iterate(s);
+
+			t = clock() - t;
 
 			if (status)
 				break;
@@ -134,18 +141,15 @@ void optimize_threestage(const double data[], int data_size, configStruct config
 			size = gsl_multimin_fminimizer_size(s);
 			status = gsl_multimin_test_size(size, 1e-4);
 
-#ifdef _VERBOSE
 			if (status == GSL_SUCCESS) {
 				printf("converged to minimum at\n");
 			}
 
-			printf
-			("%5d %.8f %.8f %.8f %.8f %.8f %.8f f() = %.17f size = %.3f\n",
+			printf("%5d %.8f %.8f %.8f %.8f %.8f %.8f f() = %.17f size = %.3f %.3fs\n\n",
 				(int)iter, gsl_vector_get(s->x, 0),
 				gsl_vector_get(s->x, 1), gsl_vector_get(s->x, 2),
 				gsl_vector_get(s->x, 3), gsl_vector_get(s->x, 4),
-				gsl_vector_get(s->x, 5), s->fval, size);
-#endif
+				gsl_vector_get(s->x, 5), s->fval, size, ((float)t) / CLOCKS_PER_SEC);
 		} while (status == GSL_CONTINUE && iter < 10000);
 
 		d_p[0] = fabs(gsl_vector_get(s->x, 0));
@@ -230,6 +234,7 @@ void optimize_threestage(const double data[], int data_size, configStruct config
 
 double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
 {
+
 	configStruct config = *(configStruct *)params;
 
 	distType * data = config.data;
@@ -259,7 +264,9 @@ double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
 		Y[i] = 0;
     }
 
-    convolv3waldpdf(m1, s1, m2, s2, m3, s3, data, Y, data_size, 0.1);
+    //convolv3waldpdf(m1, s1, m2, s2, m3, s3, data, Y, data_size, 0.1);
+
+	threestage_adapt(data, m1, s1, m2, s2, m3, s3, Y, data_size);
 
 	double ll = (double) loglikelihood(Y, data_size);
 
@@ -623,11 +630,11 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 #pragma omp parallel for
 #endif
 			for (int i = 0; i < 2; i++) {
-			if (i == 0)
-				conv2waldpdf(x, m[1], s[1], m[2], s[2], w[0], h, 0,
-					 partitionLength);
-			else
-				waldpdf(x, m[0], s[0], w[1], partitionLength);
+				if (i == 0)
+					conv2waldpdf(x, m[1], s[1], m[2], s[2], w[0], h, 0,
+						 partitionLength);
+				else
+					waldpdf(x, m[0], s[0], w[1], partitionLength);
 			}
 
 			/*
@@ -953,4 +960,105 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
     // free(x);
 }
 
-/* End of code generation (convolv_3invG_nov.c) */
+
+
+
+void threestage_adapt(const distType data[], double m1, double s1, double m2, double s2, double m3, double s3, distType Y[], int dataSize) {
+
+
+	distType gridSize = 0.01;
+
+	// find the largest point in t
+	double maxData = 0;
+	for (int i = 0; i < dataSize; i++) {
+		if (data[i] > maxData)
+			maxData = data[i];
+	}
+
+	// These represent our loglikelihoods
+	double logP0;
+	double logP1;
+
+	double E = 999999999999;
+
+	threestage_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
+
+	logP0 = (double)loglikelihood(Y, dataSize);
+
+	while (E >= 0.001 * fabs(logP0)) {
+
+		gridSize = gridSize * 0.5;	// Shrink the step size
+
+		printf("\ngridSize=%g ", gridSize);
+
+		threestage_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
+
+		logP1 = (double)loglikelihood(Y, dataSize);
+
+		E = fabs(logP1 - logP0);
+
+		logP0 = logP1;
+	}
+	
+	printf("\n");
+
+}
+
+
+
+
+void threestage_bin(const distType data[], double m1, double s1, double m2, double s2, double m3, double s3, distType Y[], long dataSize, double gridSize) {
+
+	double maxData = 0;
+	for (long i = 0; i < dataSize; i++) {
+		if (data[i] > maxData)
+			maxData = data[i];
+	}
+
+	int partitionLength = (int)(maxData / gridSize);
+
+#ifdef __INTEL_COMPILER
+	double *partition = (double *)_mm_malloc(partitionLength * sizeof(double), 32);
+	distType *x = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
+	distType *y = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
+	distType *z = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
+	distType *tmp = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
+#else
+	double *partition = (double *)malloc(partitionLength * sizeof(double));
+	distType *x = (distType *)malloc(partitionLength * sizeof(distType));
+	distType *y = (distType *)malloc(partitionLength * sizeof(distType));
+	distType *z = (distType *)malloc(partitionLength * sizeof(distType));
+	distType *tmp = (distType *)malloc(partitionLength * sizeof(distType));
+#endif
+
+	// fill the partition
+	double tally = 0;
+	for (int i = 0; i < partitionLength; i++) {
+		partition[i] = tally;
+		tally += gridSize;
+	}
+
+	// evaluate the sub-distributions at each point in x
+	waldpdf(partition, m1, s1, x, partitionLength);
+	waldpdf(partition, m2, s2, y, partitionLength);
+	waldpdf(partition, m3, s3, z, partitionLength);
+
+	double logP1;
+
+	//binned_conv(z, y, data, partition, tmp, &logP1, partitionLength, dataSize, gridSize);
+	threestage_binconv(x, y, z, data, Y, &logP1, partitionLength, dataSize, gridSize);
+
+#ifdef __INTEL_COMPILER
+	_mm_free(partition);
+	_mm_free(x);
+	_mm_free(y);
+	_mm_free(z);
+	_mm_free(tmp);
+#else
+	free(partition);
+	free(x);
+	free(y);
+	free(z);
+	free(tmp);
+#endif
+}
