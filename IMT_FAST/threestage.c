@@ -10,6 +10,7 @@
 #include "main.h"
 #include "loglikelihood.h"
 #include "time.h"
+#include "binned_conv.h"
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -81,9 +82,9 @@ void optimize_threestage(const double data[], int data_size, configStruct config
 #endif
 	for (emgfitnomle = 0; emgfitnomle < 17; emgfitnomle++) {
 
-		printf("i=%f\n", 1.0 + (double)emgfitnomle);
+		printf("i=%f ", 1.0 + (double)emgfitnomle);
 
-		printf("  P=[%f %f %f %f %f %f]\n", d_P[emgfitnomle],
+		printf("P=[%f %f %f %f %f %f]\n", d_P[emgfitnomle],
 			d_P[20 + emgfitnomle], d_P[40 + emgfitnomle],
 			d_P[60 + emgfitnomle], d_P[80 + emgfitnomle],
 			d_P[100 + emgfitnomle]);
@@ -124,6 +125,7 @@ void optimize_threestage(const double data[], int data_size, configStruct config
 
 		s = gsl_multimin_fminimizer_alloc(T, 6);
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
+		printf("\n");
 
 		do {
 			iter++;
@@ -131,6 +133,7 @@ void optimize_threestage(const double data[], int data_size, configStruct config
 			clock_t t;
 			t = clock();
 
+			printf("iter=%d\n", (int)iter);
 			status = gsl_multimin_fminimizer_iterate(s);
 
 			t = clock() - t;
@@ -145,11 +148,16 @@ void optimize_threestage(const double data[], int data_size, configStruct config
 				printf("converged to minimum at\n");
 			}
 
-			printf("%5d %.8f %.8f %.8f %.8f %.8f %.8f f() = %.17f size = %.3f %.3fs\n\n",
-				(int)iter, gsl_vector_get(s->x, 0),
-				gsl_vector_get(s->x, 1), gsl_vector_get(s->x, 2),
-				gsl_vector_get(s->x, 3), gsl_vector_get(s->x, 4),
-				gsl_vector_get(s->x, 5), s->fval, size, ((float)t) / CLOCKS_PER_SEC);
+			printf("ll=%g [%.8f %.8f %.8f %.8f %.8f %.8f] size=%.3f %.3fs\n\n",
+				s->fval,
+				gsl_vector_get(s->x, 0),
+				gsl_vector_get(s->x, 1),
+				gsl_vector_get(s->x, 2),
+				gsl_vector_get(s->x, 3),
+				gsl_vector_get(s->x, 4),
+				gsl_vector_get(s->x, 5),
+				size,
+				((float)t) / CLOCKS_PER_SEC);
 		} while (status == GSL_CONTINUE && iter < 10000);
 
 		d_p[0] = fabs(gsl_vector_get(s->x, 0));
@@ -979,7 +987,7 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 	double logP0;
 	double logP1;
 
-	double E = 999999999999;
+	double E = DBL_MAX;
 
 	threestage_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
 
@@ -1022,13 +1030,13 @@ void threestage_bin(const distType data[], double m1, double s1, double m2, doub
 	distType *x = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
 	distType *y = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
 	distType *z = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
-	distType *tmp = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
+	//distType *tmp = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
 #else
 	double *partition = (double *)malloc(partitionLength * sizeof(double));
 	distType *x = (distType *)malloc(partitionLength * sizeof(distType));
 	distType *y = (distType *)malloc(partitionLength * sizeof(distType));
 	distType *z = (distType *)malloc(partitionLength * sizeof(distType));
-	distType *tmp = (distType *)malloc(partitionLength * sizeof(distType));
+	//distType *tmp = (distType *)malloc(partitionLength * sizeof(distType));
 #endif
 
 	// fill the partition
@@ -1053,12 +1061,12 @@ void threestage_bin(const distType data[], double m1, double s1, double m2, doub
 	_mm_free(x);
 	_mm_free(y);
 	_mm_free(z);
-	_mm_free(tmp);
+	//_mm_free(tmp);
 #else
 	free(partition);
 	free(x);
 	free(y);
 	free(z);
-	free(tmp);
+	//free(tmp);
 #endif
 }

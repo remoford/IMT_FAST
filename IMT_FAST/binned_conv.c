@@ -124,7 +124,7 @@ binned_conv(const distType z[], const distType y[],
 
 		// Calculate the right handed riemann sum
 		Y[i] = 0;
-		for (int j = leftBound + 1; j <= rightBound; j++) {
+		for (int j = leftBound + 1; j < rightBound; j++) {
 			Y[i] += C[j] * h;
 		}
 	}
@@ -189,7 +189,7 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 
 		// Calculate the right handed riemann sum
 		Y[i] = 0;
-		for (int j = leftBound + 1; j <= rightBound; j++) {
+		for (int j = leftBound + 1; j < rightBound; j++) {
 			Y[i] += C2[j] * h;
 		}
 

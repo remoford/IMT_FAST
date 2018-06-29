@@ -95,19 +95,28 @@ void optimize_twostage(int data_size, const double data[], int numseeds, double 
 
 		s = gsl_multimin_fminimizer_alloc(T, 4);
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
+		printf("\n");
 
 		do {
 			iter++;
 
 			clock_t t;
 			t = clock();
+			
+			printf("iter=%d\n", (int)iter);
 			status = gsl_multimin_fminimizer_iterate(s);
 			t = clock() - t;
+
+			size = gsl_multimin_fminimizer_size(s);
 			//printf("It took me %d clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
-			printf("ll=%f [%f %f %f %f] %.3fs ", s->fval, gsl_vector_get(s->x, 0),
+			printf("ll=%g [%f %f %f %f] size=%.3f %.3fs ",
+				s->fval,
+				gsl_vector_get(s->x, 0),
 				gsl_vector_get(s->x, 1),
 				gsl_vector_get(s->x, 2),
-				gsl_vector_get(s->x, 3), ((float)t) / CLOCKS_PER_SEC);
+				gsl_vector_get(s->x, 3),
+				size,
+				((float)t) / CLOCKS_PER_SEC);
 
 			if (iter % 1 == 0)
 				printf("\n\n");
@@ -317,7 +326,7 @@ conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2,
 			h = h * 0.5;	// Shrink the step size
 
 #ifdef _VERBOSE
-			printf("h=%g ", h);
+			printf("\nh=%g ", h);
 #endif
 
 			twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h);

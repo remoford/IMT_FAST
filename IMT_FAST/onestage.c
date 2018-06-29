@@ -64,9 +64,11 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 #pragma omp parallel for
 #endif
 	for (seedIdx = 0; seedIdx < 16; seedIdx++) {
-		printf("i=%d\n", 1 + seedIdx);
-		printf("  P=[%f %f]\n", paramSeeds[seedIdx][0],
-			paramSeeds[seedIdx][1]);
+
+		printf("starting seedIdx=%d ", 1 + seedIdx);
+
+
+		printf("P=[%f %f]\n", paramSeeds[seedIdx][0], paramSeeds[seedIdx][1]);
 
 		// https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
 		const gsl_multimin_fminimizer_type *T =
@@ -95,6 +97,7 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 
 		s = gsl_multimin_fminimizer_alloc(T, 2);
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
+		printf("\n");
 
 		do {
 			iter++;
@@ -102,6 +105,7 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 			clock_t t;
 			t = clock();
 
+			printf("iter=%d\n", (int)iter);
 			status = gsl_multimin_fminimizer_iterate(s);
 
 			t = clock() - t;
@@ -116,10 +120,12 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 				printf("converged to minimum at\n");
 			}
 
-			printf("%5d %.17f %.17f f() = %.17f size = %.3f  %.3fs\n\n",
-				(int)iter,
+			printf("ll=%g [%.17f %.17f] size=%.3f %.3fs\n\n",
+				s->fval,
 				gsl_vector_get(s->x, 0),
-				gsl_vector_get(s->x, 1), s->fval, size, ((float)t) / CLOCKS_PER_SEC);
+				gsl_vector_get(s->x, 1),
+				size,
+				((float)t) / CLOCKS_PER_SEC);
 
 		} while (status == GSL_CONTINUE && iter < 10000);
 
@@ -213,7 +219,7 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 		gridSize = gridSize * 0.5;
 
 #ifdef _VERBOSE
-		printf("(gridSize=%f ", gridSize);
+		printf("\ngridSize=%f ", gridSize);
 #endif
 
 		wald_bin(data, mu, s, Y, data_size, gridSize);
@@ -225,7 +231,7 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 		errorThreshold = 0.001 * fabs(ll_current);
 
 #ifdef _VERBOSE
-		printf("E=%f eThr=%f ll=%f) ", E, errorThreshold, ll_current);
+		printf("E=%f eThr=%f ll=%f ", E, errorThreshold, ll_current);
 #endif
 
 		ll_previous = ll_current;
