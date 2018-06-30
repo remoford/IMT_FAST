@@ -350,12 +350,10 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 	if (mu <= 0 || s <= 0)
 		printf("ERROR: nonpositive mu or s!\n");
 
-    double a, b;
+    distType a, b, bExp;
 	for (long i = 0; i < dataSize; i++) {
 
-		a = 1.0 / (s * pow(6.2831853071795862 * pow((double)data[i], 3.0), 0.5));
-
-		b = exp(-((pow(mu * (double)data[i] - 1.0, 2.0)) / (2.0 * s * s * (double)data[i])));
+		a = 1.0 / (s * pow(6.2831853071795862 * pow(data[i], 3.0), 0.5));
 
 		if (errno == ERANGE)
 			printf("ERROR: range error!\n");
@@ -363,7 +361,17 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 		if (errno == EDOM)
 			printf("ERROR: domain error!\n");
 
-		Y[i] = (distType)(a * b);
+		b = -((pow(mu * data[i] - 1.0, 2.0)) / (2.0 * s * s * data[i]));
+
+		bExp = exp(b);
+
+		if (errno == ERANGE)
+			printf("ERROR: range error!\n");
+
+		if (errno == EDOM)
+			printf("ERROR: domain error!\n");
+
+		Y[i] = (distType)(a * bExp);
 
 		if (!(isfinite(a) && isfinite(b))) {
 			/* Ok this fixup requires some explaination. Strictly wald(0) is indeterminate.
