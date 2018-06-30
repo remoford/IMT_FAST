@@ -12,7 +12,7 @@ distType * readfile(char * filename, int * arraySize)
 	int readMax = 1000;
 
 #ifdef __INTEL_COMPILER
-	distType * readArray = (distType *) malloc(sizeof(distType) * readMax, 32);
+	distType * readArray = (distType *)_mm_malloc(sizeof(distType) * readMax, 32);
 #else
 	distType * readArray = (distType *)malloc(sizeof(distType) * readMax);
 #endif

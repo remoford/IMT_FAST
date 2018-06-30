@@ -347,31 +347,66 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
     // Y=(1./(s*(2*pi*t.^3).^(.5))).*exp(-((mu*t-1).^2)./(2*s^2*(t)));
     // https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution
 
-	if (mu <= 0 || s <= 0)
+
+	if (mu <= 0.0 || s <= 0.0)
 		printf("ERROR: nonpositive mu or s!\n");
 
-    distType a, b, bExp;
+	distType a, b, bExp;
 	for (long i = 0; i < dataSize; i++) {
+
+		errno = 0;
+
+		int anyError = 0;
 
 		a = 1.0 / (s * pow(6.2831853071795862 * pow(data[i], 3.0), 0.5));
 
-		if (errno == ERANGE)
-			printf("ERROR: range error!\n");
+		if (errno == ERANGE){
+			printf("ERROR: (a) range error! ");
+			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
+			anyError = 1;
+		}
+		if (errno == EDOM){
+			printf("ERROR: (a) domain error! ");
+			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
+			anyError = 1;
+		}
 
-		if (errno == EDOM)
-			printf("ERROR: domain error!\n");
-
+		errno = 0;
 		b = -((pow(mu * data[i] - 1.0, 2.0)) / (2.0 * s * s * data[i]));
 
+		if (errno == EDOM){
+			printf("ERROR: (b) domain error! ");
+			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
+			anyError = 1;
+		}
+		if (errno == ERANGE){
+			printf("ERROR: (b) domain error! ");
+			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
+			anyError = 1;
+		}
+
+		errno = 0;
 		bExp = exp(b);
 
-		if (errno == ERANGE)
-			printf("ERROR: range error!\n");
+		if (b >= 710)
+			printf("Predict exp(%f) overflow for type double. ", b);
 
-		if (errno == EDOM)
-			printf("ERROR: domain error!\n");
+		if (errno == ERANGE){
+			printf("ERROR: (bExp) range error! ");
+			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data, mu, s, b);
+			anyError = 1;
+		}
+		if (errno == EDOM){
+			printf("ERROR: (bExp) domain error! ");
+			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data, mu, s, b);
+			anyError = 1;
+		}
 
 		Y[i] = (distType)(a * bExp);
+
+		if (anyError != 0)
+			printf(" Y[%d]=inf\n", i);
+
 
 		if (!(isfinite(a) && isfinite(b))) {
 			/* Ok this fixup requires some explaination. Strictly wald(0) is indeterminate.
@@ -380,6 +415,9 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 			//printf("{a=%f b=%f data[i]=%f Y[i]=%f} ", a, b, data[i], (double)Y[i]);
 			Y[i] = 0;
 		}
+
+		if (fpclassify(Y[i]) == FP_INFINITE)
+			printf("ERROR: Y[%d]=inf\n", i);
 
 		if (Y[i] < -1000)
 			printf("waldpdf:Y[i]<-1000=%f ", Y[i]);
