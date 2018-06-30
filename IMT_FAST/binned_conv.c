@@ -147,7 +147,11 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 	int size_conv1 = 2 * size_xyz;
 
 	// C stores the result of the convolution
+#ifdef __INTEL_COMPILER
 	distType *C1 = (distType *)_mm_malloc(size_conv1 * sizeof(distType), 32);
+#else
+	distType *C1 = (distType *)malloc(size_conv1 * sizeof(distType));
+#endif
 
 	for (int i = 0; i < size_conv1; i++)
 		C1[i] = 0;
@@ -155,7 +159,11 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 	window_conv(x, y, C1, h, size_xyz);
 
 	// Copy z pdf into an expanded array
+#ifdef __INTEL_COMPILER
 	distType *expandedZ = (distType *)_mm_malloc(size_conv1 * sizeof(distType), 32);
+#else
+	distType *expandedZ = (distType *)malloc(size_conv1 * sizeof(distType));
+#endif
 
 	for (int i = 0; i < size_conv1; i++)
 		expandedZ[i] = 0;
@@ -165,7 +173,12 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 
 	// Initialize C2 big enough for the second convolution
 	int size_conv2 = 2 * size_conv1;
+
+#ifdef __INTEL_COMPILER
 	distType *C2 = (distType *)_mm_malloc(size_conv2 * sizeof(distType), 32);
+#else
+	distType *C2 = (distType *)malloc(size_conv2 * sizeof(distType));
+#endif
 
 	window_conv(C1, expandedZ, C2, h, size_conv1);
 
@@ -199,9 +212,15 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 
 	printf("logP0=%f ", *logP0);
 
+#ifdef __INTEL_COMPILER
 	_mm_free(C1);
 	_mm_free(C2);
 	_mm_free(expandedZ);
+#else
+	free(C1);
+	free(C2);
+	free(expandedZ);
+#endif
 
 	return;
 }

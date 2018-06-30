@@ -39,13 +39,18 @@ distType * readfile(char * filename, int * arraySize)
 	distType * returnArray = NULL;
 
 	if (readCount > 0) {
-		returnArray = (distType *) malloc(sizeof(distType)*readCount);
+#ifdef __INTEL_COMPILER
+		returnArray = (distType *) _mm_malloc(sizeof(distType)*readCount, 32);
+#else
+		returnArray = (distType *)malloc(sizeof(distType)*readCount);
+#endif
 
 		for (int i = 0; i < readCount; i++)
 			returnArray[i] = (distType)readArray[i];
 	}
 
 	free(readArray);
+
 
 	*arraySize = readCount;
 

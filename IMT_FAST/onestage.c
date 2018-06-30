@@ -16,7 +16,11 @@
 void optimize_onestage(const distType data[], long data_size, configStruct config) {
 	printf("onestagefitnomle\n\n");
 
+#ifdef __INTEL_COMPILER
+	distType * l = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
+#else
 	distType * l = (distType *)malloc(sizeof(distType)*data_size);
+#endif
 
 	double ld[16];
 
@@ -163,7 +167,11 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 	printf("pd_max=[%f %f]\n\n", optimizedParams[ind_ld][0],
 		optimizedParams[ind_ld][1]);
 
+#ifdef __INTEL_COMPILER
+	_mm_free(l);
+#else
 	free(l);
+#endif
 }
 
 double wald_loglikelihood(const gsl_vector * v, void *params)
@@ -183,14 +191,22 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
     m = fabs(m);
     s = fabs(s);
 
+#ifdef __INTEL_COMPILER
+	distType * Y = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
+#else
 	distType * Y = (distType *)malloc(sizeof(distType)*data_size);
+#endif
 
     //waldpdf(data, m, s, Y, data_size);
 	wald_adapt(data, m, s, Y, data_size);
  
 	double ll = (double) loglikelihood(Y, data_size);
 
+#ifdef __INTEL_COMPILER
+	_mm_free(Y);
+#else
 	free(Y);
+#endif
 
     return penalty - ll;
 }
@@ -256,13 +272,21 @@ void wald_bin(const distType data[], double mu, double s, distType Y[], long dat
 
 	long partitionLength = maxData / gridSize;
 
+#ifdef __INTEL_COMPILER
+	distType * partition = (distType *)_mm_malloc(sizeof(distType)*partitionLength, 32);
+#else
 	distType * partition = (distType *)malloc(sizeof(distType)*partitionLength);
+#endif
 
 	for (long i = 0; i < partitionLength; i++) {
 		partition[i] = i * gridSize;
 	}
 
+#ifdef __INTEL_COMPILER
+	distType * C = (distType *)_mm_malloc(sizeof(distType)*partitionLength, 32);
+#else
 	distType * C = (distType *)malloc(sizeof(distType)*partitionLength);
+#endif
 
 	waldpdf(partition, mu, s, C, partitionLength);
 
@@ -308,8 +332,13 @@ void wald_bin(const distType data[], double mu, double s, distType Y[], long dat
 
 	}
 
+#ifdef __INTEL_COMPILER
+	_mm_free(partition);
+	_mm_free(C);
+#else
 	free(partition);
 	free(C);
+#endif
 }
 
 void

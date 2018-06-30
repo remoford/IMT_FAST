@@ -43,7 +43,11 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 #endif
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 
+#ifdef __INTEL_COMPILER
+		distType * seedll = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
+#else
 		distType * seedll = (distType *)malloc(sizeof(distType)*data_size);
+#endif
 		conv2waldpdf(data, seeds[seedIdx][0],
 			seeds[seedIdx][1], seeds[seedIdx][2],
 			seeds[seedIdx][3], seedll, 0.01, 1,
@@ -51,7 +55,11 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 
 		double seedll_sum = (double)loglikelihood(seedll, data_size);
 
+#ifdef __INTEL_COMPILER
+		_mm_free(seedll);
+#else
 		free(seedll);
+#endif
 
 		printf("\nstarting seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, seeds[seedIdx][0],
 			seeds[seedIdx][1], seeds[seedIdx][2],
@@ -154,13 +162,22 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 		gsl_vector_free(ss);
 		gsl_multimin_fminimizer_free(s);
 
+#ifdef __INTEL_COMPILER
+		distType * ll = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
+#else
 		distType * ll = (distType *)malloc(sizeof(distType)*data_size);
+#endif
+
 		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], ll, 0.01, 1,
 			data_size);
 
 		double l_sum = (double)loglikelihood(ll, data_size);
 
+#ifdef __INTEL_COMPILER
+		_mm_free(ll);
+#else
 		free(ll);
+#endif
 
 		printf("\nfinished seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], l_sum);
 	}
@@ -169,8 +186,13 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 	/*  a smaller stepsize after the fact */
 	printf("\nrecalculating canidate solutions with smaller stepsize\n");
 
+#ifdef __INTEL_COMPILER
+	distType * loglikelihoods = (distType *)_mm_malloc(sizeof(distType)*numseeds, 32);
+	distType * likelihoods = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
+#else
 	distType * loglikelihoods = (distType *)malloc(sizeof(distType)*numseeds);
 	distType * likelihoods = (distType *)malloc(sizeof(distType)*data_size);
+#endif
 
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
@@ -182,7 +204,12 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 		printf("id=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], loglikelihoods[seedIdx]);
 	}
+
+#ifdef __INTEL_COMPILER
+	_mm_free(likelihoods);
+#else
 	free(likelihoods);
+#endif
 
 	// Find the best log likelihood
 	double max_ld = 0.0;
@@ -194,7 +221,11 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 		}
 	}
 
+#ifdef __INTEL_COMPILER
+	_mm_free(loglikelihoods);
+#else
 	free(loglikelihoods);
+#endif
 
 	printf("\nBest fit: row_id=%d\n", row_id);
 	printf("loglikelihood=%f ", max_ld);
@@ -225,13 +256,21 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params)
     m2 = fabs(m2);
     s2 = fabs(s2);
 
+#ifdef __INTEL_COMPILER
+	distType * Y = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
+#else
 	distType * Y = (distType *)malloc(sizeof(distType)*data_size);
+#endif
 
     conv2waldpdf(data, m1, s1, m2, s2, Y, 0.01, 1, data_size);
 
 	double ll = (double) loglikelihood(Y, data_size);
 
+#ifdef __INTEL_COMPILER
+	_mm_free(Y);
+#else
 	free(Y);
+#endif
 
     return penalty - ll;
 }
