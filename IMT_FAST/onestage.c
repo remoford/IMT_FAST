@@ -270,7 +270,7 @@ void wald_bin(const distType data[], double mu, double s, distType Y[], long dat
 			maxData = data[i];
 	}
 
-	long partitionLength = maxData / gridSize;
+	long partitionLength = (long)(maxData / gridSize);
 
 #ifdef __INTEL_COMPILER
 	distType * partition = (distType *)_mm_malloc(sizeof(distType)*partitionLength, 32);

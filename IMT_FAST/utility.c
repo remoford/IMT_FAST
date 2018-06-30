@@ -2,6 +2,8 @@
 #include "main.h"
 #include "stdio.h"
 
+#define _CRT_SECURE_NO_WARNINGS
+#pragma warning(disable:4996)
 
 distType * readfile(char * filename, int * arraySize)
 {
@@ -9,7 +11,11 @@ distType * readfile(char * filename, int * arraySize)
 
 	int readMax = 1000;
 
-	float * readArray = (float *) malloc(sizeof(float) * readMax);
+#ifdef __INTEL_COMPILER
+	distType * readArray = (distType *) malloc(sizeof(distType) * readMax, 32);
+#else
+	distType * readArray = (distType *)malloc(sizeof(distType) * readMax);
+#endif
 
 	float currentNumber;
 

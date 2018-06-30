@@ -79,12 +79,12 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 
 	printf("skp=%lu ", skipCount);
 	
-	float skipPercentage = (double)(int)(100000 * ( ((long double)skipCount) / ((long double)maximumTripcount) ))/1000;
+	distType skipPercentage = ((distType)skipCount) / ((distType)maximumTripcount);
 
 	if (skipPercentage < 0)
 		printf("\n\n\nERROR: NEGATIVE SKIP PERCENTAGE\n\n\n");
 
-	printf("tripcount=%lu maxtripcount=%lu %g%%] ", tripcount, maximumTripcount, skipPercentage);
+	printf("tripcount=%lu maxtripcount=%lu %g.3%%] ", tripcount, maximumTripcount, skipPercentage);
 #endif
 
 }
