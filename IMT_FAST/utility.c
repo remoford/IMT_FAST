@@ -55,7 +55,11 @@ distType * readfile(char * filename, int * arraySize)
 			returnArray[i] = (distType)readArray[i];
 	}
 
+#ifdef __INTEL_COMPILER
+	_mm_free(readArray);
+#else
 	free(readArray);
+#endif
 
 
 	*arraySize = readCount;
