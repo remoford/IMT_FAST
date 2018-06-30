@@ -9,12 +9,12 @@
 #include "gsl/gsl_multimin.h"
 #include "main.h"
 
-extern void optimize_twostage(int data_size, const double data[], int numseeds, double seeds[][4], configStruct config);
+extern void optimize_twostage(int data_size, const distType data[], int numseeds, double seeds[][4], configStruct config);
 
 extern double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector *v, void *params);
 
 extern void conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2, distType convolvedPDF[], double h, int adaptiveMode, int size_XY);
 
-extern twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize);
+extern void twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize);
 
 #endif

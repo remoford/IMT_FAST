@@ -13,9 +13,8 @@
 #define _WINDOW_MODE
 //#define _LAZY_MODE
 
-void
-binned_conv(const distType z[], const distType y[],
-			  const distType data[], const double x[], distType Y[],
+void binned_conv(const distType z[], const distType y[],
+			  const distType data[], const distType x[], distType Y[],
 			  double *logP0, int size_xyz, int size_XY,
 			  double h)
 {

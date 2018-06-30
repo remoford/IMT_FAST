@@ -8,7 +8,7 @@
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_statistics_double.h"
 
-void optimize_onestagelag(const double data[], int data_size, configStruct config) {
+void optimize_onestagelag(const distType data[], int data_size, configStruct config) {
 
 
 	distType * l = (distType *)malloc(sizeof(distType)*data_size);
@@ -16,8 +16,12 @@ void optimize_onestagelag(const double data[], int data_size, configStruct confi
 	printf("onestagefitlagnomle\n\n");
 
 	/* prepare statistical variables */
-	double mean = gsl_stats_mean(data, 1, data_size);
-	double variance = gsl_stats_variance(data, 1, data_size);
+	double * doubleData = (double *)malloc(sizeof(double)*data_size);
+	for (int i = 0; i < data_size; i++)
+		doubleData[i] = (double)data[i];
+	double mean = gsl_stats_mean(doubleData, 1, data_size);
+	double variance = gsl_stats_variance(doubleData, 1, data_size);
+	free(doubleData);
 
 	// C3 = sum((data-C1).^3)/(length(data));
 	double c3sum = 0;

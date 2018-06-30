@@ -25,7 +25,7 @@ typedef struct {
 //#define _PARALLEL_PDF
 #define _BINNED_MODE
 
-void optimize_threestage(const double data[], int data_size, configStruct config) {
+void optimize_threestage(const distType data[], int data_size, configStruct config) {
 
 	int itmp;
 	cell_wrap_3 b_pcell[4];
@@ -178,8 +178,12 @@ void optimize_threestage(const double data[], int data_size, configStruct config
 			c_pd[emgfitnomle + 20 * itmp] = d_p[itmp];
 		}
 
+#ifdef _OLD_THREESTAGE
 		convolv3waldpdf(d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5],
 			data, l, data_size, 0.01);
+#else
+		threestage_adapt(data, d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5], l, data_size);
+#endif
 
 		/*
 		double l_sum = 0;
@@ -202,10 +206,18 @@ void optimize_threestage(const double data[], int data_size, configStruct config
 #endif
 	for (emgfitnomle = 0; emgfitnomle < 20; emgfitnomle++) {
 
+#ifdef _OLD_THREESTAGE
 		convolv3waldpdf(c_pd[emgfitnomle], c_pd[20 + emgfitnomle],
 			c_pd[40 + emgfitnomle], c_pd[60 + emgfitnomle],
 			c_pd[80 + emgfitnomle],
 			c_pd[100 + emgfitnomle], data, l, data_size, 0.001);
+#else
+		threestage_adapt(data, c_pd[emgfitnomle], c_pd[20 + emgfitnomle],
+			c_pd[40 + emgfitnomle], c_pd[60 + emgfitnomle],
+			c_pd[80 + emgfitnomle],
+			c_pd[100 + emgfitnomle], l, data_size);
+#endif
+
 
 		/*
 		double l_sum = 0;
@@ -285,6 +297,7 @@ double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
     return objective;
 }
 
+#ifdef _OLD_THREESTAGE
 void
 convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 		double s3, const double X[], distType Y[], int size_XY,
@@ -967,9 +980,7 @@ convolv3waldpdf(double m1, double s1, double m2, double s2, double m3,
 
     // free(x);
 }
-
-
-
+#endif
 
 void threestage_adapt(const distType data[], double m1, double s1, double m2, double s2, double m3, double s3, distType Y[], int dataSize) {
 
@@ -1012,9 +1023,6 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 
 }
 
-
-
-
 void threestage_bin(const distType data[], double m1, double s1, double m2, double s2, double m3, double s3, distType Y[], long dataSize, double gridSize) {
 
 	double maxData = 0;
@@ -1026,13 +1034,13 @@ void threestage_bin(const distType data[], double m1, double s1, double m2, doub
 	int partitionLength = (int)(maxData / gridSize);
 
 #ifdef __INTEL_COMPILER
-	double *partition = (double *)_mm_malloc(partitionLength * sizeof(double), 32);
+	distType *partition = (distType *)_mm_malloc(partitionLength * sizeof(double), 32);
 	distType *x = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
 	distType *y = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
 	distType *z = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
 	//distType *tmp = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
 #else
-	double *partition = (double *)malloc(partitionLength * sizeof(double));
+	distType *partition = (distType *)malloc(partitionLength * sizeof(double));
 	distType *x = (distType *)malloc(partitionLength * sizeof(distType));
 	distType *y = (distType *)malloc(partitionLength * sizeof(distType));
 	distType *z = (distType *)malloc(partitionLength * sizeof(distType));
@@ -1040,7 +1048,7 @@ void threestage_bin(const distType data[], double m1, double s1, double m2, doub
 #endif
 
 	// fill the partition
-	double tally = 0;
+	distType tally = 0;
 	for (int i = 0; i < partitionLength; i++) {
 		partition[i] = tally;
 		tally += gridSize;

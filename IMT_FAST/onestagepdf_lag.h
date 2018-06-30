@@ -9,7 +9,7 @@
 #include "gsl/gsl_multimin.h"
 #include "main.h"
 
-extern void optimize_onestagelag(const double data[], int data_size, configStruct config);
+extern void optimize_onestagelag(const distType data[], int data_size, configStruct config);
 
 extern double waldlag_loglikelihood(const gsl_vector *v, void *params);
 

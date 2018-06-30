@@ -31,7 +31,7 @@ typedef struct {
 } cell_wrap_3;
 
 
-void optimize_twostage(int data_size, const double data[], int numseeds, double seeds[][4], configStruct config) {
+void optimize_twostage(int data_size, const distType data[], int numseeds, double seeds[][4], configStruct config) {
 	printf("twostagefitnomle\n");
 
 	//numseeds = 5;
@@ -225,7 +225,7 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params)
     m2 = fabs(m2);
     s2 = fabs(s2);
 
-	distType * Y = (double *)malloc(sizeof(double)*data_size);
+	distType * Y = (distType *)malloc(sizeof(distType)*data_size);
 
     conv2waldpdf(data, m1, s1, m2, s2, Y, 0.01, 1, data_size);
 
@@ -346,7 +346,7 @@ conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2,
 
 
 
-twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize) {
+void twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize) {
 
 	double maxData = 0;
 	for (long i = 0; i < dataSize; i++) {
@@ -357,17 +357,17 @@ twostage_bin(const distType data[], double m1, double s1, double m2, double s2, 
 	int partitionLength = (int)(maxData / gridSize);
 
 #ifdef __INTEL_COMPILER
-	double *partition = (double *)_mm_malloc(partitionLength * sizeof(double), 32);
+	distType *partition = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
 	distType *y = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
 	distType *z = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
 #else
-	double *partition = (double *)malloc(partitionLength * sizeof(double));
+	distType *partition = (distType *)malloc(partitionLength * sizeof(distType));
 	distType *y = (distType *)malloc(partitionLength * sizeof(distType));
 	distType *z = (distType *)malloc(partitionLength * sizeof(distType));
 #endif
 
 	// fill the partition
-	double tally = 0;
+	distType tally = 0;
 	for (int i = 0; i < partitionLength; i++) {
 		partition[i] = tally;
 		tally += gridSize;
