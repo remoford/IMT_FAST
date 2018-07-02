@@ -13,6 +13,12 @@
 
 #define _VERBOSE
 
+// This is based on a desired epsilon of 05
+// ERROR_BOUND = min(log(1+epsilon), -(1-epsilon))
+// see error analysis in the paper
+
+
+
 void optimize_onestage(const distType data[], long data_size, configStruct config) {
 	printf("onestagefitnomle\n\n");
 
@@ -229,14 +235,9 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 #ifdef _VERBOSE
 	printf("ll=%f ", ll_previous);
 #endif
-	double errorThreshold = 0.001 * fabs(ll_previous);
 
-	while (E >= errorThreshold) {
+	while (E >= _ERROR_BOUND) {
 		gridSize = gridSize * 0.5;
-
-#ifdef _VERBOSE
-		printf("\ngridSize=%f ", gridSize);
-#endif
 
 		wald_bin(data, mu, s, Y, data_size, gridSize);
 
@@ -244,14 +245,14 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 
 		E = fabs(ll_current - ll_previous);
 
-		errorThreshold = 0.001 * fabs(ll_current);
-
 #ifdef _VERBOSE
-		printf("E=%f eThr=%f ll=%f ", E, errorThreshold, ll_current);
+		printf("\ngridSize=%f E=%f eThr=%f ll=%f ", gridSize, E, _ERROR_BOUND, ll_current);
 #endif
 
 		ll_previous = ll_current;
 	}
+
+
 
 #ifdef _VERBOSE
 	printf("]\n");

@@ -9,7 +9,7 @@
 extern int main(int argc, const char * const argv[]);
 
 
-
+#define _ERROR_BOUND 0.4
 
 
 
