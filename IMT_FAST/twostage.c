@@ -15,12 +15,8 @@
 #include "time.h"
 
 
-//#define _CONV2INVG
-#define _CONV2WALD
 #define _VERBOSE
-//#define _PARALLEL_PDF
 #define _BINNED_MODE
-//#define _PARALLEL_SEEDS
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -234,8 +230,7 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 	return;
 }
 
-double
-convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params)
+double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params)
 {
     configStruct config = *(configStruct *)params;
 
@@ -275,8 +270,7 @@ convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params)
     return penalty - ll;
 }
 
-void
-conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2,
+void conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2,
 	distType convolvedPDF[], double h, int adaptiveMode, int size_XY) {
 
 	int flag = 0;		// remember if we applied the approximation
@@ -360,13 +354,11 @@ conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2,
 
 		logP0 = (double)loglikelihood(convolvedPDF, size_XY);
 
-		while (E >= 0.001 * fabs(logP0)) {
+		printf("ll=%g h=%.17f E=%g EB=%g\n", logP0, h, E, _ERROR_BOUND);
+
+		while (E >= _ERROR_BOUND) {
 
 			h = h * 0.5;	// Shrink the step size
-
-#ifdef _VERBOSE
-			printf("\nh=%g ", h);
-#endif
 
 			twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h);
 
@@ -375,14 +367,16 @@ conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2,
 			E = fabs(logP1 - logP0);
 
 			logP0 = logP1;
+
+#ifdef _VERBOSE
+			printf("ll=%g h=%.17f E=%g EB=%g\n", logP1, h, E, _ERROR_BOUND);
+#endif
 		}
     }
 #ifdef _VERBOSE
 	printf("\n");
 #endif
 }
-
-
 
 
 void twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize) {
@@ -393,7 +387,7 @@ void twostage_bin(const distType data[], double m1, double s1, double m2, double
 			maxData = data[i];
 	}
 
-	int partitionLength = (int)(maxData / gridSize);
+	int partitionLength = (int)(maxData / gridSize) + 1;
 
 #ifdef __INTEL_COMPILER
 	distType *partition = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);

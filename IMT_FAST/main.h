@@ -8,13 +8,10 @@
 
 extern int main(int argc, const char * const argv[]);
 
-
 #define _ERROR_BOUND 0.4
-
-
+//#define _PARALLEL_SEEDS
 
 //#define _DIST_SINGLE
-
 
 #ifdef _DIST_SINGLE
 typedef float distType;
@@ -24,7 +21,6 @@ typedef float distType;
 typedef double distType;
 #define distMin DBL_MIN
 #endif
-
 
 typedef struct  {
 	distType * data;

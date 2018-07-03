@@ -75,13 +75,11 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
 
 	printf("data[%d]={\n", data_size);
 	for (int i = 0; i < data_size; i++) {
-		printf("%f ", (float)data[i]);
+		printf("%.17e ", data[i]);
 		if (i % 8 == 7)
 			printf("\n");
 	}
 	printf("}\n");
-
-
 
 	configStruct config;
 
@@ -93,8 +91,6 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
     int onestagelagnomle = 0;
     int onestagefitnomle = 0;
     int threestagefitnomle = 0;
-   
-    
 
     const char *twostagefitnomle_str = "twostage";
     const char *onestagelagnomle_str = "onestagelag";

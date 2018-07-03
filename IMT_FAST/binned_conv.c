@@ -6,12 +6,10 @@
 #include "window_conv.h"
 #include "main.h"
 #include "loglikelihood.h"
+#include "utility.h"
 
 //#define _VERBOSE
-//#define _FASTIDXMETHOD
-#define _SLOWIDXMETHOD
 #define _WINDOW_MODE
-//#define _LAZY_MODE
 
 void binned_conv(const distType z[], const distType y[],
 			  const distType data[], const distType x[], distType Y[],
@@ -47,88 +45,7 @@ void binned_conv(const distType z[], const distType y[],
 	conv(y, z, C, h, size_xyz);
 #endif
 
-
-#ifdef _LAZY_MODE
-
-	int maxX = 0;
-	for (int i = 0; i < size_XY; i++) {
-		if (data[i] > maxX)
-			maxX = data[i];
-	}
-
-	int maxIdx = maxX * 10;
-
-	int * weights = malloc(sizeof(int)*maxIdx);
-
-	int * value = malloc(sizeof(int)*maxIdx);
-	
-	for (int i = 0; i <= maxIdx; i++)
-		weights[i] = 0;
-	
-	for (int i = 0; i < size_XY; i++)
-		weights[(int)(data[i] * 10)]++;
-
-	/*
-	printf("(");
-	for (int i = 0; i <= maxIdx; i++)
-		printf("%d ", weights[i]);
-	printf(") ");
-	*/
-
-	for (int i = 0; i <= maxIdx; i++) {
-		value[i] = 0;
-		if (weights[i] > 0) {
-			double dataPoint = ( (double) i ) / 10.0;
-
-			// rightmost boundry of integration for this particular bin
-			int rightBound = (int)(dataPoint / h);
-
-			// the bin width in terms of indices
-			int goback = (int)(0.1 / h);
-
-			// the leftmost boundry of integration
-			int leftBound = rightBound - goback;
-
-			// Calculate the right handed riemann sum
-			
-			for (int j = leftBound + 1; j <= rightBound; j++) 
-				value[i] += C[j] * h;
-		}
-	}
-
-	for (int i = 0; i < size_XY; i++)
-		Y[i] = value[(int)(data[i] * 10)];
-	
-	free(weights);
-	free(value);
-
-#else
-
-	// Calculate the probability integral over the bin for each point in the data
-	for (int i = 0; i < size_XY; i++) {
-		// rightmost boundry of integration for this particular bin
-		int rightBound = (int) (data[i] / h);
-
-		if (rightBound >= size_conv)
-			printf("ERROR: rightBound=%d>=size_conv=%d ", rightBound, size_conv);
-
-		// the bin width in terms of indices
-		int goback = (int) (0.1 / h);
-
-		// the leftmost boundry of integration
-		int leftBound = rightBound - goback;
-
-		if (leftBound < 0)
-			printf("ERROR: leftBound=%d<0 ", leftBound);
-
-		// Calculate the right handed riemann sum
-		Y[i] = 0;
-		for (int j = leftBound + 1; j < rightBound; j++) {
-			Y[i] += C[j] * h;
-		}
-	}
-	
-#endif
+	rightHandedRiemannSum((long)size_XY, data, h, (long)size_conv, 0.1, C, Y);
 
 	*logP0 = (double) loglikelihood(Y, size_XY);
 
@@ -138,8 +55,6 @@ void binned_conv(const distType z[], const distType y[],
 	free(C);
 #endif
 }
-
-
 
 void threestage_binconv(const distType x[], const distType y[], const distType z[], const distType data[], distType Y[], double *logP0, int size_xyz, int dataSize, double h) {
 
@@ -157,6 +72,11 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 		C1[i] = 0;
 
 	window_conv(x, y, C1, h, size_xyz);
+
+	// Mask the new first convolved distribution beyond size_xyz
+	// See error analysis section in paper for justification
+	for (int i = size_xyz; i < size_conv1; i++)
+		C1[i] = 0;
 
 	// Copy z pdf into an expanded array
 #ifdef __INTEL_COMPILER
@@ -182,35 +102,9 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 
 	window_conv(C1, expandedZ, C2, h, size_conv1);
 
-	// Calculate the probability integral over the bin for each point in the data
-	for (int i = 0; i < dataSize; i++) {
-		// rightmost boundry of integration for this particular bin
-		int rightBound = (int)(data[i] / h);
-
-		if (rightBound >= size_conv2)
-			printf("ERROR: rightBound=%d>=size_conv2=%d ", rightBound, size_conv2);
-
-		// the bin width in terms of indices
-		int goback = (int)(0.1 / h);
-
-		// the leftmost boundry of integration
-		int leftBound = rightBound - goback;
-
-		if (leftBound < 0)
-			printf("ERROR: leftBound=%d<0 ", leftBound);
-
-		// Calculate the right handed riemann sum
-		Y[i] = 0;
-		for (int j = leftBound + 1; j < rightBound; j++) {
-			Y[i] += C2[j] * h;
-		}
-
-		//printf("Y[%d]=%f ", i, Y[i]);
-	}
+	rightHandedRiemannSum((long)dataSize, data, h, (long)size_conv2, 0.1, C2, Y);
 
 	*logP0 = (double)loglikelihood(Y, dataSize);
-
-	printf("logP0=%f ", *logP0);
 
 #ifdef __INTEL_COMPILER
 	_mm_free(C1);

@@ -1,12 +1,21 @@
 #include "float.h"
 #include "stdio.h"
 #include "main.h"
+#include "time.h"
 
 #define _VERBOSE
 
 void window_conv(const distType z[], const distType y[], distType C[], double h, unsigned long size_xyz)
 {
+	clock_t t;
+	t = clock();
+
     unsigned long size_conv = 2 * size_xyz;
+
+	printf("[sz=%luKB ", (sizeof(distType)*size_conv) / 1024);
+
+	//if (size_xyz >= 65536)
+	//	printf("ERROR: convolution steps too big to count with an unsigned long int!!!!\n");
 	
 	distType threshold = 0;
 
@@ -21,7 +30,6 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 			break;
         else
             firstIdx = i;
-
     }
 
 	unsigned long lastIdx = size_xyz - 1;
@@ -38,7 +46,6 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 			break;
 		else
 			firstYIdx = i;
-
 	}
 
 	unsigned long lastYIdx = size_xyz - 1;
@@ -49,42 +56,19 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 			lastYIdx = i;
 	}
 
-	unsigned long tripcount = 0;
+	unsigned long newLastYIdx;
     /* do the lopsided convolution */
     for (unsigned long i = firstIdx; i < lastIdx; i++) {
-		for (unsigned long j = firstYIdx; j < lastYIdx; j++) {
+		if ((size_xyz - i) < lastYIdx)
+			newLastYIdx = size_xyz - i;
+		else
+			newLastYIdx = lastYIdx;
+
+		for (unsigned long j = firstYIdx; j < newLastYIdx; j++)
 			C[i + j] += z[i] * y[j] * h;
-			tripcount++;
-		}
     }
 
-#ifdef _VERBOSE
-	printf("[");
+	t = clock() - t;
 
-	
-	if (firstIdx != 0)
-		printf("fz=%lu ", firstIdx);
-	if (lastIdx != size_xyz)
-		printf("lz=%lu ", lastIdx);
-	if (firstYIdx != 0)
-		printf("fy=%lu ", firstYIdx);
-	if (lastYIdx != size_xyz)
-		printf("ly=%lu ", lastYIdx);
-	if (tripcount != size_xyz * size_xyz)
-		printf("sz=%lu ", size_xyz);
-
-	unsigned long maximumTripcount = size_xyz * size_xyz;
-
-	unsigned long skipCount = maximumTripcount - tripcount;
-
-	printf("skp=%lu ", skipCount);
-	
-	distType skipPercentage = ((distType)skipCount) / ((distType)maximumTripcount);
-
-	if (skipPercentage < 0)
-		printf("\n\n\nERROR: NEGATIVE SKIP PERCENTAGE\n\n\n");
-
-	printf("tripcount=%lu maxtripcount=%lu %g.3%%] ", tripcount, maximumTripcount, skipPercentage);
-#endif
-
+	printf("%fs]\n", ((float)t) / CLOCKS_PER_SEC);
 }

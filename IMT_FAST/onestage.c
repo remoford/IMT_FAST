@@ -10,6 +10,7 @@
 #include "gsl/gsl_statistics_double.h"
 #include "stdio.h"
 #include "time.h"
+#include "utility.h"
 
 #define _VERBOSE
 
@@ -130,7 +131,7 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 				printf("converged to minimum at\n");
 			}
 
-			printf("ll=%g [%.17f %.17f] size=%.3f %.3fs\n\n",
+			printf("ll=%.17e [%.17f %.17f] size=%.3f %.3fs\n\n",
 				s->fval,
 				gsl_vector_get(s->x, 0),
 				gsl_vector_get(s->x, 1),
@@ -220,7 +221,7 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
 void wald_adapt(const distType data[], double mu, double s, distType Y[], long data_size) {
 
 #ifdef _VERBOSE
-	printf("[mu=%f s=%f ", mu, s);
+	printf("[mu=%f s=%f\n", mu, s);
 #endif
 
 	distType gridSize = 0.01;
@@ -233,7 +234,7 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 	ll_previous = loglikelihood(Y, data_size);
 
 #ifdef _VERBOSE
-	printf("ll=%f ", ll_previous);
+	printf("  gridSize=%.17f E=%.17e eThr=%.17e ll=%.17e\n", gridSize, E, _ERROR_BOUND, ll_previous);
 #endif
 
 	while (E >= _ERROR_BOUND) {
@@ -246,7 +247,7 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 		E = fabs(ll_current - ll_previous);
 
 #ifdef _VERBOSE
-		printf("\ngridSize=%f E=%f eThr=%f ll=%f ", gridSize, E, _ERROR_BOUND, ll_current);
+		printf("  gridSize=%.17f E=%.17e eThr=%.17e ll=%.17e\n", gridSize, E, _ERROR_BOUND, ll_current);
 #endif
 
 		ll_previous = ll_current;
@@ -261,7 +262,8 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 }
 
 void wald_bin(const distType data[], double mu, double s, distType Y[], long dataSize, double gridSize) {
-
+	
+	//printf("dataSize=%d\n", dataSize);
 
 	double binSize = 0.1;
 
@@ -271,7 +273,7 @@ void wald_bin(const distType data[], double mu, double s, distType Y[], long dat
 			maxData = data[i];
 	}
 
-	long partitionLength = (long)(maxData / gridSize);
+	long partitionLength = (long)(maxData / gridSize) + 1;
 
 #ifdef __INTEL_COMPILER
 	distType * partition = (distType *)_mm_malloc(sizeof(distType)*partitionLength, 32);
@@ -291,15 +293,18 @@ void wald_bin(const distType data[], double mu, double s, distType Y[], long dat
 
 	waldpdf(partition, mu, s, C, partitionLength);
 
+	rightHandedRiemannSum((long)dataSize, data, gridSize, (long)partitionLength, binSize, C, Y);
+
+	/*
 	// Calculate the probability integral over the bin for each point in the data
 	for (long i = 0; i < dataSize; i++) {
+
 		// rightmost boundry of integration for this particular bin
 		long rightBound = (long)(((double)data[i]) / gridSize);
 
-		
 		if (rightBound > partitionLength)
-			printf("ERROR: rightBound=%d>partitionLength=%d ",rightBound,partitionLength);
-			
+			printf("ERROR: rightBound=%d>partitionLength=%d ", rightBound, partitionLength);
+
 
 		// the bin width in terms of indices
 		long goback = (long)(binSize / gridSize);
@@ -307,31 +312,26 @@ void wald_bin(const distType data[], double mu, double s, distType Y[], long dat
 		// the leftmost boundry of integration
 		long leftBound = rightBound - goback;
 
-		
+
 		if (leftBound < 0)
 			printf("ERROR: leftBound=%d<0 ", leftBound);
-			
+
+
+		//printf("leftBound=%ld ", leftBound);
+		//printf("rightBound=%ld ", rightBound);
 
 		// Calculate the right handed riemann sum
-		Y[i] = 0;
-		for (long j = leftBound + 1; j < rightBound; j++) {
+		Y[i] = 0.0;
+		//printf("\n");
+		for (long j = leftBound + 1; j <= rightBound; j++) {
 			Y[i] += C[j] * gridSize;
-		}
-
-		
-		if (Y[i] < -1000) {
-			printf("i=%d partitionLength=%d Y[i]=%f C[%d:%d]={", i, partitionLength, Y[i], leftBound+1, rightBound);
-
-			for (long j = leftBound + 1; j <= rightBound; j++) {
-				printf("%f ", C[j]);
-			}
-
-			printf("}");
-
+			//printf("C[%d]=%.17f\n", j, C[j]);
 		}
 		
-
+		//printf("Invg(%.17f)=Y[%d]=%.17f\n", data[i], i, Y[i]);
+		//exit(1);
 	}
+	*/
 
 #ifdef __INTEL_COMPILER
 	_mm_free(partition);
@@ -340,6 +340,7 @@ void wald_bin(const distType data[], double mu, double s, distType Y[], long dat
 	free(partition);
 	free(C);
 #endif
+
 }
 
 void
@@ -350,9 +351,13 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 
 
 	if (mu <= 0.0 || s <= 0.0)
-		printf("ERROR: nonpositive mu or s!\n");
+		printf("ERROR: waldpdf:nonpositive mu or s!\n");
 
 	distType a, b, bExp;
+
+	//FILE *f;
+	//f = fopen("onestage.log", "a");
+
 	for (long i = 0; i < dataSize; i++) {
 
 		errno = 0;
@@ -361,13 +366,13 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 
 		a = 1.0 / (s * pow(6.2831853071795862 * pow(data[i], 3.0), 0.5));
 
-		if (errno == ERANGE){
-			printf("ERROR: (a) range error! ");
+		if (errno == ERANGE) {
+			printf("ERROR: waldpdf:(a) range error! ");
 			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
 			anyError = 1;
 		}
-		if (errno == EDOM){
-			printf("ERROR: (a) domain error! ");
+		if (errno == EDOM) {
+			printf("ERROR: waldpdf:(a) domain error! ");
 			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
 			anyError = 1;
 		}
@@ -375,38 +380,43 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 		errno = 0;
 		b = -((pow(mu * data[i] - 1.0, 2.0)) / (2.0 * s * s * data[i]));
 
-		if (errno == EDOM){
-			printf("ERROR: (b) domain error! ");
+		if (errno == EDOM) {
+			printf("ERROR: waldpdf:(b) domain error! ");
 			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
 			anyError = 1;
 		}
-		if (errno == ERANGE){
-			printf("ERROR: (b) domain error! ");
+		if (errno == ERANGE) {
+			printf("ERROR: waldpdf:(b) domain error! ");
 			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
 			anyError = 1;
 		}
+
+#ifdef _DIST_SINGLE
+		if (b >= FLT_MAX_EXP)
+#else
+		if (b >= DBL_MAX_EXP)
+#endif
+			printf("ERROR: waldpdf:Predict exp(%f) overflow for type double!\n", b);
 
 		errno = 0;
 		bExp = exp(b);
 
-		if (b >= 710)
-			printf("Predict exp(%f) overflow for type double. ", b);
-
-		if (errno == ERANGE){
-			printf("ERROR: (bExp) range error! ");
+		if (errno == ERANGE) {
+			printf("ERROR: waldpdf:(bExp) range error! ");
 			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data, mu, s, b);
 			anyError = 1;
 		}
-		if (errno == EDOM){
-			printf("ERROR: (bExp) domain error! ");
+		if (errno == EDOM) {
+			printf("ERROR: waldpdf:(bExp) domain error! ");
 			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data, mu, s, b);
 			anyError = 1;
 		}
 
 		Y[i] = (distType)(a * bExp);
 
+
 		if (anyError != 0)
-			printf(" Y[%d]=inf\n", i);
+			printf(" Y[%d]=$f\n", i, Y[i]);
 
 
 		if (!(isfinite(a) && isfinite(b))) {
@@ -417,11 +427,30 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 			Y[i] = 0;
 		}
 
-		if (fpclassify(Y[i]) == FP_INFINITE)
-			printf("ERROR: Y[%d]=inf\n", i);
+		if (!isfinite(Y[i])) {
+			printf("ERROR: waldpdf:InvG(%f)=Y[%d]=inf mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, Y[i], mu, s);
+			Y[i] = 0;
+		}
 
-		if (Y[i] < -1000)
-			printf("waldpdf:Y[i]<-1000=%f ", Y[i]);
+		/*
+		if (Y[i] > 1) {
+			printf("ERROR: waldpdf:InvG(%f)=Y[%d]>1=%f mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, Y[i], mu, s);
+			Y[i] = 0;
+		}
+		*/
 
+		if (Y[i] < 0) {
+			printf("ERROR: waldpdf:InvG(%f)=Y[%d]<0=%f mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, Y[i], mu, s);
+			Y[i] = 0;
+		}
+
+		//if (i >= dataSize - 10)
+		//	printf("InvG(%f)=Y[%d]=%f\n", data[i], i, Y[i]);
+
+
+		//fprintf(f, "InvG(%f)=Y[%d]=%f\n", data[i], i, Y[i]);
+		
     }
+
+	//fclose(f);
 }
