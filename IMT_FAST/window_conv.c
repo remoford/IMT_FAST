@@ -12,7 +12,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 
     unsigned long size_conv = 2 * size_xyz;
 
-	printf("[sz=%luKB ", (sizeof(distType)*size_conv) / 1024);
+	printf("[sz=%luKB ", ((unsigned long)sizeof(distType)*size_conv) / 1024);
 
 	//if (size_xyz >= 65536)
 	//	printf("ERROR: convolution steps too big to count with an unsigned long int!!!!\n");

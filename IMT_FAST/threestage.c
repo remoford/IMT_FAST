@@ -39,11 +39,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 	double c_pd[120];
 	double d_p[6];
 
-#ifdef __INTEL_COMPILER
-	distType * l = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
-#else
-	distType * l = (distType *)malloc(sizeof(distType)*data_size);
-#endif
+	distType * l = (distType *)MALLOC(sizeof(distType)*data_size);
 
 	double c_flag[20];
 	double mtmp;
@@ -191,17 +187,11 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 #endif
 	for (emgfitnomle = 0; emgfitnomle < 20; emgfitnomle++) {
 
-#ifdef _OLD_THREESTAGE
-		convolv3waldpdf(c_pd[emgfitnomle], c_pd[20 + emgfitnomle],
-			c_pd[40 + emgfitnomle], c_pd[60 + emgfitnomle],
-			c_pd[80 + emgfitnomle],
-			c_pd[100 + emgfitnomle], data, l, data_size, 0.001);
-#else
+
 		threestage_adapt(data, c_pd[emgfitnomle], c_pd[20 + emgfitnomle],
 			c_pd[40 + emgfitnomle], c_pd[60 + emgfitnomle],
 			c_pd[80 + emgfitnomle],
 			c_pd[100 + emgfitnomle], l, data_size);
-#endif
 
 		double l_sum = (double)loglikelihood(l, data_size);
 
@@ -225,11 +215,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 
 	printf("max_ld=%f row_ld=%f\n", mtmp, (double)itmp + 1);
 
-#ifdef __INTEL_COMPILER
-	_mm_free(l);
-#else
-	free(l);
-#endif
+	FREE(l);
 }
 
 double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
@@ -257,11 +243,7 @@ double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
     m3 = fabs(m3);
     s3 = fabs(s3);
 
-#ifdef __INTEL_COMPILER
-	distType * Y = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
-#else
-	distType * Y = (distType *)malloc(sizeof(distType)*data_size);
-#endif
+	distType * Y = (distType *)MALLOC(sizeof(distType)*data_size);
 
     for (int i = 0; i < data_size; i++) {
 		Y[i] = 0;
@@ -273,11 +255,7 @@ double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
 
     double objective = penalty - ll;
 
-#ifdef __INTEL_COMPILER
-	_mm_free(Y);
-#else
-	free(Y);
-#endif
+	FREE(Y);
 
     return objective;
 }
@@ -335,17 +313,10 @@ void threestage_bin(const distType data[], double m1, double s1, double m2, doub
 
 	int partitionLength = (int)(maxData / gridSize) + 1;
 
-#ifdef __INTEL_COMPILER
-	distType *partition = (distType *)_mm_malloc(partitionLength * sizeof(double), 32);
-	distType *x = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
-	distType *y = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
-	distType *z = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
-#else
-	distType *partition = (distType *)malloc(partitionLength * sizeof(double));
-	distType *x = (distType *)malloc(partitionLength * sizeof(distType));
-	distType *y = (distType *)malloc(partitionLength * sizeof(distType));
-	distType *z = (distType *)malloc(partitionLength * sizeof(distType));
-#endif
+	distType *partition = (distType *)MALLOC(partitionLength * sizeof(double));
+	distType *x = (distType *)MALLOC(partitionLength * sizeof(distType));
+	distType *y = (distType *)MALLOC(partitionLength * sizeof(distType));
+	distType *z = (distType *)MALLOC(partitionLength * sizeof(distType));
 
 	// fill the partition
 	distType tally = 0;
@@ -361,18 +332,11 @@ void threestage_bin(const distType data[], double m1, double s1, double m2, doub
 
 	double logP1;
 
-	//binned_conv(z, y, data, partition, tmp, &logP1, partitionLength, dataSize, gridSize);
 	threestage_binconv(x, y, z, data, Y, &logP1, partitionLength, dataSize, gridSize);
 
-#ifdef __INTEL_COMPILER
-	_mm_free(partition);
-	_mm_free(x);
-	_mm_free(y);
-	_mm_free(z);
-#else
-	free(partition);
-	free(x);
-	free(y);
-	free(z);
-#endif
+	FREE(partition);
+	FREE(x);
+	FREE(y);
+	FREE(z);
+
 }

@@ -50,11 +50,8 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
 			12.7, 12.9, 11.9, 12.4, 11.1, 8.5, 14.5, 16.5, 12.4, 9.0, 11.1, 9.8, 11.1,
 			11.1, 8.8, 13.2, 17.6, 16.8, 10.9, 12.4, 8.5, 14.7 };
 
-#ifdef __INTEL_COMPILER
-		data = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
-#else
-		data = (distType *)malloc(sizeof(distType)*data_size);
-#endif
+		data = (distType *)MALLOC(sizeof(distType)*data_size);
+
 		for (int i = 0; i < data_size; i++)
 			data[i] = default_data[i];
 	}
@@ -196,11 +193,7 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
 		optimize_threestage(data, data_size, config);
 	}
 
-#ifdef __INTEL_COMPILER
-	_mm_free(data);
-#else
-	free(data);
-#endif
+	FREE(data);
 
 	t = clock() - t;
 	printf("total runtime = %fs\n", ((float)t) / CLOCKS_PER_SEC);

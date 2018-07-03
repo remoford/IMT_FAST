@@ -14,26 +14,14 @@
 
 #define _VERBOSE
 
-// This is based on a desired epsilon of 05
-// ERROR_BOUND = min(log(1+epsilon), -(1-epsilon))
-// see error analysis in the paper
-
-
-
 void optimize_onestage(const distType data[], long data_size, configStruct config) {
 	printf("onestagefitnomle\n\n");
 
-#ifdef __INTEL_COMPILER
-	distType * l = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
-#else
-	distType * l = (distType *)malloc(sizeof(distType)*data_size);
-#endif
+	distType * l = (distType *)MALLOC(sizeof(distType)*data_size);
 
 	double ld[16];
 
 	/* prepare statistical variables */
-
-
 	double * doubleData = (double *)malloc(sizeof(double)*data_size);
 	for (int i = 0; i < data_size; i++) 
 		doubleData[i] = (double)data[i];
@@ -174,11 +162,7 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 	printf("pd_max=[%f %f]\n\n", optimizedParams[ind_ld][0],
 		optimizedParams[ind_ld][1]);
 
-#ifdef __INTEL_COMPILER
-	_mm_free(l);
-#else
-	free(l);
-#endif
+	FREE(l);
 }
 
 double wald_loglikelihood(const gsl_vector * v, void *params)
@@ -198,22 +182,14 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
     m = fabs(m);
     s = fabs(s);
 
-#ifdef __INTEL_COMPILER
-	distType * Y = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
-#else
-	distType * Y = (distType *)malloc(sizeof(distType)*data_size);
-#endif
+	distType * Y = (distType *)MALLOC(sizeof(distType)*data_size);
 
     //waldpdf(data, m, s, Y, data_size);
 	wald_adapt(data, m, s, Y, data_size);
  
 	double ll = (double) loglikelihood(Y, data_size);
 
-#ifdef __INTEL_COMPILER
-	_mm_free(Y);
-#else
-	free(Y);
-#endif
+	FREE(Y);
 
     return penalty - ll;
 }
@@ -253,8 +229,6 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 		ll_previous = ll_current;
 	}
 
-
-
 #ifdef _VERBOSE
 	printf("]\n");
 #endif
@@ -275,71 +249,19 @@ void wald_bin(const distType data[], double mu, double s, distType Y[], long dat
 
 	long partitionLength = (long)(maxData / gridSize) + 1;
 
-#ifdef __INTEL_COMPILER
-	distType * partition = (distType *)_mm_malloc(sizeof(distType)*partitionLength, 32);
-#else
-	distType * partition = (distType *)malloc(sizeof(distType)*partitionLength);
-#endif
+	distType * partition = (distType *)MALLOC(sizeof(distType)*partitionLength);
 
 	for (long i = 0; i < partitionLength; i++) {
 		partition[i] = i * gridSize;
 	}
 
-#ifdef __INTEL_COMPILER
-	distType * C = (distType *)_mm_malloc(sizeof(distType)*partitionLength, 32);
-#else
-	distType * C = (distType *)malloc(sizeof(distType)*partitionLength);
-#endif
+	distType * C = (distType *)MALLOC(sizeof(distType)*partitionLength);
 
 	waldpdf(partition, mu, s, C, partitionLength);
 
 	rightHandedRiemannSum((long)dataSize, data, gridSize, (long)partitionLength, binSize, C, Y);
 
-	/*
-	// Calculate the probability integral over the bin for each point in the data
-	for (long i = 0; i < dataSize; i++) {
-
-		// rightmost boundry of integration for this particular bin
-		long rightBound = (long)(((double)data[i]) / gridSize);
-
-		if (rightBound > partitionLength)
-			printf("ERROR: rightBound=%d>partitionLength=%d ", rightBound, partitionLength);
-
-
-		// the bin width in terms of indices
-		long goback = (long)(binSize / gridSize);
-
-		// the leftmost boundry of integration
-		long leftBound = rightBound - goback;
-
-
-		if (leftBound < 0)
-			printf("ERROR: leftBound=%d<0 ", leftBound);
-
-
-		//printf("leftBound=%ld ", leftBound);
-		//printf("rightBound=%ld ", rightBound);
-
-		// Calculate the right handed riemann sum
-		Y[i] = 0.0;
-		//printf("\n");
-		for (long j = leftBound + 1; j <= rightBound; j++) {
-			Y[i] += C[j] * gridSize;
-			//printf("C[%d]=%.17f\n", j, C[j]);
-		}
-		
-		//printf("Invg(%.17f)=Y[%d]=%.17f\n", data[i], i, Y[i]);
-		//exit(1);
-	}
-	*/
-
-#ifdef __INTEL_COMPILER
-	_mm_free(partition);
-	_mm_free(C);
-#else
-	free(partition);
-	free(C);
-#endif
+	FREE(C);
 
 }
 
@@ -368,12 +290,12 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 
 		if (errno == ERANGE) {
 			printf("ERROR: waldpdf:(a) range error! ");
-			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
+			printf("data[%d]=%g mu=%g s=%g ", i, data[i], mu, s);
 			anyError = 1;
 		}
 		if (errno == EDOM) {
 			printf("ERROR: waldpdf:(a) domain error! ");
-			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
+			printf("data[%d]=%g mu=%g s=%g ", i, data[i], mu, s);
 			anyError = 1;
 		}
 
@@ -382,12 +304,12 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 
 		if (errno == EDOM) {
 			printf("ERROR: waldpdf:(b) domain error! ");
-			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
+			printf("data[%d]=%g mu=%g s=%g ", i, data[i], mu, s);
 			anyError = 1;
 		}
 		if (errno == ERANGE) {
 			printf("ERROR: waldpdf:(b) domain error! ");
-			printf("data[%d]=%g mu=%g s=%g ", i, data, mu, s);
+			printf("data[%d]=%g mu=%g s=%g ", i, data[i], mu, s);
 			anyError = 1;
 		}
 
@@ -403,12 +325,12 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 
 		if (errno == ERANGE) {
 			printf("ERROR: waldpdf:(bExp) range error! ");
-			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data, mu, s, b);
+			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data[i], mu, s, b);
 			anyError = 1;
 		}
 		if (errno == EDOM) {
 			printf("ERROR: waldpdf:(bExp) domain error! ");
-			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data, mu, s, b);
+			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data[i], mu, s, b);
 			anyError = 1;
 		}
 
@@ -416,7 +338,7 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 
 
 		if (anyError != 0)
-			printf(" Y[%d]=$f\n", i, Y[i]);
+			printf(" Y[%d]=%f\n", i, Y[i]);
 
 
 		if (!(isfinite(a) && isfinite(b))) {
@@ -428,7 +350,7 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 		}
 
 		if (!isfinite(Y[i])) {
-			printf("ERROR: waldpdf:InvG(%f)=Y[%d]=inf mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, Y[i], mu, s);
+			printf("ERROR: waldpdf:InvG(%f)=Y[%d]=inf mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, mu, s);
 			Y[i] = 0;
 		}
 

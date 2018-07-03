@@ -29,11 +29,7 @@ void binned_conv(const distType z[], const distType y[],
     int size_conv = 2 * size_xyz;
 
 	// C stores the result of the convolution
-#ifdef __INTEL_COMPILER
-    distType *C = (distType *) _mm_malloc(size_conv * sizeof(distType), 32);
-#else
-    distType *C = (distType *) malloc(size_conv * sizeof(distType));
-#endif
+	distType *C = (distType *)MALLOC(size_conv * sizeof(distType));
 
     for (int i = 0; i < size_conv; i++) {
 		C[i] = 0;
@@ -49,11 +45,7 @@ void binned_conv(const distType z[], const distType y[],
 
 	*logP0 = (double) loglikelihood(Y, size_XY);
 
-#ifdef __INTEL_COMPILER
-	_mm_free(C);
-#else
-	free(C);
-#endif
+	FREE(C);
 }
 
 void threestage_binconv(const distType x[], const distType y[], const distType z[], const distType data[], distType Y[], double *logP0, int size_xyz, int dataSize, double h) {
@@ -61,12 +53,7 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 	// Initialize C1 big enough for the first convolution
 	int size_conv1 = 2 * size_xyz;
 
-	// C stores the result of the convolution
-#ifdef __INTEL_COMPILER
-	distType *C1 = (distType *)_mm_malloc(size_conv1 * sizeof(distType), 32);
-#else
-	distType *C1 = (distType *)malloc(size_conv1 * sizeof(distType));
-#endif
+	distType *C1 = (distType *)MALLOC(size_conv1 * sizeof(distType));
 
 	for (int i = 0; i < size_conv1; i++)
 		C1[i] = 0;
@@ -78,12 +65,7 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 	for (int i = size_xyz; i < size_conv1; i++)
 		C1[i] = 0;
 
-	// Copy z pdf into an expanded array
-#ifdef __INTEL_COMPILER
-	distType *expandedZ = (distType *)_mm_malloc(size_conv1 * sizeof(distType), 32);
-#else
-	distType *expandedZ = (distType *)malloc(size_conv1 * sizeof(distType));
-#endif
+	distType *expandedZ = (distType *)MALLOC(size_conv1 * sizeof(distType));
 
 	for (int i = 0; i < size_conv1; i++)
 		expandedZ[i] = 0;
@@ -94,11 +76,7 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 	// Initialize C2 big enough for the second convolution
 	int size_conv2 = 2 * size_conv1;
 
-#ifdef __INTEL_COMPILER
-	distType *C2 = (distType *)_mm_malloc(size_conv2 * sizeof(distType), 32);
-#else
-	distType *C2 = (distType *)malloc(size_conv2 * sizeof(distType));
-#endif
+	distType *C2 = (distType *)MALLOC(size_conv2 * sizeof(distType));
 
 	window_conv(C1, expandedZ, C2, h, size_conv1);
 
@@ -106,15 +84,9 @@ void threestage_binconv(const distType x[], const distType y[], const distType z
 
 	*logP0 = (double)loglikelihood(Y, dataSize);
 
-#ifdef __INTEL_COMPILER
-	_mm_free(C1);
-	_mm_free(C2);
-	_mm_free(expandedZ);
-#else
-	free(C1);
-	free(C2);
-	free(expandedZ);
-#endif
+	FREE(C1);
+	FREE(C2);
+	FREE(expandedZ);
 
 	return;
 }

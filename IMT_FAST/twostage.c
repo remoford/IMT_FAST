@@ -39,11 +39,8 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 #endif
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 
-#ifdef __INTEL_COMPILER
-		distType * seedll = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
-#else
-		distType * seedll = (distType *)malloc(sizeof(distType)*data_size);
-#endif
+		distType * seedll = (distType *)MALLOC(sizeof(distType)*data_size);
+
 		conv2waldpdf(data, seeds[seedIdx][0],
 			seeds[seedIdx][1], seeds[seedIdx][2],
 			seeds[seedIdx][3], seedll, 0.01, 1,
@@ -51,11 +48,7 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 
 		double seedll_sum = (double)loglikelihood(seedll, data_size);
 
-#ifdef __INTEL_COMPILER
-		_mm_free(seedll);
-#else
-		free(seedll);
-#endif
+		FREE(seedll);
 
 		printf("\nstarting seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, seeds[seedIdx][0],
 			seeds[seedIdx][1], seeds[seedIdx][2],
@@ -158,22 +151,14 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 		gsl_vector_free(ss);
 		gsl_multimin_fminimizer_free(s);
 
-#ifdef __INTEL_COMPILER
-		distType * ll = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
-#else
-		distType * ll = (distType *)malloc(sizeof(distType)*data_size);
-#endif
+		distType * ll = (distType *)MALLOC(sizeof(distType)*data_size);
 
 		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], ll, 0.01, 1,
 			data_size);
 
 		double l_sum = (double)loglikelihood(ll, data_size);
 
-#ifdef __INTEL_COMPILER
-		_mm_free(ll);
-#else
-		free(ll);
-#endif
+		FREE(ll);
 
 		printf("\nfinished seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], l_sum);
 	}
@@ -181,14 +166,9 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 	/*  we previously optimized with a larger step size, recalculate with */
 	/*  a smaller stepsize after the fact */
 	printf("\nrecalculating canidate solutions with smaller stepsize\n");
-
-#ifdef __INTEL_COMPILER
-	distType * loglikelihoods = (distType *)_mm_malloc(sizeof(distType)*numseeds, 32);
-	distType * likelihoods = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
-#else
-	distType * loglikelihoods = (distType *)malloc(sizeof(distType)*numseeds);
-	distType * likelihoods = (distType *)malloc(sizeof(distType)*data_size);
-#endif
+	
+	distType * loglikelihoods = (distType *)MALLOC(sizeof(distType)*numseeds);
+	distType * likelihoods = (distType *)MALLOC(sizeof(distType)*data_size);
 
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
@@ -201,11 +181,7 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], loglikelihoods[seedIdx]);
 	}
 
-#ifdef __INTEL_COMPILER
-	_mm_free(likelihoods);
-#else
-	free(likelihoods);
-#endif
+	FREE(likelihoods);
 
 	// Find the best log likelihood
 	double max_ld = 0.0;
@@ -217,11 +193,7 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 		}
 	}
 
-#ifdef __INTEL_COMPILER
-	_mm_free(loglikelihoods);
-#else
-	free(loglikelihoods);
-#endif
+	FREE(loglikelihoods);
 
 	printf("\nBest fit: row_id=%d\n", row_id);
 	printf("loglikelihood=%f ", max_ld);
@@ -251,21 +223,13 @@ double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params
     m2 = fabs(m2);
     s2 = fabs(s2);
 
-#ifdef __INTEL_COMPILER
-	distType * Y = (distType *)_mm_malloc(sizeof(distType)*data_size, 32);
-#else
-	distType * Y = (distType *)malloc(sizeof(distType)*data_size);
-#endif
+	distType * Y = (distType *)MALLOC(sizeof(distType)*data_size);
 
     conv2waldpdf(data, m1, s1, m2, s2, Y, 0.01, 1, data_size);
 
 	double ll = (double) loglikelihood(Y, data_size);
 
-#ifdef __INTEL_COMPILER
-	_mm_free(Y);
-#else
-	free(Y);
-#endif
+	FREE(Y);
 
     return penalty - ll;
 }
@@ -389,15 +353,9 @@ void twostage_bin(const distType data[], double m1, double s1, double m2, double
 
 	int partitionLength = (int)(maxData / gridSize) + 1;
 
-#ifdef __INTEL_COMPILER
-	distType *partition = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
-	distType *y = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
-	distType *z = (distType *)_mm_malloc(partitionLength * sizeof(distType), 32);
-#else
-	distType *partition = (distType *)malloc(partitionLength * sizeof(distType));
-	distType *y = (distType *)malloc(partitionLength * sizeof(distType));
-	distType *z = (distType *)malloc(partitionLength * sizeof(distType));
-#endif
+	distType *partition = (distType *)MALLOC(partitionLength * sizeof(distType));
+	distType *y = (distType *)MALLOC(partitionLength * sizeof(distType));
+	distType *z = (distType *)MALLOC(partitionLength * sizeof(distType));
 
 	// fill the partition
 	distType tally = 0;
@@ -418,13 +376,7 @@ void twostage_bin(const distType data[], double m1, double s1, double m2, double
 	nn_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
 #endif
 
-#ifdef __INTEL_COMPILER
-	_mm_free(partition);
-	_mm_free(y);
-	_mm_free(z);
-#else
-	free(partition);
-	free(y);
-	free(z);
-#endif
+	FREE(partition);
+	FREE(y);
+	FREE(z);
 }

@@ -5,7 +5,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable:4996)
 
-void rightHandedRiemannSum(long dataSize, distType * data, double gridSize, long partitionLength, double binSize, distType * C, distType * Y) {
+void rightHandedRiemannSum(long dataSize, const distType data[], double gridSize, long partitionLength, double binSize, distType * C, distType * Y) {
 	for (long i = 0; i < dataSize; i++) {
 
 		// rightmost boundry of integration for this particular bin
@@ -42,15 +42,9 @@ void rightHandedRiemannSum(long dataSize, distType * data, double gridSize, long
 
 distType * readfile(char * filename, int * arraySize)
 {
-	
-
 	int readMax = 1000;
 
-#ifdef __INTEL_COMPILER
-	distType * readArray = (distType *)_mm_malloc(sizeof(distType) * readMax, 32);
-#else
-	distType * readArray = (distType *)malloc(sizeof(distType) * readMax);
-#endif
+	distType * readArray = (distType *)MALLOC(sizeof(distType) * readMax);
 
 	double currentNumber;
 
@@ -80,22 +74,13 @@ distType * readfile(char * filename, int * arraySize)
 	distType * returnArray = NULL;
 
 	if (readCount > 0) {
-#ifdef __INTEL_COMPILER
-		returnArray = (distType *) _mm_malloc(sizeof(distType)*readCount, 32);
-#else
-		returnArray = (distType *)malloc(sizeof(distType)*readCount);
-#endif
+		returnArray = (distType *)MALLOC(sizeof(distType)*readCount);
 
 		for (int i = 0; i < readCount; i++)
 			returnArray[i] = (distType)readArray[i];
 	}
 
-#ifdef __INTEL_COMPILER
-	_mm_free(readArray);
-#else
-	free(readArray);
-#endif
-
+	FREE(readArray);
 
 	*arraySize = readCount;
 
