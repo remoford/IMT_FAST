@@ -12,7 +12,7 @@ then
 	mkdir $out_dir
 	rm output/latest
 	ln -s $(pwd)/$out_dir $(pwd)/output/latest
-	qsub -N $datestamp -cwd $0 -e /dev/null -o /dev/null
+	qsub -N $datestamp -cwd $0 -e /dev/null -o /dev/null -l hostname=compute-0-13+compute-0-19+compute-0-5+compute-0-5+compute-0-13+compute-0-0+compute-0-8+compute-0-4+compute-0-8+compute-0-10+compute-0-14+compute-0-2+compute-0-12+compute-0-19+compute-0-18+compute-0-17+compute-0-9+compute-0-15+compute-0-7+compute-0-0+compute-0-11+compute-0-4+compute-0-14+compute-0-10+compute-0-12+compute-0-2 # -l hostname=compute-1-[0-19]
 	sleep 10
 	qstat
 	find $out_dir | grep out.txt | xargs -n1 head -n1
