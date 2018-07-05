@@ -177,7 +177,7 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
 
     double penalty = 0;
     if (m < 0 || s < 0)
-	penalty = 1000;
+		penalty = 1000;
 
     m = fabs(m);
     s = fabs(s);
@@ -271,21 +271,20 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
     // Y=(1./(s*(2*pi*t.^3).^(.5))).*exp(-((mu*t-1).^2)./(2*s^2*(t)));
     // https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution
 
-
 	if (mu <= 0.0 || s <= 0.0)
 		printf("ERROR: waldpdf:nonpositive mu or s!\n");
 
 	distType a, b, bExp;
 
-	//FILE *f;
-	//f = fopen("onestage.log", "a");
+	int underflow = 0;
+	int underflowBegin;
+	double percentUnderflow;
 
 	for (long i = 0; i < dataSize; i++) {
 
-		errno = 0;
-
 		int anyError = 0;
 
+		errno = 0;
 		a = 1.0 / (s * pow(6.2831853071795862 * pow(data[i], 3.0), 0.5));
 
 		if (errno == ERANGE) {
@@ -314,20 +313,56 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 		}
 
 #ifdef _DIST_SINGLE
-		if (b >= FLT_MAX_EXP)
+		if (b >= FLT_MAX_EXP) {
+			printf("ERROR: waldpdf:Predict exp(%f) overflow for type float! data[%d]=%g mu=%g s=%g\n", b, i, data[i], mu, s);
+			b = FLT_MAX_EXP - 1;
+		}
+		if (b <= FLT_MIN_EXP) {
+			b = FLT_MIN_EXP + 1;
+			if (!underflow) {
+				underflow = 1;
+				underflowBegin = i;
+				printf("{UNDERFLOW BEGIN data[%d]=%g ", i, data[i]);
+			}
+		} else {
+			if (underflow) {
+				percentUnderflow = 100* ((double)i - (double)underflowBegin) / ((double)dataSize - 1);
+				printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", i, data[i], dataSize, percentUnderflow, mu, s);
+				underflow = 0;
+			}
+		}
 #else
-		if (b >= DBL_MAX_EXP)
-#endif
-			printf("ERROR: waldpdf:Predict exp(%f) overflow for type double!\n", b);
+		if (b >= DBL_MAX_EXP) {
+			printf("ERROR: waldpdf:Predict exp(%f) overflow for type double! data[%d]=%g mu=%g s=%g\n", b, i, data[i], mu, s);
+			b = DBL_MAX_EXP - 1;
+		}
+		if (b <= DBL_MIN_EXP) {
+			b = DBL_MIN_EXP + 1;
+			if (!underflow) {
+				underflow = 1;
+				underflowBegin = i;
+				printf("{UNDERFLOW BEGIN data[%d]=%g ", i, data[i]);
+			}
+		} else {
+			if (underflow){
+				percentUnderflow = 100* ((double)i - (double)underflowBegin) / ((double)dataSize - 1);
+				printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", i, data[i], dataSize, percentUnderflow, mu, s);
+				underflow = 0;
+			}
+		}
+#endif	
 
 		errno = 0;
 		bExp = exp(b);
 
+		/*
 		if (errno == ERANGE) {
 			printf("ERROR: waldpdf:(bExp) range error! ");
 			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data[i], mu, s, b);
 			anyError = 1;
 		}
+		*/
+
 		if (errno == EDOM) {
 			printf("ERROR: waldpdf:(bExp) domain error! ");
 			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data[i], mu, s, b);
@@ -336,43 +371,32 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 
 		Y[i] = (distType)(a * bExp);
 
-
 		if (anyError != 0)
 			printf(" Y[%d]=%f\n", i, Y[i]);
 
-
-		if (!(isfinite(a) && isfinite(b))) {
-			/* Ok this fixup requires some explaination. Strictly wald(0) is indeterminate.
-			We replace it here with zero as that is the practical value and this avoids
-			blowing up a log likelihood calculation later! */
-			//printf("{a=%f b=%f data[i]=%f Y[i]=%f} ", a, b, data[i], (double)Y[i]);
-			Y[i] = 0;
+		/* Ok this fixup requires some explaination. Strictly wald(0) is indeterminate.
+		We replace it here with zero as that is the practical value and this avoids
+		blowing up a log likelihood calculation later! */
+		if (isnan(Y[i])) {
+			if (data[i] == 0)
+				Y[i] = 0;
+			else
+				printf("ERROR: NAN a=%f b=%f data[i]=%f Y[i]=%f\n", a, b, data[i], (double)Y[i]);
 		}
-
+			
 		if (!isfinite(Y[i])) {
 			printf("ERROR: waldpdf:InvG(%f)=Y[%d]=inf mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, mu, s);
 			Y[i] = 0;
 		}
 
-		/*
-		if (Y[i] > 1) {
-			printf("ERROR: waldpdf:InvG(%f)=Y[%d]>1=%f mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, Y[i], mu, s);
-			Y[i] = 0;
-		}
-		*/
-
 		if (Y[i] < 0) {
 			printf("ERROR: waldpdf:InvG(%f)=Y[%d]<0=%f mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, Y[i], mu, s);
 			Y[i] = 0;
 		}
-
-		//if (i >= dataSize - 10)
-		//	printf("InvG(%f)=Y[%d]=%f\n", data[i], i, Y[i]);
-
-
-		//fprintf(f, "InvG(%f)=Y[%d]=%f\n", data[i], i, Y[i]);
-		
     }
-
-	//fclose(f);
+	if (underflow) {
+		percentUnderflow = 100* ((double)dataSize - (double)underflowBegin - 1) / ((double)dataSize -1);
+		printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", dataSize, data[dataSize-1], dataSize, percentUnderflow, mu, s);
+		underflow = 0;
+	}
 }

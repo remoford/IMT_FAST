@@ -234,8 +234,7 @@ double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params
     return penalty - ll;
 }
 
-void conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2,
-	distType convolvedPDF[], double h, int adaptiveMode, int size_XY) {
+void conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2, distType convolvedPDF[], double h, int adaptiveMode, int size_XY) {
 
 	int flag = 0;		// remember if we applied the approximation
 	double eps = 0.01;		// a constant that is used in determining if the Dirac approximation should be applied.
@@ -341,7 +340,6 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 	printf("\n");
 #endif
 }
-
 
 void twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize) {
 

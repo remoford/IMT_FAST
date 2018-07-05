@@ -5,6 +5,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable:4996)
 
+distType compare(const void * a, const void * b) {
+	return (*(distType*)a - *(distType*)b);
+}
+
+
 void rightHandedRiemannSum(long dataSize, const distType data[], double gridSize, long partitionLength, double binSize, distType * C, distType * Y) {
 	for (long i = 0; i < dataSize; i++) {
 
@@ -30,7 +35,13 @@ void rightHandedRiemannSum(long dataSize, const distType data[], double gridSize
 		Y[i] = 0;
 		//printf("\n");
 		for (long j = leftBound + 1; j <= rightBound; j++) {
-			Y[i] += C[j] * gridSize;
+
+			// Rectangular integration
+			//Y[i] += C[j] * gridSize;
+
+			// Trapezodial integration
+			Y[i] += 0.5* gridSize * (C[j - 1] + C[j]);
+
 			//printf("C[%d]=%.17f\n", j, C[j]);
 		}
 

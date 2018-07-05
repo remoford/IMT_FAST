@@ -2,4 +2,6 @@
 
 extern distType * readfile(char * filename, int * arraySize);
 
-extern void rightHandedRiemannSum(long dataSize, distType * data, double gridSize, long partitionLength, double binSize, distType * C, distType * Y);
+extern void rightHandedRiemannSum(long dataSize, const distType * data, double gridSize, long partitionLength, double binSize, distType * C, distType * Y);
+
+extern distType compare(const void * a, const void * b);
