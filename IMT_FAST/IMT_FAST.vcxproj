@@ -119,6 +119,8 @@
       <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
       <EmitGAPDiagnosticsToFile>true</EmitGAPDiagnosticsToFile>
       <Parallelization>true</Parallelization>
+      <FloatingPointExpressionEvaluation>Default</FloatingPointExpressionEvaluation>
+      <FloatingPointModel>Strict</FloatingPointModel>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

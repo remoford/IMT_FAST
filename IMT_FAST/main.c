@@ -35,6 +35,7 @@ int main(int argc, const char *const argv[])
 	if (math_errhandling  &MATH_ERREXCEPT) {
 		if (fetestexcept(FE_INVALID)) printf("FE_INVALID raised\n");
 	}
+	*/
 
 	printf("FLT_MIN=%g\n", FLT_MIN);
 	printf("FLT_MAX=%g\n", FLT_MAX);
@@ -46,6 +47,12 @@ int main(int argc, const char *const argv[])
 	printf("DBL_MIN_EXP=%g\n", DBL_MIN_EXP);
 	printf("DBL_MAX_EXP=%g\n", DBL_MAX_EXP);
 
+	printf("LDBL_MIN=%g\n", LDBL_MIN);
+	printf("LDBL_MAX=%g\n", LDBL_MAX);
+	printf("LDBL_MIN_EXP=%g\n", LDBL_MIN_EXP);
+	printf("LDBL_MAX_EXP=%g\n", LDBL_MAX_EXP);
+
+	/*
 	printf("max limit for pow(x,3) : %g\n", pow(DBL_MAX, (1.0 / 3.0)));
 	
 	printf("second pow limit : %g\n", pow(DBL_MAX, 2.0 / 3.0) / pow(2 * 3.14159, 1.0 / 3.0));

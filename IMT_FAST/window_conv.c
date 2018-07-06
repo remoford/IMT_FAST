@@ -56,19 +56,34 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 			lastYIdx = i;
 	}
 
+	double opsPerIteration = 3;
 	unsigned long newLastYIdx;
     /* do the lopsided convolution */
+	double opCount = 0;
     for (unsigned long i = firstIdx; i < lastIdx; i++) {
 		if ((size_xyz - i) < lastYIdx)
 			newLastYIdx = size_xyz - i;
 		else
 			newLastYIdx = lastYIdx;
 
+		opCount += opsPerIteration * ((double)newLastYIdx - (double)firstYIdx);
+
+#pragma omp parallel for
 		for (unsigned long j = firstYIdx; j < newLastYIdx; j++)
 			C[i + j] += z[i] * y[j] * h;
     }
 
 	t = clock() - t;
 
-	printf("%fs]\n", ((float)t) / CLOCKS_PER_SEC);
+	double maxTripCount = opsPerIteration * (double)size_xyz * (double)size_xyz;
+
+	double skipPercentage = (maxTripCount - opCount) / maxTripCount;
+
+	printf("%f%% ", skipPercentage);
+
+	double runtime = ((float)t) / CLOCKS_PER_SEC;
+
+	double megaFlopsPerSecond = (opCount / runtime) / 1000000;
+
+	printf("%f Mflop/s %fs]\n", megaFlopsPerSecond, runtime);
 }

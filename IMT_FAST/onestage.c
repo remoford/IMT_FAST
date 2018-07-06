@@ -151,14 +151,16 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 	/* find the best optimized parameter set for all starting seeds tried */
 	double maxLikelihood = 0;
 	int ind_ld = 0;
+	printf("\n");
 	for (int i = 0; i < 16; i++) {
+		printf("ll=%f ms=%f s=%f\n", ld[i], optimizedParams[i][0], optimizedParams[i][1]);
 		if (ld[i] < maxLikelihood) {
 			maxLikelihood = ld[i];
 			ind_ld = i;
 		}
 	}
 
-	printf("max_ld=%f row_ld=%d\n", maxLikelihood, ind_ld);
+	printf("\nmax_ld=%f row_ld=%d\n", maxLikelihood, ind_ld);
 	printf("pd_max=[%f %f]\n\n", optimizedParams[ind_ld][0],
 		optimizedParams[ind_ld][1]);
 
@@ -326,14 +328,14 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 			}
 		} else {
 			if (underflow) {
-				percentUnderflow = 100* ((double)i - (double)underflowBegin) / ((double)dataSize - 1);
-				printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", i, data[i], dataSize, percentUnderflow, mu, s);
+				percentUnderflow = 100 * ((double)i - (double)underflowBegin - 1) / ((double)dataSize - 1);
+				printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", i - 1, data[i - 1], dataSize, percentUnderflow, mu, s);
 				underflow = 0;
 			}
 		}
 #else
 		if (b >= DBL_MAX_EXP) {
-			printf("ERROR: waldpdf:Predict exp(%f) overflow for type double! data[%d]=%g mu=%g s=%g\n", b, i, data[i], mu, s);
+			printf("ERROR: waldpdf:Predict exp(%lf) overflow for type double! data[%d]=%g mu=%g s=%g\n", b, i, data[i], mu, s);
 			b = DBL_MAX_EXP - 1;
 		}
 		if (b <= DBL_MIN_EXP) {
@@ -344,9 +346,9 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 				printf("{UNDERFLOW BEGIN data[%d]=%g ", i, data[i]);
 			}
 		} else {
-			if (underflow){
-				percentUnderflow = 100* ((double)i - (double)underflowBegin) / ((double)dataSize - 1);
-				printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", i, data[i], dataSize, percentUnderflow, mu, s);
+			if (underflow) {
+				percentUnderflow = 100 * ((double)i - (double)underflowBegin - 1) / ((double)dataSize - 1);
+				printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", i - 1, data[i - 1], dataSize, percentUnderflow, mu, s);
 				underflow = 0;
 			}
 		}
@@ -355,20 +357,13 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 		errno = 0;
 		bExp = exp(b);
 
-		/*
-		if (errno == ERANGE) {
-			printf("ERROR: waldpdf:(bExp) range error! ");
-			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data[i], mu, s, b);
-			anyError = 1;
-		}
-		*/
-
 		if (errno == EDOM) {
 			printf("ERROR: waldpdf:(bExp) domain error! ");
 			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data[i], mu, s, b);
 			anyError = 1;
 		}
 
+		// This is where the bad things happen, bExp has underflowed and then gets multiplied by a giving a non-underflowed value but with a loss of accuracy
 		Y[i] = (distType)(a * bExp);
 
 		if (anyError != 0)
@@ -377,16 +372,20 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 		/* Ok this fixup requires some explaination. Strictly wald(0) is indeterminate.
 		We replace it here with zero as that is the practical value and this avoids
 		blowing up a log likelihood calculation later! */
-		if (isnan(Y[i])) {
+		if (isnan(Y[i]) || !isfinite(Y[i])) {
 			if (data[i] == 0)
 				Y[i] = 0;
 			else
-				printf("ERROR: NAN a=%f b=%f data[i]=%f Y[i]=%f\n", a, b, data[i], (double)Y[i]);
+				printf("ERROR: NAN or Inf a=%f b=%f data[i]=%f Y[i]=%f\n", a, b, data[i], (double)Y[i]);
 		}
-			
-		if (!isfinite(Y[i])) {
-			printf("ERROR: waldpdf:InvG(%f)=Y[%d]=inf mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, mu, s);
-			Y[i] = 0;
+
+		if (Y[i] != 0) {
+			if (Y[i] >= DBL_MAX) {
+				printf("ERROR: Denormal value Y[%d]=%g >= DBL_MAX\n", i, Y[i]);
+			} else if (Y[i] <= DBL_MIN) {
+				//printf("ERROR: Denormal value Y[%d]=%g <= DBL_MIN\n", i, Y[i]);
+				Y[i] = 0;
+			}
 		}
 
 		if (Y[i] < 0) {
@@ -396,7 +395,7 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
     }
 	if (underflow) {
 		percentUnderflow = 100* ((double)dataSize - (double)underflowBegin - 1) / ((double)dataSize -1);
-		printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", dataSize, data[dataSize-1], dataSize, percentUnderflow, mu, s);
+		printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", dataSize-1, data[dataSize-1], dataSize, percentUnderflow, mu, s);
 		underflow = 0;
 	}
 }
