@@ -98,6 +98,8 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
 		printf("\n");
 
+		distType prevll = 0;
+		distType ll_delta = 0;
 		do {
 			iter++;
 
@@ -106,6 +108,10 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 
 			printf("iter=%d\n", (int)iter);
 			status = gsl_multimin_fminimizer_iterate(s);
+
+			ll_delta = prevll - s->fval;
+
+			prevll = s->fval;
 
 			t = clock() - t;
 
@@ -118,6 +124,13 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 			if (status == GSL_SUCCESS) {
 				printf("converged to minimum at\n");
 			}
+
+			
+			if (fabs(ll_delta) < TOL_FUN) {
+				printf("declaring victory!\n");
+				status = GSL_SUCCESS;
+			}
+			
 
 			printf("ll=%.17e [%.17f %.17f] size=%.3f %.3fs\n\n",
 				s->fval,
@@ -273,8 +286,18 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
     // Y=(1./(s*(2*pi*t.^3).^(.5))).*exp(-((mu*t-1).^2)./(2*s^2*(t)));
     // https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution
 
-	if (mu <= 0.0 || s <= 0.0)
+	int badParams = 0;
+	if (mu <= 0.0 || s <= 0.0) {
 		printf("ERROR: waldpdf:nonpositive mu or s!\n");
+		badParams = 1;
+	}
+
+	/*
+	if (s == 0)
+		s = distMin;
+	if (mu == 0)
+		mu = distMin;
+	*/
 
 	distType a, b, bExp;
 
@@ -299,6 +322,12 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 			printf("data[%d]=%g mu=%g s=%g ", i, data[i], mu, s);
 			anyError = 1;
 		}
+
+		if (a == HUGE_VAL) {
+			a = DBL_MAX;
+
+		}
+
 
 		errno = 0;
 		b = -((pow(mu * data[i] - 1.0, 2.0)) / (2.0 * s * s * data[i]));
@@ -376,7 +405,7 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 			if (data[i] == 0)
 				Y[i] = 0;
 			else
-				printf("ERROR: NAN or Inf a=%f b=%f data[i]=%f Y[i]=%f\n", a, b, data[i], (double)Y[i]);
+				printf("ERROR: NAN or Inf a=%f b=%f data[%d]=%f Y[%d]=%f\n", a, b, i, data[i], i, (double)Y[i]);
 		}
 
 		if (Y[i] != 0) {
@@ -398,4 +427,9 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 		printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", dataSize-1, data[dataSize-1], dataSize, percentUnderflow, mu, s);
 		underflow = 0;
 	}
+	/*
+	if (badParams)
+		for(int i = 0; i < dataSize; i++)
+			printf("Y[%d]=%f ", i, Y[i]);
+	*/
 }

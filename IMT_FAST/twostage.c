@@ -94,6 +94,9 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
 		printf("\n");
 
+
+		distType prevll = 0;
+		distType ll_delta = 0;
 		do {
 			iter++;
 
@@ -102,6 +105,11 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 			
 			printf("iter=%d\n", (int)iter);
 			status = gsl_multimin_fminimizer_iterate(s);
+
+			ll_delta = prevll - s->fval;
+
+			prevll = s->fval;
+
 			t = clock() - t;
 
 			size = gsl_multimin_fminimizer_size(s);
@@ -127,6 +135,11 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 #ifdef _VERBOSE
 			if (status == GSL_SUCCESS) {
 				printf("converged to minimum at\n");
+			}
+
+			if (fabs(ll_delta) < TOL_FUN) {
+				printf("declaring victory!\n");
+				status = GSL_SUCCESS;
 			}
 
 			/*
@@ -158,6 +171,7 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 
 		double l_sum = (double)loglikelihood(ll, data_size);
 
+
 		FREE(ll);
 
 		printf("\nfinished seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], l_sum);
@@ -170,6 +184,9 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 	distType * loglikelihoods = (distType *)MALLOC(sizeof(distType)*numseeds);
 	distType * likelihoods = (distType *)MALLOC(sizeof(distType)*data_size);
 
+#ifdef _PARALLEL_SEEDS
+#pragma omp parallel for
+#endif
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3],
@@ -184,11 +201,11 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 	FREE(likelihoods);
 
 	// Find the best log likelihood
-	double max_ld = 0.0;
+	distType max_ld = -distMax;
 	int row_id = 0;
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		if (loglikelihoods[seedIdx] > max_ld) {
-			max_ld = (double)loglikelihoods[seedIdx];
+			max_ld = loglikelihoods[seedIdx];
 			row_id = seedIdx;
 		}
 	}
@@ -216,7 +233,7 @@ double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params
 
     double penalty = 0;
     if (m1 < 0 || s1 < 0 || m2 < 0 || s2 < 0)
-	penalty = 1000;
+		penalty = 1000;
 
     m1 = fabs(m1);
     s1 = fabs(s1);

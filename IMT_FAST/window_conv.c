@@ -3,24 +3,19 @@
 #include "main.h"
 #include "time.h"
 
-#define _VERBOSE
-
 void window_conv(const distType z[], const distType y[], distType C[], double h, unsigned long size_xyz)
 {
 	clock_t t;
 	t = clock();
 
-    unsigned long size_conv = 2 * size_xyz;
+    //unsigned long size_conv = 2 * size_xyz;
 
-	printf("[sz=%luKB ", ((unsigned long)sizeof(distType)*size_conv) / 1024);
-
-	//if (size_xyz >= 65536)
-	//	printf("ERROR: convolution steps too big to count with an unsigned long int!!!!\n");
+	printf("[sz=%luKB ", ((unsigned long)sizeof(distType)*size_xyz) / 1024);
 	
 	distType threshold = 0;
 
-    for (unsigned long i = 0; i < size_conv; i++) {
-		C[i] = 0.0;
+    for (unsigned long i = 0; i < size_xyz; i++) {
+		C[i] = 0;
     }
 
     /* Find the highest zero-valued index */
@@ -33,7 +28,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
     }
 
 	unsigned long lastIdx = size_xyz - 1;
-	for (unsigned long i = size_xyz; i >= 0; i--) {
+	for (unsigned long i = size_xyz - 1; i > 0; i--) {
 		if (z[i] > threshold)
 			break;
 		else
@@ -49,7 +44,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 	}
 
 	unsigned long lastYIdx = size_xyz - 1;
-	for (unsigned long i = size_xyz; i >= 0; i--) {
+	for (unsigned long i = size_xyz - 1; i > 0; i--) {
 		if (y[i] > threshold)
 			break;
 		else
@@ -60,24 +55,32 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 	unsigned long newLastYIdx;
     /* do the lopsided convolution */
 	double opCount = 0;
-    for (unsigned long i = firstIdx; i < lastIdx; i++) {
-		if ((size_xyz - i) < lastYIdx)
-			newLastYIdx = size_xyz - i;
-		else
-			newLastYIdx = lastYIdx;
 
-		opCount += opsPerIteration * ((double)newLastYIdx - (double)firstYIdx);
+	if ((double)lastIdx - (double)firstIdx < 0 || (double)lastYIdx - (double)firstYIdx < 0) {
+		printf("Skipping entire convolution as at least one pdf is all zeros! ");
+	}
+	else {
+
+//#pragma omp parallel for
+		for (unsigned long i = firstIdx; i < lastIdx; i++) {
+			if ((size_xyz - i) < lastYIdx)
+				newLastYIdx = size_xyz - i;
+			else
+				newLastYIdx = lastYIdx;
+
+			opCount += opsPerIteration * ((double)newLastYIdx - (double)firstYIdx);
 
 #pragma omp parallel for
-		for (unsigned long j = firstYIdx; j < newLastYIdx; j++)
-			C[i + j] += z[i] * y[j] * h;
-    }
+			for (unsigned long j = firstYIdx; j < newLastYIdx; j++)
+				C[i + j] += z[i] * y[j] * h;
+		}
+	}
 
 	t = clock() - t;
 
 	double maxTripCount = opsPerIteration * (double)size_xyz * (double)size_xyz;
 
-	double skipPercentage = (maxTripCount - opCount) / maxTripCount;
+	double skipPercentage = 100*(maxTripCount - opCount) / maxTripCount;
 
 	printf("%f%% ", skipPercentage);
 

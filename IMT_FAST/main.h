@@ -15,15 +15,19 @@ extern int main(int argc, const char * const argv[]);
 
 //#define _PARALLEL_SEEDS
 
+#define TOL_FUN 0.0000001
+
 //#define _DIST_SINGLE
 
 #ifdef _DIST_SINGLE
 typedef float distType;
 #define distMin FLT_MIN
+#define distMax FLT_MAX
 
 #else
 typedef double distType;
 #define distMin DBL_MIN
+#define distMax DBL_MAX
 #endif
 
 #ifdef __INTEL_COMPILER

@@ -119,6 +119,8 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
 		printf("\n");
 
+		distType prevll = 0;
+		distType ll_delta = 0;
 		do {
 			iter++;
 
@@ -127,6 +129,10 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 
 			printf("iter=%d\n", (int)iter);
 			status = gsl_multimin_fminimizer_iterate(s);
+
+			ll_delta = prevll - s->fval;
+
+			prevll = s->fval;
 
 			t = clock() - t;
 
@@ -138,6 +144,11 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 
 			if (status == GSL_SUCCESS) {
 				printf("converged to minimum at\n");
+			}
+
+			if (fabs(ll_delta) < TOL_FUN) {
+				printf("declaring victory!\n");
+				status = GSL_SUCCESS;
 			}
 
 			printf("ll=%g [%.8f %.8f %.8f %.8f %.8f %.8f] size=%.3f %.3fs\n\n",

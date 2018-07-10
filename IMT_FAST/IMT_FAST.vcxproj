@@ -119,8 +119,15 @@
       <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
       <EmitGAPDiagnosticsToFile>true</EmitGAPDiagnosticsToFile>
       <Parallelization>true</Parallelization>
-      <FloatingPointExpressionEvaluation>Default</FloatingPointExpressionEvaluation>
-      <FloatingPointModel>Strict</FloatingPointModel>
+      <FloatingPointExpressionEvaluation>Extended</FloatingPointExpressionEvaluation>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OffloadOpenMP>Default</OffloadOpenMP>
+      <Optimization>MaxSpeedHighLevel</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
+      <UseIntelOptimizedHeaders>true</UseIntelOptimizedHeaders>
+      <AdditionalOptions>/Qlong-double</AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

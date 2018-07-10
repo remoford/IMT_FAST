@@ -5,13 +5,28 @@
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable:4996)
 
-distType compare(const void * a, const void * b) {
-	return (*(distType*)a - *(distType*)b);
+int compare(const void * a, const void * b) {
+
+	distType A = *(distType*)a;
+	distType B = *(distType*)b;
+
+	return (A > B) - (A < B);
 }
 
 
 void rightHandedRiemannSum(long dataSize, const distType data[], double gridSize, long partitionLength, double binSize, distType * C, distType * Y) {
+
+	long skippedBins = 0;
 	for (long i = 0; i < dataSize; i++) {
+
+		// Don't waste time calculating things twice 
+		if (i > 0) {
+			if (data[i] == data[i - 1]) {
+				Y[i] = Y[i - 1];
+				skippedBins++;
+				continue;
+			}
+		}
 
 		// rightmost boundry of integration for this particular bin
 		long rightBound = (long)(((double)data[i]) / gridSize);
@@ -48,6 +63,9 @@ void rightHandedRiemannSum(long dataSize, const distType data[], double gridSize
 		//printf("Invg(%.17f)=Y[%d]=%.17f\n", data[i], i, Y[i]);
 		//exit(1);
 	}
+
+	//printf("Skipped %ld bins %f%%\n", skippedBins, 100 * (double)skippedBins / (double)dataSize);
+
 }
 
 

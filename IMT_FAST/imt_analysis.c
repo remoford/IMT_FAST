@@ -70,12 +70,11 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
 		return;
 	}
 
-	qsort(data, 6, sizeof(distType), compare);
-
+	qsort(data, data_size, sizeof(distType), compare);
 
 	printf("data[%d]={\n", data_size);
 	for (int i = 0; i < data_size; i++) {
-		printf("%.17e ", data[i]);
+		printf("%.17f ", data[i]);
 		if (i % 8 == 7)
 			printf("\n");
 	}
