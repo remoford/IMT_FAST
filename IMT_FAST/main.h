@@ -15,7 +15,9 @@ extern int main(int argc, const char * const argv[]);
 
 //#define _PARALLEL_SEEDS
 
-#define TOL_FUN 0.0000001
+#define TOL_FUN 0.001
+#define TOL_X 0.001
+#define TOL_SIZE 0.001
 
 //#define _DIST_SINGLE
 

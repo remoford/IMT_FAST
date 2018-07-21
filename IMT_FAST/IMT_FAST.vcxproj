@@ -123,7 +123,6 @@
       <FloatingPointModel>Precise</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OffloadOpenMP>Default</OffloadOpenMP>
-      <Optimization>MaxSpeedHighLevel</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <UseIntelOptimizedHeaders>true</UseIntelOptimizedHeaders>

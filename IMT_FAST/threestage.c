@@ -140,7 +140,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 				break;
 
 			size = gsl_multimin_fminimizer_size(s);
-			status = gsl_multimin_test_size(size, 1e-4);
+			status = gsl_multimin_test_size(size, TOL_SIZE);
 
 			if (status == GSL_SUCCESS) {
 				printf("converged to minimum at\n");
@@ -148,7 +148,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 
 			if (fabs(ll_delta) < TOL_FUN) {
 				printf("declaring victory!\n");
-				status = GSL_SUCCESS;
+				//status = GSL_SUCCESS;
 			}
 
 			printf("ll=%g [%.8f %.8f %.8f %.8f %.8f %.8f] size=%.3f %.3fs\n\n",

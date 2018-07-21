@@ -13,6 +13,7 @@
 #include "stdio.h"
 #include "gsl/gsl_statistics_double.h"
 #include "time.h"
+#include "utility.h"
 
 
 #define _VERBOSE
@@ -27,12 +28,68 @@ typedef struct {
 } cell_wrap_3;
 
 
-void optimize_twostage(int data_size, const distType data[], int numseeds, double seeds[][4], configStruct config) {
+// Generate seeds for a twostage convolutional model using the partial method of cumulants.
+double ** twostage_seeds(const distType data[], long dataSize, int *numSeeds) {
+	/*
+	 It is a property of convolution that for any nth cumulant, the nth cumulant of the convolution is the sum of the nth cumulants of
+	the input distributions. With a regular method of cumulants we would match these cumulants to the data directly. However, because
+	the noise in the computed cumulants for the data gets large for higher order cumulants and small data set sizes, we really only want
+	to work with the first few where we have a reasonable confidence. As such, we simply generate a mesh of "ratios" and we split the
+	cumulants value between the left and right distribution according to these ratios.
+	*/
+
+	double mean = gsl_stats_mean(data, 1, dataSize);
+
+	double variance = gsl_stats_variance(data, 1, dataSize);
+
+	int numRatios = 5;
+
+	double ratios[5] = { 0.1, 0.2, 0.3, 0.4, 0.5 };
+
+	*numSeeds = numRatios * numRatios;
+
+	double ** seeds = (double **) MALLOC(sizeof(double *) * *numSeeds);
+
+	for (int seedIdx = 0; seedIdx < *numSeeds; seedIdx++) {
+
+		seeds[seedIdx] = (double *)MALLOC(sizeof(double) * 4);
+
+		int meanIdx = seedIdx % numRatios;
+		int varIdx = seedIdx / numRatios;
+
+		double leftMean = mean * ratios[meanIdx];
+		double rightMean = mean * (1 - ratios[meanIdx]);
+
+		double leftVariance = variance * ratios[varIdx];
+		double rightVariance = variance * (1 - ratios[varIdx]);
+
+
+		seeds[seedIdx][0] = 1 / leftMean;
+		seeds[seedIdx][1] = pow( leftVariance / pow(leftMean, 3), 0.5);
+
+		seeds[seedIdx][2] = 1 / rightMean;
+		seeds[seedIdx][3] = pow(rightVariance / pow(rightMean, 3), 0.5);
+
+	}
+	return seeds;
+}
+
+
+
+
+void optimize_twostage(int data_size, const distType data[], int numseeds, double ** seeds, configStruct config) {
 	printf("twostagefitnomle\n");
 
 	//numseeds = 5;
 
-	double optimizedParams[45][4];
+	//double optimizedParams[45][4];
+
+	double ** optimizedParams = (double **)MALLOC(sizeof(double *) * numseeds);
+	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+		optimizedParams[seedIdx] = (double *)MALLOC(sizeof(double) * 4);
+	}
+
+
 
 #ifdef _PARALLEL_SEEDS
 #pragma omp parallel for
@@ -97,6 +154,12 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 
 		distType prevll = 0;
 		distType ll_delta = 0;
+		double prevm1 = seeds[seedIdx][0];
+		double prevs1 = seeds[seedIdx][1];
+		double prevm2 = seeds[seedIdx][2];
+		double prevs2 = seeds[seedIdx][3];
+		int victory_TOL_X = 0;
+		int victory_TOL_FUN = 0;
 		do {
 			iter++;
 
@@ -113,15 +176,7 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 			t = clock() - t;
 
 			size = gsl_multimin_fminimizer_size(s);
-			//printf("It took me %d clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
-			printf("ll=%g [%f %f %f %f] size=%.3f %.3fs ",
-				s->fval,
-				gsl_vector_get(s->x, 0),
-				gsl_vector_get(s->x, 1),
-				gsl_vector_get(s->x, 2),
-				gsl_vector_get(s->x, 3),
-				size,
-				((float)t) / CLOCKS_PER_SEC);
+
 
 			if (iter % 1 == 0)
 				printf("\n\n");
@@ -130,27 +185,47 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 				break;
 
 			size = gsl_multimin_fminimizer_size(s);
-			status = gsl_multimin_test_size(size, 1e-4);
+			status = gsl_multimin_test_size(size, TOL_SIZE);
 
 #ifdef _VERBOSE
 			if (status == GSL_SUCCESS) {
-				printf("converged to minimum at\n");
+				printf("converged on default convergence criteria at\n");
 			}
 
+			if (euclideanDistance(gsl_vector_get(s->x, 0), gsl_vector_get(s->x, 1), gsl_vector_get(s->x, 2), gsl_vector_get(s->x, 3), 0, 0, prevm1, prevs1, prevm2, prevs2, 0, 0) < TOL_X) {
+				printf("declaring victory TOL_X!\n");
+				victory_TOL_X = 1;
+			}
+			prevm1 = gsl_vector_get(s->x, 0);
+			prevs1 = gsl_vector_get(s->x, 1);
+			prevm2 = gsl_vector_get(s->x, 2);
+			prevs2 = gsl_vector_get(s->x, 3);
+
 			if (fabs(ll_delta) < TOL_FUN) {
-				printf("declaring victory!\n");
-				status = GSL_SUCCESS;
+				printf("declaring victory TOL_FUN!\n");
+				victory_TOL_FUN = 1;
+				//status = GSL_SUCCESS;
 			}
 
 			/*
-			printf("%5d %.17f %.17f %.17f %.17f f() = %.17f size = %.3f\n",
-			(int)iter,
-			gsl_vector_get(s->x, 0),
-			gsl_vector_get(s->x, 1),
-			gsl_vector_get(s->x, 2),
-			gsl_vector_get(s->x, 3),
-			s->fval, size);
+			if (victory_TOL_X && victory_TOL_FUN) {
+				printf("converged on custom convergence critera at\n");
+				//status = GSL_SUCCESS;
+			}
+			else {
+				victory_TOL_FUN = 0;
+				victory_TOL_X = 0;
+			}
 			*/
+
+			printf("ll=%g [%f %f %f %f] size=%.3f %.3fs \n\n\n",
+				s->fval,
+				gsl_vector_get(s->x, 0),
+				gsl_vector_get(s->x, 1),
+				gsl_vector_get(s->x, 2),
+				gsl_vector_get(s->x, 3),
+				size,
+				((float)t) / CLOCKS_PER_SEC);
 #endif
 		} while (status == GSL_CONTINUE && iter < 10000);
 		printf("\n");
@@ -215,6 +290,14 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 	printf("\nBest fit: row_id=%d\n", row_id);
 	printf("loglikelihood=%f ", max_ld);
 	printf("p=[ %f %f %f %f ]\n", optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3]);
+
+
+
+	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+		FREE(optimizedParams[seedIdx]);
+	}
+	FREE(optimizedParams);
+
 
 	return;
 }

@@ -100,6 +100,12 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 
 		distType prevll = 0;
 		distType ll_delta = 0;
+		double prevm = paramSeeds[seedIdx][0];
+		double prevs = paramSeeds[seedIdx][1];
+		int victory_TOL_X = 0;
+		int victory_TOL_FUN = 0;
+		double delta_X;
+		double delta_FUN;
 		do {
 			iter++;
 
@@ -119,20 +125,44 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 				break;
 
 			size = gsl_multimin_fminimizer_size(s);
-			status = gsl_multimin_test_size(size, 1e-4);
+			status = gsl_multimin_test_size(size, TOL_SIZE);
 
 			if (status == GSL_SUCCESS) {
 				printf("converged to minimum at\n");
 			}
 
+			delta_X = euclideanDistance(gsl_vector_get(gsl_multimin_fminimizer_x(s), 0), gsl_vector_get(gsl_multimin_fminimizer_x(s), 1), 0, 0, 0, 0, prevm, prevs, 0, 0, 0, 0);
+			prevm = gsl_vector_get(gsl_multimin_fminimizer_x(s), 0);
+			prevs = gsl_vector_get(gsl_multimin_fminimizer_x(s), 1);
+
+			if (ll_delta < 0)
+				delta_FUN = DBL_MAX;
+			else
+				delta_FUN = ll_delta;
+
+			printf("delta_X=%f delta_FUN=%f\n", delta_X, delta_FUN);
+
+			if (delta_X < TOL_X) {
+				printf("declaring victory TOL_X!\n");
+				victory_TOL_X = 1;
+			}
+
+
 			
-			if (fabs(ll_delta) < TOL_FUN) {
-				printf("declaring victory!\n");
-				status = GSL_SUCCESS;
+			if (delta_FUN < TOL_FUN) {
+				printf("declaring victory TOL_FUN!\n");
+				victory_TOL_FUN = 1;
 			}
 			
+			if (victory_TOL_X && victory_TOL_FUN) {
+				printf("converged on custom convergence critera at\n");
+				//status = GSL_SUCCESS;
+			} else {
+				victory_TOL_FUN = 0;
+				victory_TOL_X = 0;
+			}
 
-			printf("ll=%.17e [%.17f %.17f] size=%.3f %.3fs\n\n",
+			printf("ll=%.17e [%.17f %.17f] size=%.17f %.3fs\n\n",
 				s->fval,
 				gsl_vector_get(s->x, 0),
 				gsl_vector_get(s->x, 1),
@@ -306,6 +336,42 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 	double percentUnderflow;
 
 	for (long i = 0; i < dataSize; i++) {
+
+
+		/*
+		printf("LOG OF GSL_LOG_DBL_MIN %f %f", log(GSL_LOG_DBL_MIN), GSL_LOG_DBL_MIN);
+
+		
+		distType logwald = -(1 / 3)*log(2 * M_PI*s*s*data[i]) - pow(1 - mu * data[i], 2) / (2 * s*s*data[i]);
+
+		if (logwald < distMin) {
+			//printf("UNDERFLOW ON LOGWALD, replacing with zero\n");
+			//Y[i] = 0;
+			Y[i] = exp(logwald);
+			continue;
+		} else {
+			Y[i] = exp(logwald);
+			continue;
+		}
+
+
+		*/
+
+		
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
 
 		int anyError = 0;
 

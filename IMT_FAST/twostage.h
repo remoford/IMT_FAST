@@ -9,7 +9,10 @@
 #include "gsl/gsl_multimin.h"
 #include "main.h"
 
-extern void optimize_twostage(int data_size, const distType data[], int numseeds, double seeds[][4], configStruct config);
+
+extern double ** twostage_seeds(const distType data[], long dataSize, int *numSeeds);
+
+extern void optimize_twostage(int data_size, const distType data[], int numseeds, double ** seeds, configStruct config);
 
 extern double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector *v, void *params);
 

@@ -14,6 +14,28 @@ int compare(const void * a, const void * b) {
 }
 
 
+double euclideanDistance(double a_m1, double a_s1, double a_m2, double a_s2, double a_m3, double a_s3, double b_m1, double b_s1, double b_m2, double b_s2, double b_m3, double b_s3) {
+
+
+	double delta_m1 = a_m1 - b_m1;
+	double delta_s1 = a_s1 - b_s1;
+	double delta_m2 = a_m2 - b_m2;
+	double delta_s2 = a_s2 - b_s2;
+	double delta_m3 = a_m3 - b_m3;
+	double delta_s3 = a_s3 - b_s3;
+
+	printf("delta_m1=%f delta_s1=%f delta_m2=%f delta_s2=%f delta_m3=%f delta_s3=%f\n", delta_m1, delta_s1, delta_m2, delta_s3, delta_m3, delta_s3);
+
+	double distance = sqrt(delta_m1*delta_m1 + delta_s1*delta_s1 + delta_m2*delta_m2 + delta_s2*delta_s2 + delta_m3*delta_m3 + delta_s3*delta_s3);
+
+	printf("calculated distance = %.17f\n", distance);
+	return distance;
+
+
+
+}
+
+
 void rightHandedRiemannSum(long dataSize, const distType data[], double gridSize, long partitionLength, double binSize, distType * C, distType * Y) {
 
 	long skippedBins = 0;
