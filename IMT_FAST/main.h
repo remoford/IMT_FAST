@@ -8,16 +8,25 @@
 
 extern int main(int argc, const char * const argv[]);
 
-// This is based on a desired epsilon of 05
-// ERROR_BOUND = min(log(1+epsilon), -(1-epsilon))
-// see error analysis in the paper
-#define _ERROR_BOUND 0.4
-
 //#define _PARALLEL_SEEDS
+
+// _GOFAST is for debugging purposes, it sets convergence criteria excessively loose and should not be used when you want useful results!
+//#define _GOFAST
 
 #define TOL_FUN 0.001
 #define TOL_X 0.001
+
+
+// This is based on a desired epsilon of 05
+// ERROR_BOUND = min(log(1+epsilon), -(1-epsilon))
+// see error analysis in the paper
+#ifdef _GOFAST
+#define _ERROR_BOUND 1
+#define TOL_SIZE 1
+#else
+#define _ERROR_BOUND 0.4
 #define TOL_SIZE 0.001
+#endif
 
 //#define _DIST_SINGLE
 

@@ -147,8 +147,6 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 				victory_TOL_X = 1;
 			}
 
-
-			
 			if (delta_FUN < TOL_FUN) {
 				printf("declaring victory TOL_FUN!\n");
 				victory_TOL_FUN = 1;
@@ -182,8 +180,7 @@ void optimize_onestage(const distType data[], long data_size, configStruct confi
 			optimizedParams[seedIdx][1]);
 
 		//onestagepdf2(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], l);
-		wald_adapt(data, optimizedParams[seedIdx][0],
-			optimizedParams[seedIdx][1], l, data_size);
+		wald_adapt(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], l, data_size);
 
 		double ll = (double)loglikelihood(l, data_size);
 
@@ -241,6 +238,9 @@ double wald_loglikelihood(const gsl_vector * v, void *params)
 
 void wald_adapt(const distType data[], double mu, double s, distType Y[], long data_size) {
 
+	clock_t t;
+	t = clock();
+
 #ifdef _VERBOSE
 	printf("[mu=%f s=%f\n", mu, s);
 #endif
@@ -275,14 +275,14 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 	}
 
 #ifdef _VERBOSE
-	printf("]\n");
+	printf("%fs]\n", ((float)t) / CLOCKS_PER_SEC);
 #endif
 	return;
 }
 
 void wald_bin(const distType data[], double mu, double s, distType Y[], long dataSize, double gridSize) {
 	
-	//printf("dataSize=%d\n", dataSize);
+	printf("dataSize=%d\n", dataSize);
 
 	double binSize = 0.1;
 
@@ -310,8 +310,7 @@ void wald_bin(const distType data[], double mu, double s, distType Y[], long dat
 
 }
 
-void
-waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
+void waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 {
     // Y=(1./(s*(2*pi*t.^3).^(.5))).*exp(-((mu*t-1).^2)./(2*s^2*(t)));
     // https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution
@@ -356,22 +355,6 @@ waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 
 
 		*/
-
-		
-
-		
-
-
-
-
-
-
-
-
-
-
-
-
 
 		int anyError = 0;
 

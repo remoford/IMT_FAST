@@ -14,10 +14,11 @@
 #include "gsl/gsl_statistics_double.h"
 #include "time.h"
 #include "utility.h"
+#include "gsl/gsl_statistics.h"
 
 
 #define _VERBOSE
-#define _BINNED_MODE
+//#define _TWOSTAGE_BINNED_MODE
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -29,7 +30,7 @@ typedef struct {
 
 
 // Generate seeds for a twostage convolutional model using the partial method of cumulants.
-double ** twostage_seeds(const distType data[], long dataSize, int *numSeeds) {
+double ** twostage_seeds(double mean, double variance, int *numSeeds) {
 	/*
 	 It is a property of convolution that for any nth cumulant, the nth cumulant of the convolution is the sum of the nth cumulants of
 	the input distributions. With a regular method of cumulants we would match these cumulants to the data directly. However, because
@@ -38,9 +39,6 @@ double ** twostage_seeds(const distType data[], long dataSize, int *numSeeds) {
 	cumulants value between the left and right distribution according to these ratios.
 	*/
 
-	double mean = gsl_stats_mean(data, 1, dataSize);
-
-	double variance = gsl_stats_variance(data, 1, dataSize);
 
 	int numRatios = 5;
 
@@ -73,9 +71,6 @@ double ** twostage_seeds(const distType data[], long dataSize, int *numSeeds) {
 	}
 	return seeds;
 }
-
-
-
 
 void optimize_twostage(int data_size, const distType data[], int numseeds, double ** seeds, configStruct config) {
 	printf("twostagefitnomle\n");
@@ -417,7 +412,7 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 
 		logP0 = (double)loglikelihood(convolvedPDF, size_XY);
 
-		printf("ll=%g h=%.17f E=%g EB=%g\n", logP0, h, E, _ERROR_BOUND);
+		printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP0, h, E, _ERROR_BOUND);
 
 		while (E >= _ERROR_BOUND) {
 
@@ -432,7 +427,7 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 			logP0 = logP1;
 
 #ifdef _VERBOSE
-			printf("ll=%g h=%.17f E=%g EB=%g\n", logP1, h, E, _ERROR_BOUND);
+			printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP1, h, E, _ERROR_BOUND);
 #endif
 		}
     }
@@ -468,7 +463,7 @@ void twostage_bin(const distType data[], double m1, double s1, double m2, double
 
 	double logP1;
 
-#ifdef _BINNED_MODE
+#ifdef _TWOSTAGE_BINNED_MODE
 	binned_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
 #else
 	nn_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);

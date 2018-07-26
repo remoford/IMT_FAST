@@ -11,6 +11,7 @@
 #include "loglikelihood.h"
 #include "time.h"
 #include "binned_conv.h"
+#include "gsl/gsl_statistics.h"
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -24,66 +25,95 @@ typedef struct {
 #define _GSL_GP_MAX_FIXED
 #define _BINNED_MODE
 
-void optimize_threestage(const distType data[], int data_size, configStruct config) {
 
-	int itmp;
-	cell_wrap_3 b_pcell[4];
-	static const double dv61[2] = { 0.8494, 0.0843 };
-	int emgfitnomle;
-	double d_P[120];
-	static const signed char b_id[60] =
-	{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 1, 1, 1, 1, 2, 2, 2,
-		3, 3, 4, 2, 2, 2, 3, 3, 4, 3, 3, 4, 4, 1, 2, 3, 4, 2, 3, 4, 3, 4, 4, 2, 3, 4,
-		3, 4, 4, 3, 4, 4, 4
-	};
-	double c_pd[120];
-	double d_p[6];
+double ** threestage_seeds(double mean, double variance, int *numSeeds) {
+	/*
+	This works similarly to twostage_seeds except that we then further split the right mean and right variance again for the second two distributions.
+	*/
+
+
+	int numRatios = 2;
+
+	double ratios[2] = { 0.1, 0.5 };
+
+	int numseeds_twostage;
+
+	double ** seeds_twostage = twostage_seeds(mean, variance, &numseeds_twostage);
+
+	*numSeeds = numRatios * numRatios * numseeds_twostage;
+
+	for (int seedIdx = 0; seedIdx < numseeds_twostage; seedIdx++)
+		FREE(seeds_twostage[seedIdx]);
+	FREE(seeds_twostage);
+
+	double ** seeds = (double **)MALLOC(sizeof(double *) * *numSeeds);
+
+	for (int seedIdx = 0; seedIdx < *numSeeds; seedIdx++) {
+
+		seeds[seedIdx] = (double *)MALLOC(sizeof(double) * 6);
+
+		int meanIdx = ((seedIdx / numseeds_twostage) % numRatios);
+		int varIdx = ((seedIdx / numseeds_twostage) / numRatios);
+		int twostageIdx = seedIdx % numseeds_twostage;
+
+		double leftMean = mean * ratios[meanIdx];
+		double rightMean = mean * (1 - ratios[meanIdx]);
+
+		double leftVariance = variance * ratios[varIdx];
+		double rightVariance = variance * (1 - ratios[varIdx]);
+
+
+		double ** seeds_twostage = twostage_seeds(rightMean, rightVariance, &numseeds_twostage);
+
+		seeds[seedIdx][0] = 1 / leftMean;
+		seeds[seedIdx][1] = pow(leftVariance / pow(leftMean, 3), 0.5);
+
+		seeds[seedIdx][2] = seeds_twostage[twostageIdx][0];
+		seeds[seedIdx][3] = seeds_twostage[twostageIdx][1];
+
+		seeds[seedIdx][4] = seeds_twostage[twostageIdx][2];
+		seeds[seedIdx][5] = seeds_twostage[twostageIdx][3];
+
+		for (int seedIdx = 0; seedIdx < numseeds_twostage; seedIdx++)
+			FREE(seeds_twostage[seedIdx]);
+		FREE(seeds_twostage);
+	}
+	return seeds;
+}
+
+void optimize_threestage(const distType data[], int data_size, configStruct config) {
 
 	distType * l = (distType *)MALLOC(sizeof(distType)*data_size);
 
-	double c_flag[20];
-	double mtmp;
+	double mean = gsl_stats_mean(data, 1, data_size);
 
-	printf("threestagefitnomle\n");
+	double variance = gsl_stats_variance(data, 1, data_size);
 
-	for (itmp = 0; itmp < 2; itmp++) {
-		b_pcell[0].f1[itmp] =
-			0.8494 + -0.25960000000000005 * (double)itmp;
-		b_pcell[1].f1[itmp] = dv61[itmp];
-		b_pcell[2].f1[itmp] =
-			0.1213 + 0.46849999999999997 * (double)itmp;
-		b_pcell[3].f1[itmp] =
-			0.1213 + -0.037000000000000005 * (double)itmp;
+	int numseeds;
+
+	double ** seeds = threestage_seeds(mean, variance, &numseeds);
+
+	printf("\nseeds[%d]:\n", numseeds);
+	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++)
+		printf("%f %f %f %f %f %f\n", seeds[seedIdx][0], seeds[seedIdx][1], seeds[seedIdx][2], seeds[seedIdx][3], seeds[seedIdx][4], seeds[seedIdx][5]);
+	printf("\n");
+
+
+	double ** optimizedParams = (double **)MALLOC(sizeof(double *) * numseeds);
+	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+		optimizedParams[seedIdx] = (double *)MALLOC(sizeof(double) * 6);
 	}
 
-	for (emgfitnomle = 0; emgfitnomle < 20; emgfitnomle++) {
-		for (itmp = 0; itmp < 2; itmp++) {
-			d_P[emgfitnomle + 20 * itmp] =
-				b_pcell[b_id[emgfitnomle] - 1].f1[itmp];
-			d_P[emgfitnomle + 20 * (itmp + 2)] =
-				b_pcell[b_id[20 + emgfitnomle] - 1].f1[itmp];
-			d_P[emgfitnomle + 20 * (itmp + 4)] =
-				b_pcell[b_id[40 + emgfitnomle] - 1].f1[itmp];
-		}
-	}
+	printf("threestagefitnomle\n\n");
 
-	memset(&c_pd[0], 0, 120U * sizeof(double));
+	distType * loglikelihoods = (distType *)MALLOC(sizeof(distType)*numseeds);
 
 #ifdef _PARALLEL_SEEDS
 #pragma omp parallel for
 #endif
-	for (emgfitnomle = 0; emgfitnomle < 17; emgfitnomle++) {
+	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 
-		printf("i=%f ", 1.0 + (double)emgfitnomle);
-
-		printf("P=[%f %f %f %f %f %f]\n", d_P[emgfitnomle],
-			d_P[20 + emgfitnomle], d_P[40 + emgfitnomle],
-			d_P[60 + emgfitnomle], d_P[80 + emgfitnomle],
-			d_P[100 + emgfitnomle]);
-
-		for (itmp = 0; itmp < 6; itmp++) {
-			d_p[itmp] = d_P[emgfitnomle + 20 * itmp];
-		}
+		printf("seed[%d]=[%f %f %f %f %f %f]\n\n", seedIdx, seeds[seedIdx][0], seeds[seedIdx][1], seeds[seedIdx][2], seeds[seedIdx][3], seeds[seedIdx][4], seeds[seedIdx][5]);
 
 		// https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
 
@@ -99,12 +129,13 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 
 		/* Starting point */
 		x = gsl_vector_alloc(6);
-		gsl_vector_set(x, 0, d_p[0]);
-		gsl_vector_set(x, 1, d_p[1]);
-		gsl_vector_set(x, 2, d_p[2]);
-		gsl_vector_set(x, 3, d_p[3]);
-		gsl_vector_set(x, 4, d_p[4]);
-		gsl_vector_set(x, 5, d_p[5]);
+
+		gsl_vector_set(x, 0, seeds[seedIdx][0]);
+		gsl_vector_set(x, 1, seeds[seedIdx][1]);
+		gsl_vector_set(x, 2, seeds[seedIdx][2]);
+		gsl_vector_set(x, 3, seeds[seedIdx][3]);
+		gsl_vector_set(x, 4, seeds[seedIdx][4]);
+		gsl_vector_set(x, 5, seeds[seedIdx][5]);
 
 		/* Set initial step sizes to 1 */
 		ss = gsl_vector_alloc(6);
@@ -113,7 +144,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 		/* Initialize method and iterate */
 		minex_func.n = 6;
 		minex_func.f = convolv_3invG_nov_loglikelihood;
-		minex_func.params = (void *) &config;
+		minex_func.params = (void *)&config;
 
 		s = gsl_multimin_fminimizer_alloc(T, 6);
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
@@ -163,70 +194,52 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 				((float)t) / CLOCKS_PER_SEC);
 		} while (status == GSL_CONTINUE && iter < 10000);
 
-		d_p[0] = fabs(gsl_vector_get(s->x, 0));
-		d_p[1] = fabs(gsl_vector_get(s->x, 1));
-		d_p[2] = fabs(gsl_vector_get(s->x, 2));
-		d_p[3] = fabs(gsl_vector_get(s->x, 3));
-		d_p[4] = fabs(gsl_vector_get(s->x, 4));
-		d_p[5] = fabs(gsl_vector_get(s->x, 5));
+		optimizedParams[seedIdx][0] = fabs(gsl_vector_get(s->x, 0));
+		optimizedParams[seedIdx][1] = fabs(gsl_vector_get(s->x, 1));
+		optimizedParams[seedIdx][2] = fabs(gsl_vector_get(s->x, 2));
+		optimizedParams[seedIdx][3] = fabs(gsl_vector_get(s->x, 3));
+		optimizedParams[seedIdx][4] = fabs(gsl_vector_get(s->x, 4));
+		optimizedParams[seedIdx][5] = fabs(gsl_vector_get(s->x, 5));
 
 		gsl_vector_free(x);
 		gsl_vector_free(ss);
 		gsl_multimin_fminimizer_free(s);
 
-		printf("  p=[%f %f %f %f %f %f]\n", d_p[0], d_p[1], d_p[2],
-			d_p[3], d_p[4], d_p[5]);
-
-		for (itmp = 0; itmp < 6; itmp++) {
-			c_pd[emgfitnomle + 20 * itmp] = d_p[itmp];
-		}
-
-
-		threestage_adapt(data, d_p[0], d_p[1], d_p[2], d_p[3], d_p[4], d_p[5], l, data_size);
+		threestage_adapt(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], optimizedParams[seedIdx][4], optimizedParams[seedIdx][5], l, data_size);
 
 		double l_sum = (double)loglikelihood(l, data_size);
 
-		/* FIXME FIXME FIXME we are not reporting the real values here */
-		printf("  l=%f hp=%f flag=%f E=%f WARNING HP FLAG AND E ARE BOGUS\n\n", l_sum, 9999.0, 9999.0, 9999.0);
+		loglikelihoods[seedIdx] = l_sum;
+
+		printf("finished seedIdx=%d p=[%f %f %f %f %f %f] ll=%f\n\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], optimizedParams[seedIdx][4], optimizedParams[seedIdx][5], l_sum);
 
 	}
 
-	printf("Recalculating canidate solutions with smaller stepsize\n");
 
-#ifdef _PARALLEL_SEEDS
-#pragma omp parallel for
-#endif
-	for (emgfitnomle = 0; emgfitnomle < 20; emgfitnomle++) {
-
-
-		threestage_adapt(data, c_pd[emgfitnomle], c_pd[20 + emgfitnomle],
-			c_pd[40 + emgfitnomle], c_pd[60 + emgfitnomle],
-			c_pd[80 + emgfitnomle],
-			c_pd[100 + emgfitnomle], l, data_size);
-
-		double l_sum = (double)loglikelihood(l, data_size);
-
-		c_flag[emgfitnomle] = l_sum;
-	}
-
-	emgfitnomle = 1;
-	mtmp = c_flag[0];
-	itmp = 0;
-
-	if (emgfitnomle < 20) {
-		while (emgfitnomle + 1 < 21) {
-			if (c_flag[emgfitnomle] > mtmp) {
-				mtmp = c_flag[emgfitnomle];
-				itmp = emgfitnomle;
-			}
-
-			emgfitnomle++;
+	// Find the best log likelihood
+	distType max_ld = -distMax;
+	int row_id = 0;
+	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+		if (loglikelihoods[seedIdx] > max_ld) {
+			max_ld = loglikelihoods[seedIdx];
+			row_id = seedIdx;
 		}
 	}
 
-	printf("max_ld=%f row_ld=%f\n", mtmp, (double)itmp + 1);
+	printf("max_ld=%f row_ld=%f [%f %f %f %f %f %f]\n", max_ld, row_id, optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3], optimizedParams[row_id][4], optimizedParams[row_id][5]);
 
 	FREE(l);
+
+	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++)
+		FREE(seeds[seedIdx]);
+	FREE(seeds);
+
+	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+		FREE(optimizedParams[seedIdx]);
+	}
+	FREE(optimizedParams);
+
+
 }
 
 double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
@@ -294,7 +307,7 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 
 	logP0 = (double)loglikelihood(Y, dataSize);
 
-	printf("ll=%f gridSize=%.17f E=%.17e EB=%g\n", logP0, gridSize, E, _ERROR_BOUND);
+	printf("ll=%f gridSize=%.17f E=%.17e EB=%g threestage\n", logP0, gridSize, E, _ERROR_BOUND);
 
 	while (E >= _ERROR_BOUND) {
 
@@ -308,7 +321,7 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 
 		logP0 = logP1;
 
-		printf("ll=%f gridSize=%.17f E=%.17e EB=%g\n", logP1, gridSize, E, _ERROR_BOUND);
+		printf("ll=%f gridSize=%.17f E=%.17e EB=%g threestage\n", logP1, gridSize, E, _ERROR_BOUND);
 	}
 	
 	printf("\n");
@@ -349,5 +362,49 @@ void threestage_bin(const distType data[], double m1, double s1, double m2, doub
 	FREE(x);
 	FREE(y);
 	FREE(z);
+
+}
+
+void threestage_double_adapt_bin(const distType data[], double m1, double s1, double m2, double s2, double m3, double s3, distType Y[], long dataSize, double gridSize) {
+
+	double maxData = 0;
+	for (long i = 0; i < dataSize; i++) {
+		if (data[i] > maxData)
+			maxData = data[i];
+	}
+
+	int partitionLength = (int)(maxData / gridSize) + 1;
+
+	distType *partition = (distType *)MALLOC(partitionLength * sizeof(double));
+	distType *x = (distType *)MALLOC(partitionLength * sizeof(distType));
+	distType *y = (distType *)MALLOC(partitionLength * sizeof(distType));
+	//distType *z = (distType *)MALLOC(partitionLength * sizeof(distType));
+
+	// fill the partition
+	distType tally = 0;
+	for (int i = 0; i < partitionLength; i++) {
+		partition[i] = tally;
+		tally += gridSize;
+	}
+
+	// evaluate the sub-distributions at each point in x
+	//waldpdf(partition, m1, s1, x, partitionLength);
+
+	conv2waldpdf(partition, m1, s1, m2, s2, x, gridSize, 1, partitionLength);
+
+	waldpdf(partition, m3, s3, y, partitionLength);
+
+	//waldpdf(partition, m3, s3, z, partitionLength);
+
+	double logP1;
+
+	//threestage_binconv(x, y, z, data, Y, &logP1, partitionLength, dataSize, gridSize);
+
+	binned_conv(x, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
+
+	FREE(partition);
+	FREE(x);
+	FREE(y);
+	//FREE(z);
 
 }

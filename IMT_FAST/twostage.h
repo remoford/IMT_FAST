@@ -10,7 +10,7 @@
 #include "main.h"
 
 
-extern double ** twostage_seeds(const distType data[], long dataSize, int *numSeeds);
+extern double ** twostage_seeds(double mean, double variance, int *numSeeds);
 
 extern void optimize_twostage(int data_size, const distType data[], int numseeds, double ** seeds, configStruct config);
 

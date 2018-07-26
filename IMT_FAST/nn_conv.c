@@ -10,12 +10,10 @@
 //#define _VERBOSE
 //#define _FASTIDXMETHOD
 #define _SLOWIDXMETHOD
+#define _WINDOW_MODE
 
 void
-nn_conv(const distType z[], const distType y[],
-			  const double X[], const double x[], distType Y[],
-			  double *logP0, int size_xyz, int size_XY,
-			  double h)
+nn_conv(const distType z[], const distType y[], const double X[], const double x[], distType Y[], double *logP0, int size_xyz, int size_XY, double h)
 {
 
     int allZero = 1;
