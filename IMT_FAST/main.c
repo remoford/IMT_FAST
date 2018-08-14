@@ -13,19 +13,15 @@
 #include "threestage.h"
 #include "time.h"
 
-static void main_IMT_analysis_April2017(const char *, const char * data_filename);
-
-static void main_IMT_analysis_April2017(const char *model, const char * data_filename)
-{
-    IMT_analysis_April2017(model, (char *) data_filename);
-}
 
 int main(int argc, const char *const argv[])
 {
     (void) argc;
     (void) argv;
 
-	// Precision can vary from machine to machine, show the ground truth
+	/*
+	Precision can vary from machine to machine, show the ground truth
+	*/
 	printf("FLT_MIN=%g\n", FLT_MIN);
 	printf("FLT_MAX=%g\n", FLT_MAX);
 	printf("FLT_MIN_EXP=%g\n", FLT_MIN_EXP);
@@ -42,7 +38,9 @@ int main(int argc, const char *const argv[])
 	printf("LDBL_MAX_EXP=%g\n", LDBL_MAX_EXP);
 
 
-	// Error checking depends on compiler options, show the ground truth
+	/*
+	Error checking depends on compiler options, show the ground truth
+	*/
 	errno = 0;
 	if (math_errhandling & MATH_ERREXCEPT) feclearexcept(FE_ALL_EXCEPT);
 
@@ -59,23 +57,31 @@ int main(int argc, const char *const argv[])
 	printf("\n");
 
 
-	// Parse command line arguments
+	/*
+	Parse command line arguments
+	*/
 	if (argc < 2) {
 		printf("No arguments given! Usage: <usage goes here>\n");
 	}
 	else if( strcmp(argv[1], "analysis") == 0 ) {
+		/*
+		Run a maximum likelihood analysis with model argv[2] and an optional data file argv[3]
+		*/
 
 		if (argc == 3)
-			main_IMT_analysis_April2017(argv[2], "");
+			IMT_analysis_April2017(argv[2], "");
 
 		else if (argc == 4)
-			main_IMT_analysis_April2017(argv[2], argv[3]);
+			IMT_analysis_April2017(argv[2], argv[3]);
 
 		else
 			printf("Invalid number of arguments for optimize mode. Please provide the model and optionally a data file like \"optimize twostage data/DMSO.txt\"\n");
 	}
 
 	else if (strcmp(argv[1], "single") == 0) {
+		/*
+		Run a single model evaluation
+		*/
 
 		clock_t t;
 		t = clock();
@@ -84,7 +90,9 @@ int main(int argc, const char *const argv[])
 			printf("Invalid number of arguments for single mode. Please provide the model and it's requisite parameters and optionally a data file like \"single twostage 0.03 0.2 0.5 0.45 data/DMSO.txt\"\n");
 
 		else if (strcmp(argv[2], "onestage") == 0) {
-
+			/*
+			Evaluate a one stage model with parameters m=argv[3] and s=argv[4] and an optional data file argv[5] and print its loglikelihood
+			*/
 			if (argc == 5 || argc == 6) {
 
 				int data_size;
@@ -113,6 +121,9 @@ int main(int argc, const char *const argv[])
 		}
 
 		else if (strcmp(argv[2], "twostage") == 0) {
+			/*
+			Evaluate a two stage model with parameters argv[3] through argv[6] and an optional data file argv[7] and print its loglikelihood
+			*/
 
 			if (argc == 7 || argc == 8) {
 
@@ -144,6 +155,9 @@ int main(int argc, const char *const argv[])
 		}
 
 		else if (strcmp(argv[2], "threestage") == 0) {
+			/*
+			Evaluate a three stage model with parameters argv[3] through argv[8] and an optional data file argv[9] and print its loglikelihood
+			*/
 
 			if (argc == 9 || argc == 10) {
 

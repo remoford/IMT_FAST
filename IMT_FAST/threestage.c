@@ -25,7 +25,9 @@ typedef struct {
 #define _GSL_GP_MAX_FIXED
 #define _BINNED_MODE
 
-
+/*
+Generate seeds for a threestage convolutional model using the partial method of cumulants.
+*/
 double ** threestage_seeds(double mean, double variance, int *numSeeds) {
 	/*
 	This works similarly to twostage_seeds except that we then further split the right mean and right variance again for the second two distributions.
@@ -81,24 +83,31 @@ double ** threestage_seeds(double mean, double variance, int *numSeeds) {
 	return seeds;
 }
 
+/*
+Optimize parameters for a three stage model using the data in the config struct for the given seeds
+*/
 void optimize_threestage(const distType data[], int data_size, configStruct config) {
 
 	distType * l = (distType *)MALLOC(sizeof(distType)*data_size);
 
-	double mean = gsl_stats_mean(data, 1, data_size);
+	/*
+	Get some seeds
+	*/
 
-	double variance = gsl_stats_variance(data, 1, data_size);
-
+	double * doubleData = (double *)MALLOC(sizeof(double)*data_size);
+	for (int i = 0; i < data_size; i++)
+		doubleData[i] = (double)data[i];
+	double mean = gsl_stats_mean(doubleData, 1, data_size);
+	double variance = gsl_stats_variance(doubleData, 1, data_size);
+	FREE(doubleData);
 	int numseeds;
-
 	double ** seeds = threestage_seeds(mean, variance, &numseeds);
-
 	printf("\nseeds[%d]:\n", numseeds);
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++)
 		printf("%f %f %f %f %f %f\n", seeds[seedIdx][0], seeds[seedIdx][1], seeds[seedIdx][2], seeds[seedIdx][3], seeds[seedIdx][4], seeds[seedIdx][5]);
 	printf("\n");
 
-
+	// Need to store optimized parameters for each seed
 	double ** optimizedParams = (double **)MALLOC(sizeof(double *) * numseeds);
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		optimizedParams[seedIdx] = (double *)MALLOC(sizeof(double) * 6);
@@ -108,28 +117,32 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 
 	distType * loglikelihoods = (distType *)MALLOC(sizeof(distType)*numseeds);
 
+	/*
+	For each seed
+	*/
 #ifdef _PARALLEL_SEEDS
 #pragma omp parallel for
 #endif
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+		/*
+		Optimize this seed
+		*/
 
 		printf("seed[%d]=[%f %f %f %f %f %f]\n\n", seedIdx, seeds[seedIdx][0], seeds[seedIdx][1], seeds[seedIdx][2], seeds[seedIdx][3], seeds[seedIdx][4], seeds[seedIdx][5]);
 
 		// https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
 
-		const gsl_multimin_fminimizer_type *T =
-			gsl_multimin_fminimizer_nmsimplex2;
-		gsl_multimin_fminimizer *s = NULL;
-		gsl_vector *ss, *x;
-		gsl_multimin_function minex_func;
+		const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;	// We are using the nelder-mead implementation
+		gsl_multimin_fminimizer *s = NULL;	// s is the minimizer itself
+		gsl_vector *ss, *x;					// ss is the step and x is the current position
+		gsl_multimin_function minex_func;	// this is the function that the minimizer will minimize
 
-		size_t iter = 0;
-		int status;
-		double size;
+		size_t iter = 0;					// Optimizer iteration count
+		int status;							// This lets us know when to stop optimizing or continue
+		double size;						// This is the size of the optimizers current simplex
 
 		/* Starting point */
 		x = gsl_vector_alloc(6);
-
 		gsl_vector_set(x, 0, seeds[seedIdx][0]);
 		gsl_vector_set(x, 1, seeds[seedIdx][1]);
 		gsl_vector_set(x, 2, seeds[seedIdx][2]);
@@ -146,12 +159,17 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 		minex_func.f = convolv_3invG_nov_loglikelihood;
 		minex_func.params = (void *)&config;
 
+		// Allocate the minimizer and set it up
 		s = gsl_multimin_fminimizer_alloc(T, 6);
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
 		printf("\n");
 
-		distType prevll = 0;
-		distType ll_delta = 0;
+		distType prevll = 0;				// We need to store the loglikelihood of prior iterations for comparison
+		distType ll_delta = 0;				// difference in these loglikelihoods
+
+		/*
+		Iterate the optimizer until we satisfy convergence criteria or we exceed the iteration limit
+		*/
 		do {
 			iter++;
 
@@ -242,6 +260,9 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 
 }
 
+/*
+Find and return the loglikelihood for a threestage model with the parameters in v given the data in params
+*/
 double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
 {
 	configStruct config = *(configStruct *)params;
@@ -284,6 +305,10 @@ double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
     return objective;
 }
 
+/*
+Evaluate the threestage model with parameters m1, s1, m2, s2, m3, s3 for each point in data[] into Y[] indirectly
+using adapatation to adjust the gridSize to ensure acceptable error
+*/
 void threestage_adapt(const distType data[], double m1, double s1, double m2, double s2, double m3, double s3, distType Y[], int dataSize) {
 
 	printf("starting (%g %g %g %g %g %g)\n", m1, s1, m2, s2, m3, s3);
@@ -327,6 +352,10 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 	printf("\n");
 }
 
+/*
+Evaluate the threestage model with parameters m1, s1, m2, s2, m3, s3 for each point in data[], the integrated
+probability of the sampling bin containing the point, into Y[] using the given gridSize
+*/
 void threestage_bin(const distType data[], double m1, double s1, double m2, double s2, double m3, double s3, distType Y[], long dataSize, double gridSize) {
 
 	double maxData = 0;
@@ -365,6 +394,11 @@ void threestage_bin(const distType data[], double m1, double s1, double m2, doub
 
 }
 
+/*
+Evaluate the threestage model with parameters m1, s1, m2, s2, m3, s3 for each point in data[], the integrated
+probability of the sampling bin containing the point, into Y[] using the given gridSize where the first two
+distributions are convolved using a seperate adapatation than the last convolution
+*/
 void threestage_double_adapt_bin(const distType data[], double m1, double s1, double m2, double s2, double m3, double s3, distType Y[], long dataSize, double gridSize) {
 
 	double maxData = 0;

@@ -2,10 +2,13 @@
 #include <float.h>
 #include "stdio.h"
 
+/*
+Calculate the loglikelihood of a set of likelihoods
+*/
 distType loglikelihood(distType likelihood[], long data_size){
 
-	distType llSum = 0;
-	distType ll = 0;
+	distType llSum = 0;	// loglikelihood of the set of observations
+	distType ll = 0;	// individual loglikelihood
 	for (long i = 0; i < data_size; i++) {
 
 		if (!isfinite(likelihood[i]))

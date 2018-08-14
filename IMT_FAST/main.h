@@ -28,7 +28,7 @@ extern int main(int argc, const char * const argv[]);
 #define TOL_SIZE 0.001
 #endif
 
-//#define _DIST_SINGLE
+#define _DIST_SINGLE
 
 #ifdef _DIST_SINGLE
 typedef float distType;

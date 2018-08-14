@@ -7,6 +7,8 @@
 #include <string.h>
 #include "omp.h"
 
+#ifdef _ENABLE_OLDTAILMASS
 extern double gp_max_fixed(double m, double s);
+#endif
 
 #endif

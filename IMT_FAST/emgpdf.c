@@ -7,9 +7,15 @@
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_statistics_double.h"
 
-/* Fit the EMG model */
-void optimize_emg(const distType data[], int data_size, configStruct config) {
+
+/*
+Optimize parameters for the emg model using the data in the config struct
+*/
+void optimize_emg(configStruct config) {
 	
+	distType * data = config.data;
+	int data_size = config.data_size;
+
 	distType * l = (distType *)malloc(sizeof(distType)*data_size);
 
 	printf("emgfitnomle\n\n");
@@ -178,6 +184,9 @@ void optimize_emg(const distType data[], int data_size, configStruct config) {
 	free(l);
 }
 
+/*
+Find and return the loglikelihood for an emg model with the parameters in v given the data in params
+*/
 double emgpdf_loglikelihood(const gsl_vector * v, void *params)
 {
 	configStruct config = *(configStruct *)params;
@@ -208,8 +217,10 @@ double emgpdf_loglikelihood(const gsl_vector * v, void *params)
     return penalty - ll;
 }
 
-void
-emgpdf(const distType X[], double l, double m, double s, distType Y[], int data_size)
+/*
+Evaluate the emg model with parameters l, m and s for each point in X[] of size data_size into Y[] by direct evaluation
+*/
+void emgpdf(const distType X[], double l, double m, double s, distType Y[], int data_size)
 {
     // Y=(l/2)*erfc((-X+m+l*s^2)/(s*2^(1/2))).*exp((l/2)*(-2*X+2*m+l*s^2));
     // https://en.wikipedia.org/wiki/Exponentially_modified_Gaussian_distribution

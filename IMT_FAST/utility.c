@@ -5,6 +5,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable:4996)
 
+/*
+Compare two distType numbers. This is used together with qsort elsewhere
+*/
 int compare(const void * a, const void * b) {
 
 	distType A = *(distType*)a;
@@ -13,9 +16,12 @@ int compare(const void * a, const void * b) {
 	return (A > B) - (A < B);
 }
 
+/*
+Calculate the euclidian distance between point a and point b in the three stage parameter space
 
+For use with two or one stage, set the unused coordinates to zero.
+*/
 double euclideanDistance(double a_m1, double a_s1, double a_m2, double a_s2, double a_m3, double a_s3, double b_m1, double b_s1, double b_m2, double b_s2, double b_m3, double b_s3) {
-
 
 	double delta_m1 = a_m1 - b_m1;
 	double delta_s1 = a_s1 - b_s1;
@@ -30,12 +36,15 @@ double euclideanDistance(double a_m1, double a_s1, double a_m2, double a_s2, dou
 
 	printf("calculated distance = %.17f\n", distance);
 	return distance;
-
-
-
 }
 
+/*
+Calculate the integrated probability for the interval cooresponding to the sampling bin containing the
+point on the provided probability density grid C of length partitionLength with spacing gridSize for
+each data point in data[] of size dataSize and store that probability into Y[]
 
+Despite the name, this is actually doing trapezoidal integration!
+*/
 void rightHandedRiemannSum(long dataSize, const distType data[], double gridSize, long partitionLength, double binSize, distType * C, distType * Y) {
 
 	long skippedBins = 0;
@@ -90,7 +99,10 @@ void rightHandedRiemannSum(long dataSize, const distType data[], double gridSize
 
 }
 
-
+/*
+Read a file in filename which is a list of numbers, one per line, into an array of size arraySize and
+return the pointer to that array
+*/
 distType * readfile(char * filename, int * arraySize)
 {
 	int readMax = 1000;

@@ -12,7 +12,7 @@
 
 extern double ** twostage_seeds(double mean, double variance, int *numSeeds);
 
-extern void optimize_twostage(int data_size, const distType data[], int numseeds, double ** seeds, configStruct config);
+extern void optimize_twostage(int numseeds, double ** seeds, configStruct config);
 
 extern double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector *v, void *params);
 

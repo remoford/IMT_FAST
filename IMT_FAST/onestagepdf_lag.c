@@ -8,8 +8,13 @@
 #include "gsl/gsl_multimin.h"
 #include "gsl/gsl_statistics_double.h"
 
-void optimize_onestagelag(const distType data[], int data_size, configStruct config) {
+/*
+Optimize parameters for a one stage lag model using the data in the config struct
+*/
+void optimize_onestagelag(configStruct config) {
 
+	distType * data = config.data;
+	int data_size = config.data_size;
 
 	distType * l = (distType *)malloc(sizeof(distType)*data_size);
 
@@ -207,8 +212,7 @@ double waldlag_loglikelihood(const gsl_vector * v, void *params)
     return penalty - ll;
 }
 
-void
-waldlagpdf(const distType X[], double mu, double s, double l,
+void waldlagpdf(const distType X[], double mu, double s, double l,
 	   distType Y[], int size_XY)
 {
     double a, b;

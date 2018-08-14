@@ -12,8 +12,15 @@
 #define _SLOWIDXMETHOD
 #define _WINDOW_MODE
 
-void
-nn_conv(const distType z[], const distType y[], const double X[], const double x[], distType Y[], double *logP0, int size_xyz, int size_XY, double h)
+/*
+Evaluating the algebraic convolution of vectors y and z of size size_xyz,
+for each point in data[] of size size_XY,
+find the value at the point, on the grid x with spacing h, nearest to the data point,
+into Y[] and find the loglikelihood logP0
+
+FIXME this really needs to be cleaned up...
+*/
+void nn_conv(const distType z[], const distType y[], const double X[], const double x[], distType Y[], double *logP0, int size_xyz, int size_XY, double h)
 {
 
     int allZero = 1;

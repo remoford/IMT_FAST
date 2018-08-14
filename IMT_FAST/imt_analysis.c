@@ -16,7 +16,9 @@
 #define _VERBOSE
 #define _CONV2WALD
 
-
+/*
+	Return a set of default hardcoded data. These are from the FUCCI data set.
+*/
 distType * get_default_data(int * data_size) {
 	printf("Using default FUCCI data\n");
 
@@ -52,15 +54,20 @@ distType * get_default_data(int * data_size) {
 		data[i] = default_data[i];
 
 	return data;
-
 }
 
+/*
+Run a maximum likelihood analysis using the model *model and the data in the file data_filename
+*/
 void IMT_analysis_April2017(const char *model, char * data_filename) {
 	printf("Using GSL minimizer\n");
 
 	clock_t t;
 	t = clock();
 
+	/*
+	Get the data the file or use default data
+	*/
 	int data_size;
 	distType * data;
 	if  (strcmp(data_filename, "") == 0) {
@@ -82,8 +89,14 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
 		return;
 	}
 
+	/*
+	Sorting the data is useful later on when we can lazily avoid recalculating repeated values
+	*/
 	qsort(data, data_size, sizeof(distType), compare);
 
+	/*
+	Print the data
+	*/
 	printf("\ndata[%d]={\n", data_size);
 	for (int i = 0; i < data_size; i++) {
 		printf("%.17f ", data[i]);
@@ -92,71 +105,38 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
 	}
 	printf("}\n");
 
+	/*
+	The config struct is used to pass the data through the optimizer
+	*/
 	configStruct config;
-
 	config.data = data;
 	config.data_size = data_size;
 
-	int emgfitnomle = 0;
-    int twostagefitnomle = 0;
-    int onestagelagnomle = 0;
-    int onestagefitnomle = 0;
-    int threestagefitnomle = 0;
+	/*
+	Choose model to fit
+	*/
+	if (strcmp(model, "emg") == 0)
+		optimize_emg(config);
 
-    const char *twostagefitnomle_str = "twostage";
-    const char *onestagelagnomle_str = "onestagelag";
-    const char *onestagefitnomle_str = "onestage";
-    const char *emgfitnomle_str = "emg";
-    const char *threestagefitnomle_str = "threestage";
-    const char *all_str = "all";
+	if (strcmp(model, "onestage") == 0)
+		optimize_onestage(config);
 
-	/* choose model to fit */
-    if (strcmp(model, twostagefitnomle_str) == 0) {
-		twostagefitnomle = 1;
+	if (strcmp(model, "onestagelag") == 0)
+		optimize_onestagelag(config);
 
-    } else if (strcmp(model, onestagelagnomle_str) == 0) {
-		onestagelagnomle = 1;
-
-    } else if (strcmp(model, onestagefitnomle_str) == 0) {
-		onestagefitnomle = 1;
-
-    } else if (strcmp(model, emgfitnomle_str) == 0) {
-		emgfitnomle = 1;
-
-    } else if (strcmp(model, threestagefitnomle_str) == 0) {
-		threestagefitnomle = 1;
-
-    } else if (strcmp(model, all_str) == 0) {
-		emgfitnomle = 1;
-		onestagefitnomle = 1;
-		onestagelagnomle = 1;
-		twostagefitnomle = 1;
-		threestagefitnomle = 1;
-
-    } else {
-		printf("No valid model was selected, quitting.\n");
-
-    }
-
-	if (emgfitnomle == 1) {
-		optimize_emg(data, data_size, config);
-	}
-
-	if (onestagefitnomle == 1) {
-		optimize_onestage(data, data_size, config);
-	}
-
-	if (onestagelagnomle == 1) {
-		optimize_onestagelag(data, data_size, config);
-	}
-
-	if (twostagefitnomle) {
+	if (strcmp(model, "twostage") == 0) {
 
 		int numseeds_twostage;
 
-		double mean = gsl_stats_mean(data, 1, data_size);
+		double * doubleData = (double *)MALLOC(sizeof(double)*data_size);
+		for (int i = 0; i < data_size; i++)
+			doubleData[i] = (double)data[i];
 
-		double variance = gsl_stats_variance(data, 1, data_size);
+		double mean = gsl_stats_mean(doubleData, 1, data_size);
+
+		double variance = gsl_stats_variance(doubleData, 1, data_size);
+
+		FREE(doubleData);
 
 		double ** seeds_twostage = twostage_seeds(mean, variance, &numseeds_twostage);
 
@@ -166,17 +146,15 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
 		printf("\n");
 
 
-		optimize_twostage(data_size, data, numseeds_twostage, seeds_twostage, config);
+		optimize_twostage(numseeds_twostage, seeds_twostage, config);
 
 		for (int seedIdx = 0; seedIdx < numseeds_twostage; seedIdx++)
 			FREE(seeds_twostage[seedIdx]);
 		FREE(seeds_twostage);
 	}
 
-
-	if (threestagefitnomle == 1) {
+	if (strcmp(model, "threestage") == 0)
 		optimize_threestage(data, data_size, config);
-	}
 
 	FREE(data);
 

@@ -9,7 +9,7 @@
 #include "gsl/gsl_multimin.h"
 #include "main.h"
 
-extern void optimize_onestage(const distType data[], long data_size, configStruct config);
+extern void optimize_onestage(configStruct config);
 
 extern void wald_adapt(const distType data[], double mu, double s, distType Y[], long dataSize);
 

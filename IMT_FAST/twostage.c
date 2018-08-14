@@ -18,7 +18,7 @@
 
 
 #define _VERBOSE
-//#define _TWOSTAGE_BINNED_MODE
+#define _TWOSTAGE_BINNED_MODE
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -29,7 +29,9 @@ typedef struct {
 } cell_wrap_3;
 
 
-// Generate seeds for a twostage convolutional model using the partial method of cumulants.
+/*
+Generate seeds for a twostage convolutional model using the partial method of cumulants.
+*/
 double ** twostage_seeds(double mean, double variance, int *numSeeds) {
 	/*
 	 It is a property of convolution that for any nth cumulant, the nth cumulant of the convolution is the sum of the nth cumulants of
@@ -72,32 +74,45 @@ double ** twostage_seeds(double mean, double variance, int *numSeeds) {
 	return seeds;
 }
 
-void optimize_twostage(int data_size, const distType data[], int numseeds, double ** seeds, configStruct config) {
+/*
+Optimize parameters for a one stage model using the data in the config struct for the given seeds
+*/
+void optimize_twostage(int numseeds, double ** seeds, configStruct config) {
 	printf("twostagefitnomle\n");
 
-	//numseeds = 5;
+	int data_size = config.data_size;
+	distType * data = config.data;
 
-	//double optimizedParams[45][4];
-
+	/*
+	We need somewhere to store the optimized parameters corresponding to the given seeds
+	*/
 	double ** optimizedParams = (double **)MALLOC(sizeof(double *) * numseeds);
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		optimizedParams[seedIdx] = (double *)MALLOC(sizeof(double) * 4);
 	}
 
 
-
+	/*
+	For each seed
+	*/
 #ifdef _PARALLEL_SEEDS
 #pragma omp parallel for
 #endif
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+		/*
+		Optimize this seed
+		*/
 
+		// This stores the likelihoods of the distribution with our starting seed parameters
 		distType * seedll = (distType *)MALLOC(sizeof(distType)*data_size);
 
+		// Calculate the likelihoods of observing the specified data points
 		conv2waldpdf(data, seeds[seedIdx][0],
 			seeds[seedIdx][1], seeds[seedIdx][2],
 			seeds[seedIdx][3], seedll, 0.01, 1,
 			data_size);
 
+		// Find the loglikelihood of the set of observations taken together
 		double seedll_sum = (double)loglikelihood(seedll, data_size);
 
 		FREE(seedll);
@@ -106,55 +121,53 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 			seeds[seedIdx][1], seeds[seedIdx][2],
 			seeds[seedIdx][3], seedll_sum);
 
-		// https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
-		const gsl_multimin_fminimizer_type *T =
-			gsl_multimin_fminimizer_nmsimplex2;
-		gsl_multimin_fminimizer *s = NULL;
-		gsl_vector *ss, *x;
-		gsl_multimin_function minex_func;
+		/*
+		Set up the GSL derivative free optimizer
+		https://www.gnu.org/software/gsl/doc/html/multimin.html#algorithms-without-derivatives
+		*/
 
-		size_t iter = 0;
-		int status;
-		double size;
+		const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex2;	// We are using the nelder-mead implementation
+		gsl_multimin_fminimizer *s = NULL;	// s is the minimizer itself
+		gsl_vector *ss, *x;					// ss is the step and x is the current position
+		gsl_multimin_function minex_func;	// this is the function that the minimizer will minimize
+		size_t iter = 0;					// Optimizer iteration count
+		int status;							// This lets us know when to stop optimizing or continue
+		double size;						// This is the size of the optimizers current simplex
 
-		/* Starting point */
+		/* Set the starting seed parameters */
 		x = gsl_vector_alloc(4);
 		gsl_vector_set(x, 0, seeds[seedIdx][0]);
 		gsl_vector_set(x, 1, seeds[seedIdx][1]);
 		gsl_vector_set(x, 2, seeds[seedIdx][2]);
 		gsl_vector_set(x, 3, seeds[seedIdx][3]);
 
-		/*
-		// Store previous state
-		gsl_vector *prev;
-		prev = gsl_vector_alloc(4);
-		gsl_vector_set_all(prev, 0);
-		*/
-
-		//int repeated = 0;
-
 		/* Set initial step sizes to 1 */
 		ss = gsl_vector_alloc(4);
 		gsl_vector_set_all(ss, 1.0);
 
-		/* Initialize method and iterate */
+		/* Tell minimizer what function to minimize and with what fixed data */
 		minex_func.n = 4;
 		minex_func.f = convolv_2invG_adapt_nov_loglikelihood;
 		minex_func.params = (void *) &config;
 
+		// Allocate the minimizer and set it up
 		s = gsl_multimin_fminimizer_alloc(T, 4);
 		gsl_multimin_fminimizer_set(s, &minex_func, x, ss);
 		printf("\n");
 
 
-		distType prevll = 0;
-		distType ll_delta = 0;
-		double prevm1 = seeds[seedIdx][0];
+		distType prevll = 0;	// We need to store the loglikelihood of prior iterations for comparison
+		distType ll_delta = 0;	// difference in these loglikelihoods
+		double prevm1 = seeds[seedIdx][0];	// We also store the prior iterations parameters
 		double prevs1 = seeds[seedIdx][1];
 		double prevm2 = seeds[seedIdx][2];
 		double prevs2 = seeds[seedIdx][3];
-		int victory_TOL_X = 0;
-		int victory_TOL_FUN = 0;
+		int victory_TOL_X = 0;		// Have we satisfied our change in parameters convergence criterion?
+		int victory_TOL_FUN = 0;	// Have we satisfied our loglikelihood convergence criterion?
+
+		/*
+		Iterate the optimizer until we satisfy convergence criteria or we exceed the iteration limit
+		*/
 		do {
 			iter++;
 
@@ -162,31 +175,36 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 			t = clock();
 			
 			printf("iter=%d\n", (int)iter);
+
+			// Iterate the optimizer one step
 			status = gsl_multimin_fminimizer_iterate(s);
 
+			// Look at the new loglikelihood and compare it with the old one
 			ll_delta = prevll - s->fval;
-
 			prevll = s->fval;
 
 			t = clock() - t;
 
+			// Get the "size" of the current simplex
 			size = gsl_multimin_fminimizer_size(s);
 
 
 			if (iter % 1 == 0)
 				printf("\n\n");
 
+			// If the optimizer wants us to stop, stop!
 			if (status)
 				break;
 
-			size = gsl_multimin_fminimizer_size(s);
+			// Check to see if simplex is small enough to stop iterating
 			status = gsl_multimin_test_size(size, TOL_SIZE);
 
-#ifdef _VERBOSE
+
 			if (status == GSL_SUCCESS) {
 				printf("converged on default convergence criteria at\n");
 			}
 
+			// Check the distance between this point int the parameter space and the prior one
 			if (euclideanDistance(gsl_vector_get(s->x, 0), gsl_vector_get(s->x, 1), gsl_vector_get(s->x, 2), gsl_vector_get(s->x, 3), 0, 0, prevm1, prevs1, prevm2, prevs2, 0, 0) < TOL_X) {
 				printf("declaring victory TOL_X!\n");
 				victory_TOL_X = 1;
@@ -196,6 +214,7 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 			prevm2 = gsl_vector_get(s->x, 2);
 			prevs2 = gsl_vector_get(s->x, 3);
 
+			// Check the difference in the loglikelihood between this point and the prior one
 			if (fabs(ll_delta) < TOL_FUN) {
 				printf("declaring victory TOL_FUN!\n");
 				victory_TOL_FUN = 1;
@@ -221,10 +240,12 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 				gsl_vector_get(s->x, 3),
 				size,
 				((float)t) / CLOCKS_PER_SEC);
-#endif
+
 		} while (status == GSL_CONTINUE && iter < 10000);
 		printf("\n");
 
+
+		// Store the optimized parameters
 		optimizedParams[seedIdx][0] = fabs(gsl_vector_get(s->x, 0));
 		optimizedParams[seedIdx][1] = fabs(gsl_vector_get(s->x, 1));
 		optimizedParams[seedIdx][2] = fabs(gsl_vector_get(s->x, 2));
@@ -234,13 +255,10 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 		gsl_vector_free(ss);
 		gsl_multimin_fminimizer_free(s);
 
+		// Calculate the loglikelihood of our optimized parameters
 		distType * ll = (distType *)MALLOC(sizeof(distType)*data_size);
-
-		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], ll, 0.01, 1,
-			data_size);
-
+		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], ll, 0.01, 1, data_size);
 		double l_sum = (double)loglikelihood(ll, data_size);
-
 
 		FREE(ll);
 
@@ -286,17 +304,17 @@ void optimize_twostage(int data_size, const distType data[], int numseeds, doubl
 	printf("loglikelihood=%f ", max_ld);
 	printf("p=[ %f %f %f %f ]\n", optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3]);
 
-
-
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		FREE(optimizedParams[seedIdx]);
 	}
 	FREE(optimizedParams);
 
-
 	return;
 }
 
+/*
+Find and return the loglikelihood for a twostage model with the parameters in v given the data in params
+*/
 double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params)
 {
     configStruct config = *(configStruct *)params;
@@ -329,6 +347,11 @@ double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params
     return penalty - ll;
 }
 
+/*
+Evaluate the twostage model with parameters m1, s1, m2, s2 for each point in data[] into convolvedPDF[] indirectly
+using adapatation to adjust the gridSize to ensure acceptable error with a starting grid spacing of hand a flag,
+adapativeMode ,for disabling adapation
+*/
 void conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2, distType convolvedPDF[], double h, int adaptiveMode, int size_XY) {
 
 	int flag = 0;		// remember if we applied the approximation
@@ -362,8 +385,10 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
     double sd_a = pow(v_a, 0.5);
     double sd_b = pow(v_b, 0.5);
 
-    /* reorder m and s so that the sub-distribution with the smallest
-       variance comes first.  So the fist part might be approximated as a Dirac delta. */
+    /*
+	Reorder m and s so that the sub-distribution with the smallest
+    variance comes first.  So the fist part might be approximated as a Dirac delta.
+	*/
     if (sd_a > sd_b) {
 	double tmp;
 	tmp = m_a;
@@ -391,23 +416,31 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
     double logP0;
     double logP1;
 
-    /* if the first pdf is very concentrated, check to see if it can be
-       approximated as a point-mass distribution */
+    /*
+	If the first pdf is very concentrated, check to see if it can be approximated as a
+	point-mass distribution
+	 */
     if (sd_a < 0.01 && checktailmass(m_a, s_a, m_b, s_b, eps, sd_a, sd_b)) {
 #ifdef _VERBOSE
 		printf("using dirac delta approximation\n");
 #endif
 
-		/* If there is not much probability in the tails of the convolution,
-		   we use a Dirac Delta for part 1.
-		   Flag is set to 1 to indicate this. */
+		/*
+		If there is not much probability in the tails of the convolution,
+		we use a Dirac Delta for part 1.
+		Flag is set to 1 to indicate this.
+		*/
 		double lag = 1 / m_a;
 
+		// Use the log model approximation rather than do the convolution
 		waldlagpdf(data, m_b, s_b, lag, convolvedPDF, size_XY);
 
 		flag = 1;
     } else {
 
+		/*
+		Calculuate the binned convolution
+		*/
 		twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h);
 
 		logP0 = (double)loglikelihood(convolvedPDF, size_XY);
@@ -415,6 +448,9 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 		printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP0, h, E, _ERROR_BOUND);
 
 		while (E >= _ERROR_BOUND) {
+			/*
+			Try again with a smaller grid size until the error is acceptable
+			*/
 
 			h = h * 0.5;	// Shrink the step size
 
@@ -436,14 +472,19 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 #endif
 }
 
+/*
+Evaluate the twostage model with parameters m1, s1, m2, s2 for each point in data[], the integrated probability of the sampling bin containing the point, into Y[] using the given gridSize
+*/
 void twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize) {
 
+	// Find the largest value in data
 	double maxData = 0;
 	for (long i = 0; i < dataSize; i++) {
 		if (data[i] > maxData)
 			maxData = data[i];
 	}
 
+	// The grids need to span the observed range of the data
 	int partitionLength = (int)(maxData / gridSize) + 1;
 
 	distType *partition = (distType *)MALLOC(partitionLength * sizeof(distType));

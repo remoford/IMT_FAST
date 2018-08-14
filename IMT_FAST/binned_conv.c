@@ -11,12 +11,21 @@
 //#define _VERBOSE
 #define _WINDOW_MODE
 
+/*
+Evaluating the algebraic convolution of vectors y and z of size size_xyz,
+for each point in data[] of size size_XY,
+compute the integrated probability of the sampling bin containing the data point,
+into Y[] using the given grid x with spacing h and find the compensated
+loglikelihood logP0
+
+FIXME do we even use the grid x anywhere in this function anyways?
+*/
 void binned_conv(const distType z[], const distType y[],
 			  const distType data[], const distType x[], distType Y[],
 			  double *logP0, int size_xyz, int size_XY,
 			  double h)
 {
-	// Sanity checking
+	// Sanity checking, make sure all the data points are positive! Negative stopping times are bad.
     int allZero = 1;
     for (int i = 0; i < size_XY; i++) {
 	if (data[i] > 0)
@@ -28,6 +37,7 @@ void binned_conv(const distType z[], const distType y[],
 	// C stores the result of the convolution
 	distType *C = (distType *)MALLOC(size_xyz * sizeof(distType));
 
+	// Initialize C with zeros
     for (int i = 0; i < size_xyz; i++) {
 		C[i] = 0;
     }
@@ -45,10 +55,14 @@ void binned_conv(const distType z[], const distType y[],
 	FREE(C);
 }
 
+/*
+Evaluating the algebraic convolution of vectors x, y and z of size size_xyz,
+for each point in data[] of dataSize,
+compute the integrated probability of the sampling bin containing the data point,
+into Y[] using the grid spacing h and find the compensated
+loglikelihood logP0
+*/
 void threestage_binconv(const distType x[], const distType y[], const distType z[], const distType data[], distType Y[], double *logP0, int size_xyz, int dataSize, double h) {
-
-	// Initialize C1 big enough for the first convolution
-	int size_conv1 = 2 * size_xyz;
 
 	distType *C1 = (distType *)MALLOC(size_xyz * sizeof(distType));
 

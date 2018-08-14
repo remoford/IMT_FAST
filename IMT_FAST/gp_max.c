@@ -5,6 +5,11 @@
 #include <gsl/gsl_poly.h>
 #include "main.h"
 
+#ifdef _ENABLE_OLDTAILMASS
+
+/*
+This is a helper function used in calculating the mass of the tail of an inverse gaussian distribution - see tailmass.c
+*/
 double gp_max_fixed(double m, double s)
 {
     double coeff[5];
@@ -49,3 +54,5 @@ double gp_max_fixed(double m, double s)
 
     return largest;
 }
+
+#endif

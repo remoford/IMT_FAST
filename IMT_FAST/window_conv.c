@@ -3,6 +3,15 @@
 #include "main.h"
 #include "time.h"
 
+/*
+Compute the windowed algebraic convolution of vectors y and z of size size_xyz into C with a grid size of h
+
+This skips inconsequential operations by picking a window for each vector and only convolve those windows. As
+the runtime of convolutions looks like O(n*m), even small reductions in either n or m can give large speedups.
+
+For a threshold of zero, inconsequential means that the result will be idential regardless of the use of
+windowing. However, for nonzero thresholds error is introduced. This is difficult to characterize.
+*/
 void window_conv(const distType z[], const distType y[], distType C[], double h, unsigned long size_xyz)
 {
 	clock_t t;
@@ -68,7 +77,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 			else
 				newLastYIdx = lastYIdx;
 
-			opCount += opsPerIteration * ((double)newLastYIdx - (double)firstYIdx);
+			opCount += opsPerIteration * (double)(newLastYIdx - firstYIdx);
 
 #pragma omp parallel for
 			for (unsigned long j = firstYIdx; j < newLastYIdx; j++)
@@ -80,7 +89,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 
 	double maxTripCount = opsPerIteration * (double)size_xyz * (double)size_xyz;
 
-	double skipPercentage = 100*(maxTripCount - opCount) / maxTripCount;
+	double skipPercentage = 100*((maxTripCount - opCount) / maxTripCount);
 
 	printf("%f%% ", skipPercentage);
 
