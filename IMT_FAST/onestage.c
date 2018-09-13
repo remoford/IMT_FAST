@@ -372,6 +372,10 @@ Evaluate the onestage model with parameters mu and s for each point in data[] in
 */
 void waldpdf(const distType data[], double mu, double s, distType Y[], long dataSize)
 {
+	
+	beginTraceFun("waldpdf");
+
+
     // Y=(1./(s*(2*pi*t.^3).^(.5))).*exp(-((mu*t-1).^2)./(2*s^2*(t)));
     // https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution
 
@@ -541,4 +545,7 @@ void waldpdf(const distType data[], double mu, double s, distType Y[], long data
 		for(int i = 0; i < dataSize; i++)
 			printf("Y[%d]=%f ", i, Y[i]);
 	*/
+
+
+	endTraceFun("waldpdf");
 }

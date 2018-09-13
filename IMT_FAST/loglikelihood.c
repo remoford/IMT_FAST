@@ -23,10 +23,13 @@ distType loglikelihood(distType likelihood[], long data_size){
 		if (!isfinite(ll)) {
 			printf("[OH NOES NONFINITE LOGLIKELIHOOD!!! likelihood=%f  ---  ", (double)likelihood[i]);
 						
-			for (long k = 0; k < data_size; k++)
+			for (long k = 0; k < data_size; k++) {
 				printf("%f ", likelihood[k]);
+				if (k % 20 == 0)
+					printf("\n");
+			}
 
-			printf("]");
+			printf("]\n");
 			ll = distMin;
 		}
 		

@@ -69,10 +69,10 @@ void rightHandedRiemannSum(long dataSize, const distType data[], double gridSize
 		long leftBound = rightBound - goback;
 
 		if (leftBound < 0)
-			printf("ERROR: leftBound=%d<0 ", leftBound);
+			printf("ERROR(rightHandedRiemannSum): leftBound=%d<0 ", leftBound);
 
 		if (rightBound > partitionLength)
-			printf("ERROR: rightBound=%d>partitionLength=%d ", rightBound, partitionLength);
+			printf("ERROR(rightHandedRiemannSum): rightBound=%d>partitionLength=%d ", rightBound, partitionLength);
 
 		//printf("leftBound=%ld ", leftBound);
 		//printf("rightBound=%ld ", rightBound);
@@ -148,4 +148,59 @@ distType * readfile(char * filename, int * arraySize)
 	*arraySize = readCount;
 
 	return returnArray;
+}
+
+
+double checkNormalization(distType C[], long data_size, double gridSize)
+{
+	double totalProbability = 0;
+
+	printf("data_size = %ld gridSize = %f ", data_size, gridSize);
+
+	for (long i = 0; i < data_size; i++) {
+
+		// Rectangular integration
+		totalProbability += C[i] * gridSize;
+
+		// Trapezodial integration
+		//totalProbability += 0.5* gridSize * (C[i - 1] + C[i]);
+
+		//printf("C[%d]=%.17f\n", j, C[j]);
+	}
+
+	printf("totalProbability = %f\n", totalProbability);
+
+	return totalProbability;
+}
+
+
+void beginTraceFun(char * functionName) {
+
+#ifdef _ENABLE_FUNCTION_TRACING
+
+	for (int i = 0; i < traceDepth; i++)
+		printf("\t");
+
+	printf("BEGIN %s\n", functionName);
+
+
+	traceDepth++;
+
+#endif
+
+}
+
+void endTraceFun(char * functionName) {
+
+#ifdef _ENABLE_FUNCTION_TRACING
+
+	traceDepth--;
+
+	for (int i = 0; i < traceDepth; i++)
+		printf("\t");
+
+	printf("END %s\n", functionName);
+
+#endif
+
 }

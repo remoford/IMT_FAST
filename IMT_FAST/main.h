@@ -8,7 +8,7 @@
 
 extern int main(int argc, const char * const argv[]);
 
-//#define _PARALLEL_SEEDS
+#define _PARALLEL_SEEDS
 
 // _GOFAST is for debugging purposes, it sets convergence criteria excessively loose and should not be used when you want useful results!
 //#define _GOFAST
@@ -28,7 +28,7 @@ extern int main(int argc, const char * const argv[]);
 #define TOL_SIZE 0.001
 #endif
 
-#define _DIST_SINGLE
+//#define _DIST_SINGLE
 
 #ifdef _DIST_SINGLE
 typedef float distType;
@@ -55,4 +55,10 @@ typedef struct  {
 
 } configStruct;
 
+
 #endif
+
+//#define _ENABLE_FUNCTION_TRACING
+
+// This stores the current function depth for printing function tracing information
+int traceDepth;

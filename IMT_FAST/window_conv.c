@@ -79,7 +79,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 
 			opCount += opsPerIteration * (double)(newLastYIdx - firstYIdx);
 
-#pragma omp parallel for
+//#pragma omp parallel for
 			for (unsigned long j = firstYIdx; j < newLastYIdx; j++)
 				C[i + j] += z[i] * y[j] * h;
 		}

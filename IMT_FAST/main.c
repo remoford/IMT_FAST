@@ -14,6 +14,10 @@
 #include "time.h"
 
 
+
+traceDepth = 0;
+
+
 int main(int argc, const char *const argv[])
 {
     (void) argc;

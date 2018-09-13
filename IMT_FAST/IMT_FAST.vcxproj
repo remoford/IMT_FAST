@@ -109,24 +109,25 @@
       <OpenMP>GenerateParallelCode</OpenMP>
       <OpenMPSupport>true</OpenMPSupport>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
-      <GenerateAlternateCodePaths>AVX2</GenerateAlternateCodePaths>
-      <UseProcessorExtensions>AVX2</UseProcessorExtensions>
-      <Mtune>skylake</Mtune>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <GenerateAlternateCodePaths>AVXI</GenerateAlternateCodePaths>
+      <UseProcessorExtensions>AVXI</UseProcessorExtensions>
+      <Mtune>Ivybridge</Mtune>
       <Cpp0xSupport>true</Cpp0xSupport>
       <EnableMatrixMultiplyLibraryCall>Yes</EnableMatrixMultiplyLibraryCall>
       <SuppressStartupBanner>false</SuppressStartupBanner>
       <EmitOptimizationDiagnosticsToFile>true</EmitOptimizationDiagnosticsToFile>
       <EmitGAPDiagnosticsToFile>true</EmitGAPDiagnosticsToFile>
       <Parallelization>true</Parallelization>
-      <FloatingPointExpressionEvaluation>Extended</FloatingPointExpressionEvaluation>
-      <FloatingPointModel>Precise</FloatingPointModel>
+      <FloatingPointExpressionEvaluation>Source</FloatingPointExpressionEvaluation>
+      <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OffloadOpenMP>Default</OffloadOpenMP>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <UseIntelOptimizedHeaders>true</UseIntelOptimizedHeaders>
       <AdditionalOptions>/Qlong-double</AdditionalOptions>
+      <FlushDenormalResultsToZero>false</FlushDenormalResultsToZero>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

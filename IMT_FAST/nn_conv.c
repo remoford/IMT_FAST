@@ -6,6 +6,7 @@
 #include "window_conv.h"
 #include "loglikelihood.h"
 #include "main.h"
+#include "utility.h"
 
 //#define _VERBOSE
 //#define _FASTIDXMETHOD
@@ -22,6 +23,7 @@ FIXME this really needs to be cleaned up...
 */
 void nn_conv(const distType z[], const distType y[], const double X[], const double x[], distType Y[], double *logP0, int size_xyz, int size_XY, double h)
 {
+	beginTraceFun("nn_conv");
 
     int allZero = 1;
     for (int i = 0; i < size_XY; i++) {
@@ -171,4 +173,7 @@ void nn_conv(const distType z[], const distType y[], const double X[], const dou
 #else
     free(C);
 #endif
+
+	endTraceFun("nn_conv");
+
 }

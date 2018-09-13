@@ -18,7 +18,7 @@
 
 
 #define _VERBOSE
-#define _TWOSTAGE_BINNED_MODE
+//#define _TWOSTAGE_BINNED_MODE
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -354,6 +354,12 @@ adapativeMode ,for disabling adapation
 */
 void conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2, distType convolvedPDF[], double h, int adaptiveMode, int size_XY) {
 
+
+
+	beginTraceFun("conv2waldpdf");
+
+	double initialH = h;
+
 	int flag = 0;		// remember if we applied the approximation
 	double eps = 0.01;		// a constant that is used in determining if the Dirac approximation should be applied.
 
@@ -416,6 +422,10 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
     double logP0;
     double logP1;
 
+	double totalProbability = 0;
+	double priorTotalProbability = 0;
+	double deltaTotalProbability = 0;
+
     /*
 	If the first pdf is very concentrated, check to see if it can be approximated as a
 	point-mass distribution
@@ -443,24 +453,40 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 		*/
 		twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h);
 
-		logP0 = (double)loglikelihood(convolvedPDF, size_XY);
+		//logP0 = (double)loglikelihood(convolvedPDF, size_XY);
 
-		printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP0, h, E, _ERROR_BOUND);
+		//printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP0, h, E, _ERROR_BOUND);
 
-		while (E >= _ERROR_BOUND) {
+		priorTotalProbability = checkNormalization(convolvedPDF, size_XY, initialH);
+
+		deltaTotalProbability = 1;
+
+		//while (E >= _ERROR_BOUND) {
+		while( deltaTotalProbability > 0.001 ){
 			/*
 			Try again with a smaller grid size until the error is acceptable
 			*/
 
 			h = h * 0.5;	// Shrink the step size
 
+			printf("Shrinking h... h = %f\n", h);
+
 			twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h);
 
-			logP1 = (double)loglikelihood(convolvedPDF, size_XY);
+			//logP1 = (double)loglikelihood(convolvedPDF, size_XY);
 
-			E = fabs(logP1 - logP0);
+			//E = fabs(logP1 - logP0);
 
-			logP0 = logP1;
+			//logP0 = logP1;
+
+			totalProbability = checkNormalization(convolvedPDF, size_XY, initialH);
+
+			deltaTotalProbability = fabs(priorTotalProbability - totalProbability);
+
+			printf("totalProbability = %.17f deltaTotalProbability = %.17f\n", totalProbability, deltaTotalProbability);
+
+			priorTotalProbability = totalProbability;
+
 
 #ifdef _VERBOSE
 			printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP1, h, E, _ERROR_BOUND);
@@ -468,14 +494,19 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 		}
     }
 #ifdef _VERBOSE
-	printf("\n");
+	//printf("\n");
 #endif
+
+	endTraceFun("conv2waldpdf");
 }
 
 /*
 Evaluate the twostage model with parameters m1, s1, m2, s2 for each point in data[], the integrated probability of the sampling bin containing the point, into Y[] using the given gridSize
 */
 void twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize) {
+
+	beginTraceFun("twostage_bin");
+
 
 	// Find the largest value in data
 	double maxData = 0;
@@ -513,4 +544,7 @@ void twostage_bin(const distType data[], double m1, double s1, double m2, double
 	FREE(partition);
 	FREE(y);
 	FREE(z);
+
+
+	endTraceFun("twostage_bin");
 }

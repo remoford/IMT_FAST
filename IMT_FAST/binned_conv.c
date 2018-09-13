@@ -25,6 +25,9 @@ void binned_conv(const distType z[], const distType y[],
 			  double *logP0, int size_xyz, int size_XY,
 			  double h)
 {
+
+	beginTraceFun("binned_conv");
+
 	// Sanity checking, make sure all the data points are positive! Negative stopping times are bad.
     int allZero = 1;
     for (int i = 0; i < size_XY; i++) {
@@ -53,6 +56,9 @@ void binned_conv(const distType z[], const distType y[],
 	*logP0 = (double) loglikelihood(Y, size_XY);
 
 	FREE(C);
+
+
+	endTraceFun("binned_conv");
 }
 
 /*

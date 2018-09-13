@@ -12,6 +12,7 @@
 #include "time.h"
 #include "binned_conv.h"
 #include "gsl/gsl_statistics.h"
+#include "utility.h"
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -311,6 +312,8 @@ using adapatation to adjust the gridSize to ensure acceptable error
 */
 void threestage_adapt(const distType data[], double m1, double s1, double m2, double s2, double m3, double s3, distType Y[], int dataSize) {
 
+	beginTraceFun("threestage_adapt");
+
 	printf("starting (%g %g %g %g %g %g)\n", m1, s1, m2, s2, m3, s3);
 
 	distType gridSize = 0.01;
@@ -328,7 +331,8 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 
 	double E = DBL_MAX;
 
-	threestage_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
+	//threestage_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
+	threestage_double_adapt_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
 
 	logP0 = (double)loglikelihood(Y, dataSize);
 
@@ -338,7 +342,10 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 
 		gridSize = gridSize * 0.5;	// Shrink the step size
 
-		threestage_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
+		printf("Shrinking gridSize... gridSize = %f\n", gridSize);
+
+		//threestage_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
+		threestage_double_adapt_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
 
 		logP1 = (double)loglikelihood(Y, dataSize);
 
@@ -349,7 +356,7 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 		printf("ll=%f gridSize=%.17f E=%.17e EB=%g threestage\n", logP1, gridSize, E, _ERROR_BOUND);
 	}
 	
-	printf("\n");
+	endTraceFun("threestage_adapt");
 }
 
 /*
@@ -401,6 +408,9 @@ distributions are convolved using a seperate adapatation than the last convoluti
 */
 void threestage_double_adapt_bin(const distType data[], double m1, double s1, double m2, double s2, double m3, double s3, distType Y[], long dataSize, double gridSize) {
 
+
+	beginTraceFun("threestage_double_adapt_bin");
+
 	double maxData = 0;
 	for (long i = 0; i < dataSize; i++) {
 		if (data[i] > maxData)
@@ -440,5 +450,7 @@ void threestage_double_adapt_bin(const distType data[], double m1, double s1, do
 	FREE(x);
 	FREE(y);
 	//FREE(z);
+
+	endTraceFun("threestage_double_adapt_bin");
 
 }
