@@ -42,9 +42,9 @@ double ** twostage_seeds(double mean, double variance, int *numSeeds) {
 	*/
 
 
-	int numRatios = 5;
+	int numRatios = 2;
 
-	double ratios[5] = { 0.1, 0.2, 0.3, 0.4, 0.5 };
+	double ratios[2] = { 0.2, 0.4 };
 
 	*numSeeds = numRatios * numRatios;
 
@@ -462,7 +462,7 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 		deltaTotalProbability = 1;
 
 		//while (E >= _ERROR_BOUND) {
-		while( deltaTotalProbability > 0.001 ){
+		while( deltaTotalProbability > 0.000001 ){
 			/*
 			Try again with a smaller grid size until the error is acceptable
 			*/

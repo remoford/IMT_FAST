@@ -466,12 +466,12 @@ void waldpdf(const distType data[], double mu, double s, distType Y[], long data
 			if (!underflow) {
 				underflow = 1;
 				underflowBegin = i;
-				printf("{UNDERFLOW BEGIN data[%d]=%g ", i, data[i]);
+				//printf("{UNDERFLOW BEGIN data[%d]=%g ", i, data[i]);
 			}
 		} else {
 			if (underflow) {
 				percentUnderflow = 100 * ((double)i - (double)underflowBegin - 1) / ((double)dataSize - 1);
-				printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", i - 1, data[i - 1], dataSize, percentUnderflow, mu, s);
+				//printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", i - 1, data[i - 1], dataSize, percentUnderflow, mu, s);
 				underflow = 0;
 			}
 		}
@@ -485,12 +485,12 @@ void waldpdf(const distType data[], double mu, double s, distType Y[], long data
 			if (!underflow) {
 				underflow = 1;
 				underflowBegin = i;
-				printf("{UNDERFLOW BEGIN data[%d]=%g ", i, data[i]);
+				//printf("{UNDERFLOW BEGIN data[%d]=%g ", i, data[i]);
 			}
 		} else {
 			if (underflow) {
 				percentUnderflow = 100 * ((double)i - (double)underflowBegin - 1) / ((double)dataSize - 1);
-				printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", i - 1, data[i - 1], dataSize, percentUnderflow, mu, s);
+				//printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", i - 1, data[i - 1], dataSize, percentUnderflow, mu, s);
 				underflow = 0;
 			}
 		}

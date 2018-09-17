@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern int main(int argc, const char * const argv[]);
+extern int main(int argc, char * argv[]);
 
-#define _PARALLEL_SEEDS
+//#define _PARALLEL_SEEDS
 
 // _GOFAST is for debugging purposes, it sets convergence criteria excessively loose and should not be used when you want useful results!
 //#define _GOFAST

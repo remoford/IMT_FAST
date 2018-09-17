@@ -18,7 +18,7 @@
 traceDepth = 0;
 
 
-int main(int argc, const char *const argv[])
+int main(int argc, char * argv[])
 {
     (void) argc;
     (void) argv;
@@ -26,20 +26,20 @@ int main(int argc, const char *const argv[])
 	/*
 	Precision can vary from machine to machine, show the ground truth
 	*/
-	printf("FLT_MIN=%g\n", FLT_MIN);
-	printf("FLT_MAX=%g\n", FLT_MAX);
-	printf("FLT_MIN_EXP=%g\n", FLT_MIN_EXP);
-	printf("FLT_MAX_EXP=%g\n", FLT_MAX_EXP);
+	printf("FLT_MIN=%g\n", (double)FLT_MIN);
+	printf("FLT_MAX=%g\n", (double)FLT_MAX);
+	printf("FLT_MIN_EXP=%g\n", (double)FLT_MIN_EXP);
+	printf("FLT_MAX_EXP=%g\n", (double)FLT_MAX_EXP);
 
 	printf("DBL_MIN=%g\n", DBL_MIN);
 	printf("DBL_MAX=%g\n", DBL_MAX);
-	printf("DBL_MIN_EXP=%g\n", DBL_MIN_EXP);
-	printf("DBL_MAX_EXP=%g\n", DBL_MAX_EXP);
+	printf("DBL_MIN_EXP=%g\n", (double)DBL_MIN_EXP);
+	printf("DBL_MAX_EXP=%g\n", (double)DBL_MAX_EXP);
 
-	printf("LDBL_MIN=%g\n", LDBL_MIN);
-	printf("LDBL_MAX=%g\n", LDBL_MAX);
-	printf("LDBL_MIN_EXP=%g\n", LDBL_MIN_EXP);
-	printf("LDBL_MAX_EXP=%g\n", LDBL_MAX_EXP);
+	printf("LDBL_MIN=%f\n", (double)LDBL_MIN);
+	printf("LDBL_MAX=%f\n", (double)LDBL_MAX);
+	printf("LDBL_MIN_EXP=%f\n", (double)LDBL_MIN_EXP);
+	printf("LDBL_MAX_EXP=%f\n", (double)LDBL_MAX_EXP);
 
 
 	/*

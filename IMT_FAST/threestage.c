@@ -13,6 +13,7 @@
 #include "binned_conv.h"
 #include "gsl/gsl_statistics.h"
 #include "utility.h"
+#include "windows.h"
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -37,7 +38,7 @@ double ** threestage_seeds(double mean, double variance, int *numSeeds) {
 
 	int numRatios = 2;
 
-	double ratios[2] = { 0.1, 0.5 };
+	double ratios[2] = { 0.2, 0.4 };
 
 	int numseeds_twostage;
 
@@ -125,6 +126,10 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 #pragma omp parallel for
 #endif
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+
+		
+		clock_t seed_t = clock();
+
 		/*
 		Optimize this seed
 		*/
@@ -201,8 +206,18 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 				//status = GSL_SUCCESS;
 			}
 
-			printf("ll=%g [%.8f %.8f %.8f %.8f %.8f %.8f] size=%.3f %.3fs\n\n",
-				s->fval,
+			HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+			CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+			WORD saved_attributes;
+
+			/* Save current attributes */
+			GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
+			saved_attributes = consoleInfo.wAttributes;
+
+			SetConsoleTextAttribute(hConsole, BACKGROUND_INTENSITY);
+			
+			printf("ll=%g [%.8f %.8f %.8f %.8f %.8f %.8f] size=%.3f %.3fs",
+				0.0-sqrt(s->fval),
 				gsl_vector_get(s->x, 0),
 				gsl_vector_get(s->x, 1),
 				gsl_vector_get(s->x, 2),
@@ -211,6 +226,12 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 				gsl_vector_get(s->x, 5),
 				size,
 				((float)t) / CLOCKS_PER_SEC);
+
+			/* Restore original attributes */
+			SetConsoleTextAttribute(hConsole, saved_attributes);
+
+			printf("\n\n");
+
 		} while (status == GSL_CONTINUE && iter < 10000);
 
 		optimizedParams[seedIdx][0] = fabs(gsl_vector_get(s->x, 0));
@@ -230,8 +251,30 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 
 		loglikelihoods[seedIdx] = l_sum;
 
-		printf("finished seedIdx=%d p=[%f %f %f %f %f %f] ll=%f\n\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], optimizedParams[seedIdx][4], optimizedParams[seedIdx][5], l_sum);
+		seed_t = clock() - seed_t;
 
+		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+		WORD saved_attributes;
+
+		/* Save current attributes */
+		GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
+		saved_attributes = consoleInfo.wAttributes;
+
+		SetConsoleTextAttribute(hConsole, BACKGROUND_RED);
+
+		printf("finished seedIdx=%d p=[%f %f %f %f %f %f] ll=%f time=%fs",
+			seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
+			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3],
+			optimizedParams[seedIdx][4], optimizedParams[seedIdx][5],
+			l_sum, ((float)seed_t) / CLOCKS_PER_SEC);
+
+
+		/* Restore original attributes */
+		SetConsoleTextAttribute(hConsole, saved_attributes);
+
+		printf("\n\n");
+		
 	}
 
 
@@ -239,13 +282,19 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 	distType max_ld = -distMax;
 	int row_id = 0;
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+		printf("row_id=%d [%f %f %f %f %f %f] -> [%f %f %f %f %f %f] ll=%f\n", row_id,
+			seeds[row_id][0], seeds[row_id][1], seeds[row_id][2], seeds[row_id][3], seeds[row_id][4], seeds[row_id][5],
+			optimizedParams[row_id][0], optimizedParams[row_id][1],
+			optimizedParams[row_id][2], optimizedParams[row_id][3],
+			optimizedParams[row_id][4], optimizedParams[row_id][5],
+			loglikelihoods[seedIdx]);
 		if (loglikelihoods[seedIdx] > max_ld) {
 			max_ld = loglikelihoods[seedIdx];
 			row_id = seedIdx;
 		}
 	}
 
-	printf("max_ld=%f row_ld=%f [%f %f %f %f %f %f]\n", max_ld, row_id, optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3], optimizedParams[row_id][4], optimizedParams[row_id][5]);
+	printf("max_ld=%f row_ld=%d [%f %f %f %f %f %f]\n", max_ld, row_id, optimizedParams[row_id][0], optimizedParams[row_id][1], optimizedParams[row_id][2], optimizedParams[row_id][3], optimizedParams[row_id][4], optimizedParams[row_id][5]);
 
 	FREE(l);
 
@@ -282,26 +331,32 @@ double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
     if (m1 < 0 || s1 < 0 || m2 < 0 || s2 < 0 || m3 < 0 || s3 < 0)
 		penalty = 1000;
 
-    m1 = fabs(m1);
-    s1 = fabs(s1);
-    m2 = fabs(m2);
-    s2 = fabs(s2);
-    m3 = fabs(m3);
-    s3 = fabs(s3);
+	double ll;
 
-	distType * Y = (distType *)MALLOC(sizeof(distType)*data_size);
+	
+		m1 = fabs(m1);
+		s1 = fabs(s1);
+		m2 = fabs(m2);
+		s2 = fabs(s2);
+		m3 = fabs(m3);
+		s3 = fabs(s3);
 
-    for (int i = 0; i < data_size; i++) {
-		Y[i] = 0;
-    }
+		distType * Y = (distType *)MALLOC(sizeof(distType)*data_size);
 
-	threestage_adapt(data, m1, s1, m2, s2, m3, s3, Y, data_size);
+		for (int i = 0; i < data_size; i++) {
+			Y[i] = 0;
+		}
 
-	double ll = (double) loglikelihood(Y, data_size);
+		threestage_adapt(data, m1, s1, m2, s2, m3, s3, Y, data_size);
 
-    double objective = penalty - ll;
+		ll = (double)loglikelihood(Y, data_size);
 
-	FREE(Y);
+		FREE(Y);
+	
+	
+    double objective =  ll*ll;
+
+	
 
     return objective;
 }
