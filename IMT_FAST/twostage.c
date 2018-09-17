@@ -419,8 +419,8 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
     }
 
     // These represent our loglikelihoods
-    double logP0;
-    double logP1;
+    double logP0 = 0;
+    double logP1 = 0;
 
 	double totalProbability = 0;
 	double priorTotalProbability = 0;
@@ -489,7 +489,7 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 
 
 #ifdef _VERBOSE
-			printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP1, h, E, _ERROR_BOUND);
+			printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP1, h, E, (double)_ERROR_BOUND);
 #endif
 		}
     }

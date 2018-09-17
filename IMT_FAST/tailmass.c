@@ -10,6 +10,7 @@ checktailmass(const double m_a, const double s_a, const double m_b,
 	      const double s_b, double T2, const double sd_a,
 	      const double sd_b)
 {
+	/*
     double m[2];
     double s[2];
     double sd[2];
@@ -20,7 +21,7 @@ checktailmass(const double m_a, const double s_a, const double m_b,
     sd[0] = sd_a;
     sd[1] = sd_b;
 
-	/*
+	
     if (tailmass(m, s, T2, sd) <= (T2 / 3.0))
 		return 1;
     else

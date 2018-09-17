@@ -72,7 +72,7 @@ void rightHandedRiemannSum(long dataSize, const distType data[], double gridSize
 			printf("ERROR(rightHandedRiemannSum): leftBound=%ld<0 ", leftBound);
 
 		if (rightBound > partitionLength)
-			printf("ERROR(rightHandedRiemannSum): rightBound=%d>partitionLength=%ld ", rightBound, partitionLength);
+			printf("ERROR(rightHandedRiemannSum): rightBound=%ld>partitionLength=%ld ", rightBound, partitionLength);
 
 		//printf("leftBound=%ld ", leftBound);
 		//printf("rightBound=%ld ", rightBound);

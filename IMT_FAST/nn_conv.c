@@ -35,11 +35,9 @@ void nn_conv(const distType z[], const distType y[], const double X[], const dou
 
     // Initialize C big enough for the convolution
     int size_conv = 2 * size_xyz;
-#ifdef __INTEL_COMPILER
-    distType *C = (distType *) _mm_malloc(size_conv * sizeof(distType), 32);
-#else
-    distType *C = (distType *) malloc(size_conv * sizeof(distType));
-#endif
+
+
+	distType *C = (distType *)MALLOC(size_conv * sizeof(distType));
 
 
     for (int i = 0; i < size_conv; i++) {
@@ -96,7 +94,7 @@ void nn_conv(const distType z[], const distType y[], const double X[], const dou
 	//%[~, I(i)] = min((t(i) - x). ^ 2); % slow
 	minDelta = DBL_MAX;
 	foundIdx = 0;
-	for (int k = 0; k <= size_xyz; k++) {
+	for (int k = 0; k < size_xyz; k++) {
 	    delta = fabs(X[i] - x[k]);
 	    if (delta < minDelta) {
 		foundIdx = k;
@@ -168,11 +166,7 @@ void nn_conv(const distType z[], const distType y[], const double X[], const dou
     printf("\n\n");
 #endif
 
-#ifdef __INTEL_COMPILER
-    _mm_free(C);
-#else
-    free(C);
-#endif
+	FREE(C);
 
 	endTraceFun("nn_conv");
 

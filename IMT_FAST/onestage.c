@@ -447,12 +447,12 @@ void waldpdf(const distType data[], double mu, double s, distType Y[], long data
 
 		if (errno == EDOM) {
 			printf("ERROR: waldpdf:(b) domain error! ");
-			printf("data[%d]=%g mu=%g s=%g ", i, data[i], mu, s);
+			printf("data[%ld]=%g mu=%g s=%g ", i, data[i], mu, s);
 			anyError = 1;
 		}
 		if (errno == ERANGE) {
 			printf("ERROR: waldpdf:(b) domain error! ");
-			printf("data[%d]=%g mu=%g s=%g ", i, data[i], mu, s);
+			printf("data[%ld]=%g mu=%g s=%g ", i, data[i], mu, s);
 			anyError = 1;
 		}
 
@@ -477,7 +477,7 @@ void waldpdf(const distType data[], double mu, double s, distType Y[], long data
 		}
 #else
 		if (b >= DBL_MAX_EXP) {
-			printf("ERROR: waldpdf:Predict exp(%lf) overflow for type double! data[%d]=%g mu=%g s=%g\n", b, i, data[i], mu, s);
+			printf("ERROR: waldpdf:Predict exp(%lf) overflow for type double! data[%ld]=%g mu=%g s=%g\n", b, i, data[i], mu, s);
 			b = DBL_MAX_EXP - 1;
 		}
 		if (b <= DBL_MIN_EXP) {
@@ -501,7 +501,7 @@ void waldpdf(const distType data[], double mu, double s, distType Y[], long data
 
 		if (errno == EDOM) {
 			printf("ERROR: waldpdf:(bExp) domain error! ");
-			printf("data[%d]=%g mu=%g s=%g b=%g ", i, data[i], mu, s, b);
+			printf("data[%ld]=%g mu=%g s=%g b=%g ", i, data[i], mu, s, b);
 			anyError = 1;
 		}
 
@@ -509,7 +509,7 @@ void waldpdf(const distType data[], double mu, double s, distType Y[], long data
 		Y[i] = (distType)(a * bExp);
 
 		if (anyError != 0)
-			printf(" Y[%d]=%f\n", i, Y[i]);
+			printf(" Y[%ld]=%f\n", i, Y[i]);
 
 		/* Ok this fixup requires some explaination. Strictly wald(0) is indeterminate.
 		We replace it here with zero as that is the practical value and this avoids
@@ -518,12 +518,12 @@ void waldpdf(const distType data[], double mu, double s, distType Y[], long data
 			if (data[i] == 0)
 				Y[i] = 0;
 			else
-				printf("ERROR: NAN or Inf a=%f b=%f data[%d]=%f Y[%d]=%f\n", a, b, i, data[i], i, (double)Y[i]);
+				printf("ERROR: NAN or Inf a=%f b=%f data[%ld]=%f Y[%ld]=%f\n", a, b, i, data[i], i, (double)Y[i]);
 		}
 
 		if (Y[i] != 0) {
 			if (Y[i] >= distMax) {
-				printf("ERROR: Denormal value Y[%d]=%g >= DBL_MAX\n", i, Y[i]);
+				printf("ERROR: Denormal value Y[%ld]=%g >= DBL_MAX\n", i, Y[i]);
 			} else if (Y[i] <= distMin ){
 				//printf("ERROR: Denormal value Y[%d]=%g <= DBL_MIN\n", i, Y[i]);
 				Y[i] = 0;
@@ -531,13 +531,13 @@ void waldpdf(const distType data[], double mu, double s, distType Y[], long data
 		}
 
 		if (Y[i] < 0) {
-			printf("ERROR: waldpdf:InvG(%f)=Y[%d]<0=%f mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, Y[i], mu, s);
+			printf("ERROR: waldpdf:InvG(%f)=Y[%ld]<0=%f mu=%f s=%f HOLY NORMALIZATION BATMAN\n", data[i], i, Y[i], mu, s);
 			Y[i] = 0;
 		}
     }
 	if (underflow) {
 		percentUnderflow = 100* ((double)dataSize - (double)underflowBegin - 1) / ((double)dataSize -1);
-		printf("END data[%d]=%g dataSize=%d %f%% mu=%g s=%g}\n", dataSize-1, data[dataSize-1], dataSize, percentUnderflow, mu, s);
+		printf("END data[%ld]=%g dataSize=%ld %f%% mu=%g s=%g}\n", dataSize-1, data[dataSize-1], dataSize, percentUnderflow, mu, s);
 		underflow = 0;
 	}
 	/*

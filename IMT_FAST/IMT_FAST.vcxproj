@@ -129,7 +129,6 @@
       <AdditionalOptions>
       </AdditionalOptions>
       <FlushDenormalResultsToZero>false</FlushDenormalResultsToZero>
-      <Optimization>MaxSpeedHighLevel</Optimization>
       <EnableGapAnalysis>
       </EnableGapAnalysis>
     </ClCompile>

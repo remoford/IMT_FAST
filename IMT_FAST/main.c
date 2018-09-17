@@ -119,6 +119,7 @@ int main(int argc, char * argv[])
 				printf("loglikelihood = %f\n", ll);
 
 				FREE(Y);
+				FREE(data);
 			}
 			else
 				printf("Invalid number of parameters\n");
@@ -153,6 +154,7 @@ int main(int argc, char * argv[])
 				printf("loglikelihood = %f\n", ll);
 
 				FREE(Y);
+				FREE(data);
 
 			} else
 				printf("Invalid number of parameters\n");
@@ -189,6 +191,7 @@ int main(int argc, char * argv[])
 				printf("loglikelihood = %f\n", ll);
 
 				FREE(Y);
+				FREE(data);
 
 			} else
 				printf("Invalid number of parameters\n");

@@ -81,6 +81,7 @@ void IMT_analysis_April2017(const char *model, char * data_filename) {
 
 	if (data_size <= 0) {
 		printf("ERROR: returned data_size <= 0 !!!\n");
+		FREE(data);
 		return;
 	}
 
