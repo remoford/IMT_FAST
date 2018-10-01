@@ -20,6 +20,9 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
     //unsigned long size_conv = 2 * size_xyz;
 
 	printf("[sz=%luKB ", ((unsigned long)sizeof(distType)*size_xyz) / 1024);
+
+	if (size_xyz > 65535)
+		printf(" WARNING ulong OVERFLOW!!! ");
 	
 	distType threshold = 0;
 
@@ -63,7 +66,10 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 	double opsPerIteration = 3;
 	unsigned long newLastYIdx;
     /* do the lopsided convolution */
-	double opCount = 0;
+	//double opCount = 0;
+
+	unsigned long firstExceed = 0;
+	unsigned long lastComputedIdx = 0;
 
 	if ((double)lastIdx - (double)firstIdx < 0 || (double)lastYIdx - (double)firstYIdx < 0) {
 		printf("Skipping entire convolution as at least one pdf is all zeros! ");
@@ -72,30 +78,39 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 
 //#pragma omp parallel for
 		for (unsigned long i = firstIdx; i < lastIdx; i++) {
-			if ((size_xyz - i) < lastYIdx)
+			if ((size_xyz - i) < lastYIdx) {
 				newLastYIdx = size_xyz - i;
+				if (firstExceed == 0) {
+					firstExceed = i;	
+				}
+			}
 			else
 				newLastYIdx = lastYIdx;
 
-			opCount += opsPerIteration * (double)(newLastYIdx - firstYIdx);
+			if (newLastYIdx - firstYIdx < 1)
+				lastComputedIdx = i;
 
-//#pragma omp parallel for
+			//opCount += opsPerIteration * (double)(newLastYIdx - firstYIdx);
+
+#pragma omp parallel for
 			for (unsigned long j = firstYIdx; j < newLastYIdx; j++)
 				C[i + j] += z[i] * y[j] * h;
 		}
 	}
 
+	double estimateOpCount = opsPerIteration * (((firstExceed - firstIdx) * (lastYIdx - firstYIdx)) + (0.5 * (lastYIdx - firstYIdx) * (lastComputedIdx)));
+
 	t = clock() - t;
 
 	double maxTripCount = opsPerIteration * (double)size_xyz * (double)size_xyz;
 
-	double skipPercentage = 100*((maxTripCount - opCount) / maxTripCount);
-
-	printf("%f%% ", skipPercentage);
+	double skipPercentage = 100*((maxTripCount - estimateOpCount) / maxTripCount);
 
 	double runtime = ((float)t) / CLOCKS_PER_SEC;
 
-	double megaFlopsPerSecond = (opCount / runtime) / 1000000;
+	double megaFlopsPerSecond = (estimateOpCount / runtime) / 1000000;
 
-	printf("%f Mflop/s %fs]\n", megaFlopsPerSecond, runtime);
+	printf("%lu size_xyz (%lu %lu , %lu %lu ) %g fullOps %g estOps %f%% skipped %f Mflop/s %fs]\n",
+		size_xyz, firstIdx, lastIdx, firstYIdx, lastYIdx,
+		maxTripCount, estimateOpCount, skipPercentage, megaFlopsPerSecond, runtime);
 }

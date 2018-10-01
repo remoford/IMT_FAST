@@ -92,7 +92,7 @@ void optimize_twostage(int numseeds, double ** seeds, configStruct config) {
 	}
 
 	//Store iteration count for each seed
-	size_t * numIters = (int *)MALLOC(sizeof(size_t) * numseeds);
+	size_t * numIters = (size_t *)MALLOC(sizeof(size_t) * numseeds);
 
 	//Store the runtimes for each seed
 	float * runtimes = (float *)MALLOC(sizeof(float) * numseeds);
@@ -310,7 +310,7 @@ void optimize_twostage(int numseeds, double ** seeds, configStruct config) {
 			seeds[seedIdx][0], seeds[seedIdx][1], seeds[seedIdx][2], seeds[seedIdx][3],
 			optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3],
-			numIters[seedIdx], runtimes[seedIdx], loglikelihoods[seedIdx]);
+			(int)numIters[seedIdx], runtimes[seedIdx], loglikelihoods[seedIdx]);
 		if (loglikelihoods[seedIdx] > max_ld) {
 			max_ld = loglikelihoods[seedIdx];
 			row_id = seedIdx;

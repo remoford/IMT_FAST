@@ -9,8 +9,8 @@
 #include "utility.h"
 
 //#define _VERBOSE
-//#define _FASTIDXMETHOD
-#define _SLOWIDXMETHOD
+#define _FASTIDXMETHOD
+//#define _SLOWIDXMETHOD
 #define _WINDOW_MODE
 
 /*

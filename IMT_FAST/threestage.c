@@ -116,7 +116,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 	}
 
 	//Store iteration count for each seed
-	size_t * numIters = (int *)MALLOC(sizeof(size_t) * numseeds);
+	size_t * numIters = (size_t *)MALLOC(sizeof(size_t) * numseeds);
 
 	//Store the runtimes for each seed
 	float * runtimes = (float *)MALLOC(sizeof(float) * numseeds);
@@ -301,7 +301,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 			optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3],
 			optimizedParams[seedIdx][4], optimizedParams[seedIdx][5],
-			numIters[seedIdx], runtimes[seedIdx], loglikelihoods[seedIdx]);
+			(int)numIters[seedIdx], runtimes[seedIdx], loglikelihoods[seedIdx]);
 		if (loglikelihoods[seedIdx] > max_ld) {
 			max_ld = loglikelihoods[seedIdx];
 			row_id = seedIdx;
