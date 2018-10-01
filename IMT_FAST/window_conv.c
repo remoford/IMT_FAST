@@ -69,7 +69,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 	//double opCount = 0;
 
 	unsigned long firstExceed = 0;
-	unsigned long lastComputedIdx = 0;
+	unsigned long lastComputedIdx = lastIdx;
 
 	if ((double)lastIdx - (double)firstIdx < 0 || (double)lastYIdx - (double)firstYIdx < 0) {
 		printf("Skipping entire convolution as at least one pdf is all zeros! ");
@@ -98,7 +98,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 		}
 	}
 
-	double estimateOpCount = opsPerIteration * (((firstExceed - firstIdx) * (lastYIdx - firstYIdx)) + (0.5 * (lastYIdx - firstYIdx) * (lastComputedIdx)));
+	double estimateOpCount = opsPerIteration * (((double)(firstExceed - firstIdx) * (double)(lastYIdx - firstYIdx)) + (0.5 * (double)(lastYIdx - firstYIdx) * (double)(lastComputedIdx)));
 
 	t = clock() - t;
 
