@@ -309,7 +309,7 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 	ll_previous = loglikelihood(Y, data_size);
 
 #ifdef _VERBOSE
-	printf("  gridSize=%.17f E=%.17e eThr=%.17e ll=%.17e\n", gridSize, E, _ERROR_BOUND, ll_previous);
+	printf("  gridSize=%.17f E=%.17e eThr=%.17e ll=%.17e\n", gridSize, E, (double)_ERROR_BOUND, ll_previous);
 #endif
 
 	while (E >= _ERROR_BOUND) {
@@ -322,7 +322,7 @@ void wald_adapt(const distType data[], double mu, double s, distType Y[], long d
 		E = fabs(ll_current - ll_previous);
 
 #ifdef _VERBOSE
-		printf("  gridSize=%.17f E=%.17e eThr=%.17e ll=%.17e\n", gridSize, E, _ERROR_BOUND, ll_current);
+		printf("  gridSize=%.17f E=%.17e eThr=%.17e ll=%.17e\n", gridSize, E, (double)_ERROR_BOUND, ll_current);
 #endif
 
 		ll_previous = ll_current;

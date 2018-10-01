@@ -147,7 +147,7 @@ int main(int argc, char * argv[])
 				double m2 = atof(argv[5]);
 				double s2 = atof(argv[6]);
 
-				conv2waldpdf(data, m1, s1, m2, s2, Y, 0.01, 1, data_size);
+				conv2waldpdf(data, m1, s1, m2, s2, Y, 0.01, 1, data_size, LOGLIKELIHOOD);
 
 				double ll = (double)loglikelihood(Y, data_size);
 

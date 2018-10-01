@@ -115,6 +115,12 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 		optimizedParams[seedIdx] = (double *)MALLOC(sizeof(double) * 6);
 	}
 
+	//Store iteration count for each seed
+	size_t * numIters = (int *)MALLOC(sizeof(size_t) * numseeds);
+
+	//Store the runtimes for each seed
+	float * runtimes = (float *)MALLOC(sizeof(float) * numseeds);
+
 	printf("threestagefitnomle\n\n");
 
 	distType * loglikelihoods = (distType *)MALLOC(sizeof(distType)*numseeds);
@@ -179,6 +185,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 		do {
 			iter++;
 
+
 			clock_t t;
 			t = clock();
 
@@ -206,6 +213,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 				//status = GSL_SUCCESS;
 			}
 
+#ifdef _WIN32
 			HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 			CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
 			WORD saved_attributes;
@@ -215,7 +223,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 			saved_attributes = consoleInfo.wAttributes;
 
 			SetConsoleTextAttribute(hConsole, BACKGROUND_INTENSITY);
-			
+#endif
 			printf("ll=%g [%.8f %.8f %.8f %.8f %.8f %.8f] size=%.3f %.3fs",
 				0.0-sqrt(s->fval),
 				gsl_vector_get(s->x, 0),
@@ -226,9 +234,10 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 				gsl_vector_get(s->x, 5),
 				size,
 				((float)t) / CLOCKS_PER_SEC);
-
+#ifdef _WIN32
 			/* Restore original attributes */
 			SetConsoleTextAttribute(hConsole, saved_attributes);
+#endif
 
 			printf("\n\n");
 
@@ -253,6 +262,9 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 
 		seed_t = clock() - seed_t;
 
+		runtimes[seedIdx] = ((float)seed_t) / CLOCKS_PER_SEC;
+
+#ifdef _WIN32
 		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 		CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
 		WORD saved_attributes;
@@ -262,32 +274,34 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 		saved_attributes = consoleInfo.wAttributes;
 
 		SetConsoleTextAttribute(hConsole, BACKGROUND_RED);
-
+#endif
 		printf("finished seedIdx=%d p=[%f %f %f %f %f %f] ll=%f time=%fs",
 			seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3],
 			optimizedParams[seedIdx][4], optimizedParams[seedIdx][5],
 			l_sum, ((float)seed_t) / CLOCKS_PER_SEC);
 
-
+#ifdef _WIN32
 		/* Restore original attributes */
 		SetConsoleTextAttribute(hConsole, saved_attributes);
+#endif
+
+		numIters[seedIdx] = iter;
 
 		printf("\n\n");
 		
 	}
 
-
 	// Find the best log likelihood
 	distType max_ld = -distMax;
 	int row_id = 0;
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
-		printf("row_id=%d [%f %f %f %f %f %f] -> [%f %f %f %f %f %f] ll=%f\n", row_id,
-			seeds[row_id][0], seeds[row_id][1], seeds[row_id][2], seeds[row_id][3], seeds[row_id][4], seeds[row_id][5],
-			optimizedParams[row_id][0], optimizedParams[row_id][1],
-			optimizedParams[row_id][2], optimizedParams[row_id][3],
-			optimizedParams[row_id][4], optimizedParams[row_id][5],
-			loglikelihoods[seedIdx]);
+		printf("row_id=%d [%f %f %f %f %f %f] -> [%f %f %f %f %f %f] iters=%d runtime=%fs ll=%f\n", seedIdx,
+			seeds[seedIdx][0], seeds[seedIdx][1], seeds[seedIdx][2], seeds[seedIdx][3], seeds[seedIdx][4], seeds[seedIdx][5],
+			optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
+			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3],
+			optimizedParams[seedIdx][4], optimizedParams[seedIdx][5],
+			numIters[seedIdx], runtimes[seedIdx], loglikelihoods[seedIdx]);
 		if (loglikelihoods[seedIdx] > max_ld) {
 			max_ld = loglikelihoods[seedIdx];
 			row_id = seedIdx;
@@ -391,7 +405,7 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 
 	logP0 = (double)loglikelihood(Y, dataSize);
 
-	printf("ll=%f gridSize=%.17f E=%.17e EB=%g threestage\n", logP0, gridSize, E, _ERROR_BOUND);
+	printf("ll=%f gridSize=%.17f E=%.17e EB=%g threestage\n", logP0, gridSize, E, (double)_ERROR_BOUND);
 
 	while (E >= _ERROR_BOUND) {
 
@@ -408,7 +422,7 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 
 		logP0 = logP1;
 
-		printf("ll=%f gridSize=%.17f E=%.17e EB=%g threestage\n", logP1, gridSize, E, _ERROR_BOUND);
+		printf("ll=%f gridSize=%.17f E=%.17e EB=%g threestage\n", logP1, gridSize, E, (double)_ERROR_BOUND);
 	}
 	
 	endTraceFun("threestage_adapt");
@@ -477,7 +491,9 @@ void threestage_double_adapt_bin(const distType data[], double m1, double s1, do
 	distType *partition = (distType *)MALLOC(partitionLength * sizeof(double));
 	distType *x = (distType *)MALLOC(partitionLength * sizeof(distType));
 	distType *y = (distType *)MALLOC(partitionLength * sizeof(distType));
-	//distType *z = (distType *)MALLOC(partitionLength * sizeof(distType));
+#ifndef _MULTI_ADAPT
+	distType *z = (distType *)MALLOC(partitionLength * sizeof(distType));
+#endif
 
 	// fill the partition
 	distType tally = 0;
@@ -487,24 +503,28 @@ void threestage_double_adapt_bin(const distType data[], double m1, double s1, do
 	}
 
 	// evaluate the sub-distributions at each point in x
-	//waldpdf(partition, m1, s1, x, partitionLength);
-
-	conv2waldpdf(partition, m1, s1, m2, s2, x, gridSize, 1, partitionLength);
-
 	waldpdf(partition, m3, s3, y, partitionLength);
-
-	//waldpdf(partition, m3, s3, z, partitionLength);
+#ifdef _MULTI_ADAPT
+	conv2waldpdf(partition, m1, s1, m2, s2, x, gridSize, 1, partitionLength, NORMALIZATION);
+#else
+	waldpdf(partition, m1, s1, x, partitionLength);
+	waldpdf(partition, m3, s3, z, partitionLength);
+#endif
 
 	double logP1;
 
-	//threestage_binconv(x, y, z, data, Y, &logP1, partitionLength, dataSize, gridSize);
-
+#ifdef _MULTI_ADAPT
 	binned_conv(x, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
+#else
+	threestage_binconv(x, y, z, data, Y, &logP1, partitionLength, dataSize, gridSize);
+#endif
 
 	FREE(partition);
 	FREE(x);
 	FREE(y);
-	//FREE(z);
+#ifndef _MULTI_ADAPT
+	FREE(z);
+#endif
 
 	endTraceFun("threestage_double_adapt_bin");
 

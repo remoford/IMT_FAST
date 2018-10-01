@@ -91,6 +91,11 @@ void optimize_twostage(int numseeds, double ** seeds, configStruct config) {
 		optimizedParams[seedIdx] = (double *)MALLOC(sizeof(double) * 4);
 	}
 
+	//Store iteration count for each seed
+	size_t * numIters = (int *)MALLOC(sizeof(size_t) * numseeds);
+
+	//Store the runtimes for each seed
+	float * runtimes = (float *)MALLOC(sizeof(float) * numseeds);
 
 	/*
 	For each seed
@@ -103,6 +108,8 @@ void optimize_twostage(int numseeds, double ** seeds, configStruct config) {
 		Optimize this seed
 		*/
 
+		clock_t seed_t = clock();
+
 		// This stores the likelihoods of the distribution with our starting seed parameters
 		distType * seedll = (distType *)MALLOC(sizeof(distType)*data_size);
 
@@ -110,7 +117,7 @@ void optimize_twostage(int numseeds, double ** seeds, configStruct config) {
 		conv2waldpdf(data, seeds[seedIdx][0],
 			seeds[seedIdx][1], seeds[seedIdx][2],
 			seeds[seedIdx][3], seedll, 0.01, 1,
-			data_size);
+			data_size, LOGLIKELIHOOD);
 
 		// Find the loglikelihood of the set of observations taken together
 		double seedll_sum = (double)loglikelihood(seedll, data_size);
@@ -257,10 +264,16 @@ void optimize_twostage(int numseeds, double ** seeds, configStruct config) {
 
 		// Calculate the loglikelihood of our optimized parameters
 		distType * ll = (distType *)MALLOC(sizeof(distType)*data_size);
-		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], ll, 0.01, 1, data_size);
+		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], ll, 0.01, 1, data_size, LOGLIKELIHOOD);
 		double l_sum = (double)loglikelihood(ll, data_size);
 
 		FREE(ll);
+
+
+		seed_t = clock() - seed_t;
+		runtimes[seedIdx] = ((float)seed_t) / CLOCKS_PER_SEC;
+
+		numIters[seedIdx] = iter;
 
 		printf("\nfinished seedIdx=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1], optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], l_sum);
 	}
@@ -278,13 +291,14 @@ void optimize_twostage(int numseeds, double ** seeds, configStruct config) {
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
 		conv2waldpdf(data, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3],
-			likelihoods, 0.001, 1, data_size);
+			likelihoods, 0.001, 1, data_size, LOGLIKELIHOOD);
 
 		loglikelihoods[seedIdx] = loglikelihood(likelihoods, data_size);
 
 		printf("id=%d p=[%f %f %f %f] ll=%f\n", seedIdx, optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
 			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3], loglikelihoods[seedIdx]);
 	}
+	printf("\n");
 
 	FREE(likelihoods);
 
@@ -292,6 +306,11 @@ void optimize_twostage(int numseeds, double ** seeds, configStruct config) {
 	distType max_ld = -distMax;
 	int row_id = 0;
 	for (int seedIdx = 0; seedIdx < numseeds; seedIdx++) {
+		printf("row_id=%d [%f %f %f %f] -> [%f %f %f %f] iters=%d runtime=%fs ll=%f\n", seedIdx,
+			seeds[seedIdx][0], seeds[seedIdx][1], seeds[seedIdx][2], seeds[seedIdx][3],
+			optimizedParams[seedIdx][0], optimizedParams[seedIdx][1],
+			optimizedParams[seedIdx][2], optimizedParams[seedIdx][3],
+			numIters[seedIdx], runtimes[seedIdx], loglikelihoods[seedIdx]);
 		if (loglikelihoods[seedIdx] > max_ld) {
 			max_ld = loglikelihoods[seedIdx];
 			row_id = seedIdx;
@@ -338,7 +357,7 @@ double convolv_2invG_adapt_nov_loglikelihood(const gsl_vector * v, void * params
 
 	distType * Y = (distType *)MALLOC(sizeof(distType)*data_size);
 
-    conv2waldpdf(data, m1, s1, m2, s2, Y, 0.01, 1, data_size);
+    conv2waldpdf(data, m1, s1, m2, s2, Y, 0.01, 1, data_size, LOGLIKELIHOOD);
 
 	double ll = (double) loglikelihood(Y, data_size);
 
@@ -352,9 +371,21 @@ Evaluate the twostage model with parameters m1, s1, m2, s2 for each point in dat
 using adapatation to adjust the gridSize to ensure acceptable error with a starting grid spacing of hand a flag,
 adapativeMode ,for disabling adapation
 */
-void conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2, distType convolvedPDF[], double h, int adaptiveMode, int size_XY) {
+void conv2waldpdf(const distType data[], double m1, double s1, double m2, double s2, distType convolvedPDF[], double h, int adaptiveMode, int size_XY, enum adaptConvergenceMethod convergenceMethod) {
 
+	int normConvergence = 0;
+	int llConvergence = 0;
 
+	if (convergenceMethod == NORMALIZATION) {
+		normConvergence = 1;
+	}
+	else if (convergenceMethod == LOGLIKELIHOOD) {
+		llConvergence = 1;
+	}
+	else {
+		printf("ERROR: INVALID CONVERGENCE METHOD!\n");
+		exit(1);
+	}
 
 	beginTraceFun("conv2waldpdf");
 
@@ -446,23 +477,28 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 		waldlagpdf(data, m_b, s_b, lag, convolvedPDF, size_XY);
 
 		flag = 1;
-    } else {
+	}
+	else {
 
 		/*
 		Calculuate the binned convolution
 		*/
-		twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h);
+		twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h, convergenceMethod);
 
-		//logP0 = (double)loglikelihood(convolvedPDF, size_XY);
+		if (llConvergence) {
 
-		//printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP0, h, E, _ERROR_BOUND);
+			logP0 = (double)loglikelihood(convolvedPDF, size_XY);
 
-		priorTotalProbability = checkNormalization(convolvedPDF, size_XY, initialH);
+			printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP0, h, E, (double)_ERROR_BOUND);
 
-		deltaTotalProbability = 1;
+		}
+		if (normConvergence) {
+			priorTotalProbability = checkNormalization(convolvedPDF, size_XY, initialH);
 
-		//while (E >= _ERROR_BOUND) {
-		while( deltaTotalProbability > 0.000001 ){
+			deltaTotalProbability = 1;
+		}
+
+		while (  (  llConvergence && (E >= _ERROR_BOUND) ) || ( normConvergence &&  (deltaTotalProbability > 0.000001) )  ){
 			/*
 			Try again with a smaller grid size until the error is acceptable
 			*/
@@ -471,22 +507,26 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 
 			printf("Shrinking h... h = %f\n", h);
 
-			twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h);
+			twostage_bin(data, m[0], s[0], m[1], s[1], convolvedPDF, size_XY, h, convergenceMethod);
 
-			//logP1 = (double)loglikelihood(convolvedPDF, size_XY);
+			if (llConvergence) {
 
-			//E = fabs(logP1 - logP0);
+				logP1 = (double)loglikelihood(convolvedPDF, size_XY);
 
-			//logP0 = logP1;
+				E = fabs(logP1 - logP0);
 
-			totalProbability = checkNormalization(convolvedPDF, size_XY, initialH);
+				logP0 = logP1;
 
-			deltaTotalProbability = fabs(priorTotalProbability - totalProbability);
+			}
+			if (normConvergence) {
+				totalProbability = checkNormalization(convolvedPDF, size_XY, initialH);
 
-			printf("totalProbability = %.17f deltaTotalProbability = %.17f\n", totalProbability, deltaTotalProbability);
+				deltaTotalProbability = fabs(priorTotalProbability - totalProbability);
 
-			priorTotalProbability = totalProbability;
+				printf("totalProbability = %.17f deltaTotalProbability = %.17f\n", totalProbability, deltaTotalProbability);
 
+				priorTotalProbability = totalProbability;
+			}
 
 #ifdef _VERBOSE
 			printf("ll=%g h=%.17f E=%g EB=%g twostage\n", logP1, h, E, (double)_ERROR_BOUND);
@@ -503,7 +543,7 @@ void conv2waldpdf(const distType data[], double m1, double s1, double m2, double
 /*
 Evaluate the twostage model with parameters m1, s1, m2, s2 for each point in data[], the integrated probability of the sampling bin containing the point, into Y[] using the given gridSize
 */
-void twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize) {
+void twostage_bin(const distType data[], double m1, double s1, double m2, double s2, distType Y[], long dataSize, double gridSize, enum adaptConvergenceMethod convergenceMethod) {
 
 	beginTraceFun("twostage_bin");
 
@@ -535,11 +575,14 @@ void twostage_bin(const distType data[], double m1, double s1, double m2, double
 
 	double logP1;
 
-#ifdef _TWOSTAGE_BINNED_MODE
-	binned_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
-#else
-	nn_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
-#endif
+	if(convergenceMethod == LOGLIKELIHOOD)
+		binned_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
+	else if(convergenceMethod == NORMALIZATION)
+		nn_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
+	else {
+		printf("ERROR: INVALID CONVERGENCE METHOD!\n");
+		exit(1);
+	}
 
 	FREE(partition);
 	FREE(y);
