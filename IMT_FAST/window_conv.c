@@ -87,7 +87,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 			else
 				newLastYIdx = lastYIdx;
 
-			if (newLastYIdx - firstYIdx < 1)
+			if (newLastYIdx - firstYIdx < 1 && lastComputedIdx == lastIdx)
 				lastComputedIdx = i;
 
 			//opCount += opsPerIteration * (double)(newLastYIdx - firstYIdx);

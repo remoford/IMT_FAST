@@ -400,6 +400,24 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 
 	double E = DBL_MAX;
 
+
+	// find the variance for each sub-distributions
+	double v1 = (s1 * s1) / (m1 * m1 * m1);
+	double v2 = (s2 * s2) / (m2 * m2 * m2);
+	double v3 = (s3 * s3) / (m3 * m3 * m3);
+
+	// Ensure that the lowest variance distribution is never the last one to prevent extra work
+	double m_tmp, s_tmp;
+	if (v3 < v2) {
+		m_tmp = m2;
+		s_tmp = s2;
+		m2 = m3;
+		s2 = s3;
+		m3 = m_tmp;
+		s3 = s_tmp;
+	}
+
+
 	//threestage_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
 	threestage_double_adapt_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
 
