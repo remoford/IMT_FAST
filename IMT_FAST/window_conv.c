@@ -71,12 +71,18 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 	unsigned long firstExceed = 0;
 	unsigned long lastComputedIdx = lastIdx;
 
+	double estimateOpCount;
+	double maxTripCount = opsPerIteration * (double)size_xyz * (double)size_xyz;
+
 	if ((double)lastIdx - (double)firstIdx < 0 || (double)lastYIdx - (double)firstYIdx < 0) {
 		printf("Skipping entire convolution as at least one pdf is all zeros! ");
 	}
 	else {
 
-//#pragma omp parallel for
+
+#ifdef _OLDCONV
+		unsigned long j;
+//#pragma omp parallel for schedule(static, 1) private(newLastYIdx, j)
 		for (unsigned long i = firstIdx; i < lastIdx; i++) {
 			if ((size_xyz - i) < lastYIdx) {
 				newLastYIdx = size_xyz - i;
@@ -91,18 +97,63 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 				lastComputedIdx = i;
 
 			//opCount += opsPerIteration * (double)(newLastYIdx - firstYIdx);
-
-#pragma omp parallel for
-			for (unsigned long j = firstYIdx; j < newLastYIdx; j++)
+#ifdef _PARALLEL_CONV
+#pragma omp parallel for private(j)
+#endif
+			for (j = firstYIdx; j < newLastYIdx; j++)
 				C[i + j] += z[i] * y[j] * h;
 		}
+		estimateOpCount = opsPerIteration * (((double)(firstExceed - firstIdx) * (double)(lastYIdx - firstYIdx)) + (0.5 * (double)(lastYIdx - firstYIdx) * (double)(lastComputedIdx)));
+
+
+#else
+		//distType * CC = (distType *)MALLOC(sizeof(distType) * 2 * size_xyz);
+		unsigned long int firstOutIdx = firstIdx + firstYIdx;
+		unsigned long int lastOutIdx = lastIdx + lastYIdx;
+		if (lastOutIdx >= size_xyz) {
+			lastOutIdx = size_xyz;
+			//printf("Clipping lastOutIdx\n");
+		}
+		if (firstOutIdx >= lastOutIdx)
+			firstOutIdx = 0;
+		distType acc;
+		double skippedIndices;
+		unsigned long skippedIndicesInside;
+		unsigned long j;
+		unsigned long k;
+#ifdef _PARALLEL_CONV
+#pragma omp parallel for schedule(static, 1) private(acc, skippedIndicesInside, j, k)
+#endif
+		for (unsigned long i = firstOutIdx; i < lastOutIdx; i++) {
+			acc = 0;
+			skippedIndicesInside = 0;
+			for (k = 0; k <= i; k++) {
+				j = i - k;
+				if (k >= firstIdx && k <= lastIdx && j >= firstYIdx && j <= lastYIdx)
+					acc += z[k] * y[j] * h;
+				else {
+					skippedIndices++;
+					//	printf("Window skipping!\n");
+				}
+			}
+			C[i] = acc;
+			skippedIndices += skippedIndicesInside;
+		}
+		estimateOpCount = maxTripCount - (opsPerIteration * skippedIndices);
+#endif
 	}
 
-	double estimateOpCount = opsPerIteration * (((double)(firstExceed - firstIdx) * (double)(lastYIdx - firstYIdx)) + (0.5 * (double)(lastYIdx - firstYIdx) * (double)(lastComputedIdx)));
+	
+
+
+
+
+
+
 
 	t = clock() - t;
 
-	double maxTripCount = opsPerIteration * (double)size_xyz * (double)size_xyz;
+	
 
 	double skipPercentage = 100*((maxTripCount - estimateOpCount) / maxTripCount);
 

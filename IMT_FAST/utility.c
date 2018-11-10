@@ -157,13 +157,13 @@ double checkNormalization(distType C[], long data_size, double gridSize)
 
 	printf("data_size = %ld gridSize = %f ", data_size, gridSize);
 
-	for (long i = 0; i < data_size; i++) {
+	for (long i = 1; i < data_size; i++) {
 
 		// Rectangular integration
-		totalProbability += C[i] * gridSize;
+		//totalProbability += C[i] * gridSize;
 
 		// Trapezodial integration
-		//totalProbability += 0.5* gridSize * (C[i - 1] + C[i]);
+		totalProbability += 0.5* gridSize * (C[i - 1] + C[i]);
 
 		//printf("C[%d]=%.17f\n", j, C[j]);
 	}

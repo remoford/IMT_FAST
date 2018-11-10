@@ -578,7 +578,7 @@ void twostage_bin(const distType data[], double m1, double s1, double m2, double
 	if(convergenceMethod == LOGLIKELIHOOD)
 		binned_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
 	else if(convergenceMethod == NORMALIZATION)
-		nn_conv(z, y, data, partition, Y, &logP1, partitionLength, dataSize, gridSize);
+		nn_conv(z, y, data, partition, Y, partitionLength, dataSize, gridSize);
 	else {
 		printf("ERROR: INVALID CONVERGENCE METHOD!\n");
 		exit(1);

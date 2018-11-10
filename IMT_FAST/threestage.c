@@ -383,8 +383,6 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 
 	beginTraceFun("threestage_adapt");
 
-	printf("starting (%g %g %g %g %g %g)\n", m1, s1, m2, s2, m3, s3);
-
 	distType gridSize = 0.01;
 
 	// find the largest point in t
@@ -417,6 +415,7 @@ void threestage_adapt(const distType data[], double m1, double s1, double m2, do
 		s3 = s_tmp;
 	}
 
+	printf("starting (%g %g %g %g %g %g)\n", m1, s1, m2, s2, m3, s3);
 
 	//threestage_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);
 	threestage_double_adapt_bin(data, m1, s1, m2, s2, m3, s3, Y, dataSize, gridSize);

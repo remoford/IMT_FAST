@@ -21,7 +21,7 @@ into Y[] and find the loglikelihood logP0
 
 FIXME this really needs to be cleaned up...
 */
-void nn_conv(const distType z[], const distType y[], const double X[], const double x[], distType Y[], double *logP0, int size_xyz, int size_XY, double h)
+void nn_conv(const distType z[], const distType y[], const double X[], const double x[], distType Y[], int size_xyz, int size_XY, double h)
 {
 	beginTraceFun("nn_conv");
 
@@ -153,7 +153,15 @@ void nn_conv(const distType z[], const distType y[], const double X[], const dou
     printf("\n\n");
 #endif
 
-	*logP0 = (double) loglikelihood(Y, size_XY);
+	for (int i = 0; i < size_XY; i++){
+		if (Y[i] * h > 1) {
+			printf("ERROR: nn_conv(): Y[%d]*%f = %f > 1 ; Y[%d] = %f\n", i, h, Y[i]*h, i, Y[i]);
+			exit(1);
+		}
+	}
+
+
+	//*logP0 = (double) loglikelihood(Y, size_XY);
 
 
 #ifdef _VERBOSE

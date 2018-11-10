@@ -53,6 +53,13 @@ void binned_conv(const distType z[], const distType y[],
 
 	rightHandedRiemannSum((long)size_XY, data, h, (long)size_xyz, 0.1, C, Y);
 
+	for (long i = 0; i < size_XY; i++) {
+		if (Y[i] < 0)
+			printf("ERROR: binned_conv(): L[%d] = %f < 0\n", i, Y[i]);
+		if (Y[i] > 1)
+			printf("ERROR: binned_conv(): L[%d] = %f > 1\n", i, Y[i]);
+	}
+
 	*logP0 = (double) loglikelihood(Y, size_XY);
 
 	FREE(C);

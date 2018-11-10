@@ -10,11 +10,17 @@ extern int main(int argc, char * argv[]);
 
 //#define _PARALLEL_SEEDS
 
+//#define _OLDCONV
+
+#define _PARALLEL_CONV
+
 // _GOFAST is for debugging purposes, it sets convergence criteria excessively loose and should not be used when you want useful results!
 //#define _GOFAST
 
 #define TOL_FUN 0.001
 #define TOL_X 0.001
+
+
 
 
 // This is based on a desired epsilon of 05

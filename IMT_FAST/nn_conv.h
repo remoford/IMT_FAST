@@ -6,4 +6,4 @@
 #include "main.h"
 
 extern void nn_conv(const distType z[], const distType y[], const double X
-	[], const double x[], distType Y[], double *logP0, int size_xyz, int size_XY, double h);
+	[], const double x[], distType Y[], int size_xyz, int size_XY, double h);
