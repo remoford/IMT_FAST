@@ -181,7 +181,7 @@ void optimize_twostage(int numseeds, double ** seeds, configStruct config) {
 			clock_t t;
 			t = clock();
 			
-			printf("iter=%d\n", (int)iter);
+			printf("seed=%d iter=%d\n", (int)seedIdx, (int)iter);
 
 			// Iterate the optimizer one step
 			status = gsl_multimin_fminimizer_iterate(s);

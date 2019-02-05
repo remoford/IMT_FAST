@@ -197,7 +197,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 			clock_t t;
 			t = clock();
 
-			printf("iter=%d\n", (int)iter);
+			printf("seed=%d iter=%d\n", (int) seedIdx, (int)iter);
 			status = gsl_multimin_fminimizer_iterate(s);
 
 			ll_delta = prevll - s->fval;
