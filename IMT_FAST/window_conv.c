@@ -3,6 +3,8 @@
 #include "main.h"
 #include "time.h"
 
+#define _OLDCONV
+
 /*
 Compute the windowed algebraic convolution of vectors y and z of size size_xyz into C with a grid size of h
 
@@ -26,12 +28,12 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 	
 	distType threshold = 0;
 
-    for (unsigned long i = 0; i < size_xyz; i++) {
+    for (long i = 0; i < size_xyz; i++) {
 		C[i] = 0;
     }
 
     /* Find the highest zero-valued index */
-    unsigned long firstIdx = 0;
+    long firstIdx = 0;
     for (unsigned long i = 0; i < size_xyz; i++) {
         if (z[i] > threshold)
 			break;
@@ -39,7 +41,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
             firstIdx = i;
     }
 
-	unsigned long lastIdx = size_xyz - 1;
+	long lastIdx = size_xyz - 1;
 	for (unsigned long i = size_xyz - 1; i > 0; i--) {
 		if (z[i] > threshold)
 			break;
@@ -47,7 +49,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 			lastIdx = i;
 	}
 
-	unsigned long firstYIdx = 0;
+	long firstYIdx = 0;
 	for (unsigned long i = 0; i < size_xyz; i++) {
 		if (y[i] > threshold)
 			break;
@@ -55,7 +57,7 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 			firstYIdx = i;
 	}
 
-	unsigned long lastYIdx = size_xyz - 1;
+	long lastYIdx = size_xyz - 1;
 	for (unsigned long i = size_xyz - 1; i > 0; i--) {
 		if (y[i] > threshold)
 			break;
@@ -117,27 +119,129 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 		if (firstOutIdx >= lastOutIdx)
 			firstOutIdx = 0;
 		distType acc;
-		double skippedIndices;
+		double skippedIndices = 0;
 		unsigned long skippedIndicesInside;
-		unsigned long j;
-		unsigned long k;
+		long j;
+		long k;
+		long firstKIdx = 0;
+		long lastKIdx = 0;
 #ifdef _PARALLEL_CONV
-#pragma omp parallel for schedule(static, 1) private(acc, skippedIndicesInside, j, k)
+#pragma omp parallel for schedule(static, 16) private(acc, skippedIndicesInside, j, k, firstKIdx, lastKIdx)
 #endif
-		for (unsigned long i = firstOutIdx; i < lastOutIdx; i++) {
+		//for (unsigned long i = firstOutIdx; i < lastOutIdx; i++) {
+		for (long i = 0 ; i < size_xyz ; i++){
 			acc = 0;
 			skippedIndicesInside = 0;
-			for (k = 0; k <= i; k++) {
+
+
+
+			/*
+j < firstYIdx
+i=169 k=161 j=8 firstKIdx=-2031 lastKIdx=-2031 firstIdx=0 lastIdx=2200 firstYIdx=12 lastYIdx=2200 !!!
+i=202 k=198 j=4 firstKIdx=-1998 lastKIdx=-1998 firstIdx=0 lastIdx=2200 firstYIdx=12 lastYIdx=2200 !!!
+j < firstYIdx
+j < firstYIdx
+i=148 k=142 j=6 firstKIdx=-2052 lastKIdx=-2052 firstIdx=0 lastIdx=2200 firstYIdx=12 lastYIdx=2200 !!!
+i=202 k=199 j=3 firstKIdx=-1998 lastKIdx=-1998 firstIdx=0 lastIdx=2200 firstYIdx=12 lastYIdx=2200 !!!
+j < firstYIdx
+			*/
+
+
+
+			firstKIdx = 0;
+			lastKIdx = i;
+
+			// Satisfy k >= firstIdx
+			if(firstKIdx < firstIdx)
+				firstKIdx = firstIdx;
+
+			// Satisfy k <= lastIdx
+			if (lastKIdx > lastIdx)
+				lastKIdx = lastIdx;
+
+
+
+
+			// Satisfy j <= lastYIdx
+
+			long firstJIdx = i - firstKIdx;
+
+			if (firstJIdx < i - firstYIdx)
+				firstKIdx = firstYIdx - i;
+			firstJIdx = i - firstKIdx;
+
+
+			if (firstJIdx < i - lastYIdx)
+				firstKIdx = lastYIdx - i;
+			firstJIdx = i - firstKIdx;
+
+
+			// Satisfy j >= firstYIdx
+
+			long lastJIdx = i - lastKIdx;
+
+			if (lastJIdx < i - firstYIdx) {
+
+				printf("WOO");
+				lastKIdx = i - firstYIdx;
+
+			}
+			lastJIdx = i - lastKIdx;
+
+
+
+
+
+			// Careful about overlaps
+			if (lastKIdx < firstKIdx)
+				lastKIdx = firstKIdx;
+
+
+			for (k = firstKIdx; k < lastKIdx; k++) {
+			//for(k=firstKIdx ; k < lastKIdx ; k++){
+				skippedIndicesInside++;
+				//printf("i=%d k=%d j=%d firstKIdx=%d lastKIdx=%d firstIdx=%d lastIdx=%d firstYIdx=%d lastYIdx=%d !!!\n",
+				//	i, k, j, firstKIdx, lastKIdx, firstIdx, lastIdx, firstYIdx, lastYIdx);
+
 				j = i - k;
-				if (k >= firstIdx && k <= lastIdx && j >= firstYIdx && j <= lastYIdx)
-					acc += z[k] * y[j] * h;
+				//if (k >= firstIdx && k <= lastIdx && j >= firstYIdx && j <= lastYIdx) {
+				if (j >= firstYIdx && j <= lastYIdx) {
+					acc += z[k] * y[j];
+				}
+					
+				
 				else {
-					skippedIndices++;
+					
+					printf("i=%ld k=%ld j=%ld firstKIdx=%ld lastKIdx=%ld firstJIdx=%ld lastJIdx=%ld firstIdx=%ld lastIdx=%ld firstYIdx=%ld lastYIdx=%ld !!!",
+						i, k, j, firstKIdx, lastKIdx, firstJIdx, lastJIdx, firstIdx, lastIdx, firstYIdx, lastYIdx);
+
+					if (k < firstIdx)
+						printf("k < firstIdx ");
+					if (k > lastIdx)
+						printf("k > lastIdx ");
+					if (j < firstYIdx)
+						printf("j < firstYIdx ");
+					if (j > lastYIdx)
+						printf("j > lastYIdx ");
+						
+					printf("\n");
+					/*
+					if (k < firstKIdx || k > lastKIdx)
+						printf("NEW BOUNDS NOT WORKING i=%d k=%d j=%d firstKIdx=%d lastKIdx=%d firstIdx=%d lastIdx=%d firstYIdx=%d lastYIdx=%d !!!\n",
+							i, k, j, firstKIdx, lastKIdx, firstIdx, lastIdx, firstYIdx, lastYIdx);
+					exit(1);
+					*/
+
+					skippedIndicesInside++;
 					//	printf("Window skipping!\n");
 				}
+				
 			}
-			C[i] = acc;
+			C[i] = acc * h;
+			//skippedIndicesInside = i - skippedIndicesInside;
+			//printf("skippedIndicesInside = %d", skippedIndicesInside);
 			skippedIndices += skippedIndicesInside;
+			
 		}
 		estimateOpCount = maxTripCount - (opsPerIteration * skippedIndices);
 #endif

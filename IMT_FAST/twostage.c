@@ -42,9 +42,9 @@ double ** twostage_seeds(double mean, double variance, int *numSeeds) {
 	*/
 
 
-	int numRatios = 2;
+	int numRatios = 3;
 
-	double ratios[2] = { 0.2, 0.4 };
+	double ratios[3] = { 0.1, 0.5, 1.25};
 
 	*numSeeds = numRatios * numRatios;
 
@@ -54,14 +54,14 @@ double ** twostage_seeds(double mean, double variance, int *numSeeds) {
 
 		seeds[seedIdx] = (double *)MALLOC(sizeof(double) * 4);
 
-		int meanIdx = seedIdx % numRatios;
-		int varIdx = seedIdx / numRatios;
+		int meanIdx = seedIdx / numRatios;
+		int varIdx = seedIdx % numRatios;
 
 		double leftMean = mean * ratios[meanIdx];
-		double rightMean = mean * (1 - ratios[meanIdx]);
+		double rightMean = mean * fabs(1.0 - ratios[meanIdx]);
 
 		double leftVariance = variance * ratios[varIdx];
-		double rightVariance = variance * (1 - ratios[varIdx]);
+		double rightVariance = variance * fabs(1.0 - ratios[varIdx]);
 
 
 		seeds[seedIdx][0] = 1 / leftMean;

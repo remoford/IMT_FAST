@@ -13,7 +13,10 @@
 #include "binned_conv.h"
 #include "gsl/gsl_statistics.h"
 #include "utility.h"
+
+#ifdef _WIN32
 #include "windows.h"
+#endif
 
 #ifndef typedef_cell_wrap_3
 #define typedef_cell_wrap_3
@@ -38,17 +41,20 @@ double ** threestage_seeds(double mean, double variance, int *numSeeds) {
 
 	int numRatios = 2;
 
-	double ratios[2] = { 0.2, 0.4 };
+	double ratios[2] = { 0.1, 0.75 };
 
 	int numseeds_twostage;
 
+	// Note that we only want the number of seeds that twostage generated so we throw away the actual seeds afterwards and generate our own
 	double ** seeds_twostage = twostage_seeds(mean, variance, &numseeds_twostage);
 
 	*numSeeds = numRatios * numRatios * numseeds_twostage;
 
+	// throw away the existing seeds
 	for (int seedIdx = 0; seedIdx < numseeds_twostage; seedIdx++)
 		FREE(seeds_twostage[seedIdx]);
 	FREE(seeds_twostage);
+
 
 	double ** seeds = (double **)MALLOC(sizeof(double *) * *numSeeds);
 
@@ -56,16 +62,18 @@ double ** threestage_seeds(double mean, double variance, int *numSeeds) {
 
 		seeds[seedIdx] = (double *)MALLOC(sizeof(double) * 6);
 
-		int meanIdx = ((seedIdx / numseeds_twostage) % numRatios);
-		int varIdx = ((seedIdx / numseeds_twostage) / numRatios);
+		int meanIdx = ((seedIdx / numseeds_twostage) / numRatios);
+		int varIdx = ((seedIdx / numseeds_twostage) % numRatios);
 		int twostageIdx = seedIdx % numseeds_twostage;
 
+
 		double leftMean = mean * ratios[meanIdx];
-		double rightMean = mean * (1 - ratios[meanIdx]);
+		double rightMean = mean * fabs(1 - ratios[meanIdx]);
 
 		double leftVariance = variance * ratios[varIdx];
-		double rightVariance = variance * (1 - ratios[varIdx]);
+		double rightVariance = variance * fabs(1 - ratios[varIdx]);
 
+		//printf("meanIdx = %d  varIdx = %d  towstageIdx = %d      leftMean = %f  rightMean = %f  leftVariance = %f  rightVariance = %f\n",  meanIdx, varIdx, twostageIdx, leftMean, rightMean, leftVariance, rightVariance);
 
 		double ** seeds_twostage = twostage_seeds(rightMean, rightVariance, &numseeds_twostage);
 
