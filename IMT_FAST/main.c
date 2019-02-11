@@ -1,7 +1,7 @@
 #include "imt_analysis.h"
 #include "main.h"
 #include "stdio.h"
-#include <math.h>       /* math_errhandling */
+#include "math.h"       /* math_errhandling */
 #include <errno.h>      /* errno, EDOM */
 #include <fenv.h>       /* feclearexcept, fetestexcept, FE_ALL_EXCEPT, FE_INVALID */
 #include "float.h"
@@ -12,7 +12,7 @@
 #include "twostage.h"
 #include "threestage.h"
 #include "time.h"
-
+#include "mex.h"
 
 
 traceDepth = 0;
@@ -22,6 +22,11 @@ int main(int argc, char * argv[])
 {
     (void) argc;
     (void) argv;
+
+	printf("argc = %d", argc);
+	for(int i = 0; i < argc ; i++){
+		printf("argv[%d] = %s", i, argv[i]);
+	}
 
 	/*
 	Precision can vary from machine to machine, show the ground truth
