@@ -5,7 +5,10 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef MATLAB_MEX_FILE
 #include <mex.h>
+#endif
 
 
 extern int main(int argc, char * argv[]);

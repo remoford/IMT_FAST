@@ -15,13 +15,18 @@
 #include "time.h"
 #include "utility.h"
 #include "gsl/gsl_statistics.h"
+
+#ifdef MATLAB_MEX_FILE
 #include "mex.h"
 #include "matrix.h"
 
 
-void
-mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
+
+void mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 {
+
+
+	/*
   mexPrintf ("Hello World!\n");
 
 
@@ -88,31 +93,158 @@ mexFunction (int nlhs, mxArray * plhs[], int nrhs, const mxArray * prhs[])
 	}
 
       mwSize arraySize = mxGetNumberOfElements(prhs[i]);
-      mexPrintf(" arraySize = %d", arraySize);
-
-      const char * class_name_str = mxGetClassName(prhs[i]);
-
-      mexPrintf("class name str = %s", class_name_str);
+	  mexPrintf(" arraySize = %d", arraySize);
 
       mexPrintf ("\n");
     }
+	*/
+
+  if (nrhs != 9) {
+	  mexPrintf("OMG THE NUMBER OF ARGUMENTS WASNT 8!!!!!\n");
+	  return;
+  }
+
+
+  mxClassID zeroth_arg_type = mxGetClassID(prhs[0]);
+
+  if (zeroth_arg_type != mxCHAR_CLASS) {
+	  mexPrintf("OMG THE FIRST ARGUMENT WAS NOT A STRING!!!!\n");
+	  return;
+
+  }
+
+
+  // function [P, h, flag, E, C] = convolv_2invG_Dirac_optipon(t, m1, s1, m2, s2, bin, h0, EType)
+
+  if (mxGetClassID(prhs[1]) != mxDOUBLE_CLASS) {
+	  mexPrintf("OMG THE t ARGUMENT IS NOT OF TYPE DOUBLE!!!!\n");
+	  return;
+  }
+
+  
+
+  if (mxGetNumberOfElements(prhs[1]) <= 0) {
+	  mexPrintf("OMG t needs to have 1 or more elements!!!!\n");
+	  return;
+  }
+
+  
+
+  if (mxGetClassID(prhs[2]) != mxDOUBLE_CLASS) {
+	  mexPrintf("OMG THE m1 ARGUMENT IS NOT OF TYPE DOUBLE!!!!\n");
+	  return;
+  }
+
+  if (mxGetNumberOfElements(prhs[2]) != 1) {
+	  mexPrintf("OMG m1 needs to have exactly 1 elements!!!!\n");
+	  return;
+  }
+
+  if (mxGetClassID(prhs[3]) != mxDOUBLE_CLASS) {
+	  mexPrintf("OMG THE s1 ARGUMENT IS NOT OF TYPE DOUBLE!!!!\n");
+	  return;
+  }
+
+  if (mxGetNumberOfElements(prhs[3]) != 1) {
+	  mexPrintf("OMG s1 needs to have exactly 1 elements!!!!\n");
+	  return;
+  }
+
+  if (mxGetClassID(prhs[4]) != mxDOUBLE_CLASS) {
+	  mexPrintf("OMG THE m2 ARGUMENT IS NOT OF TYPE DOUBLE!!!!\n");
+	  return;
+  }
+
+  if (mxGetNumberOfElements(prhs[4]) != 1) {
+	  mexPrintf("OMG m2 needs to have exactly 1 elements!!!!\n");
+	  return;
+  }
+
+  if (mxGetClassID(prhs[5]) != mxDOUBLE_CLASS) {
+	  mexPrintf("OMG THE s2 ARGUMENT IS NOT OF TYPE DOUBLE!!!!\n");
+	  return;
+  }
+
+  if (mxGetNumberOfElements(prhs[5]) != 1) {
+	  mexPrintf("OMG s2 needs to have exactly 1 elements!!!!\n");
+	  return;
+  }
+
+  if (mxGetClassID(prhs[6]) != mxCHAR_CLASS) {
+	  mexPrintf("OMG bin needs to be a char array!!!!!\n");
+	  return;
+  }
+
+  if (mxGetClassID(prhs[7]) != mxDOUBLE_CLASS) {
+	  mexPrintf("OMG h0 needs to be of type double!!!!\n");
+	  return;
+  }
+
+  if (mxGetNumberOfElements(prhs[7]) != 1) {
+	  mexPrintf("OMG h0 needs to heave exactly 1 elements!!!!\n");
+	  return;
+  }
+
+  if (mxGetClassID(prhs[8]) != mxCHAR_CLASS) {
+	  mexPrintf("OMG EType needs to be a char array\n");
+	  return;
+  }
+
+
+ 
+
+  if (nlhs != 1) {
+	  mexPrintf("OMG THE NUMBER OF OUTPUTS WASNT 1!!!!!\n");
+	  return;
+  }
+
+  //if (mxGetClassID(plhs[0]) != mxDOUBLE_CLASS) {
+//	  mexPrintf("OMG output needs to be a double type\n");
+	//  return;
+  //}
+
+  double m1 = mxGetScalar(prhs[2]);
+  double s1 = mxGetScalar(prhs[3]);
+  double m2 = mxGetScalar(prhs[4]);
+  double s2 = mxGetScalar(prhs[5]);
+
+  /* Starting point */
+  gsl_vector * v;
+  v = gsl_vector_alloc(4);
+  gsl_vector_set(v, 0, m1);
+  gsl_vector_set(v, 1, s1);
+  gsl_vector_set(v, 2, m2);
+  gsl_vector_set(v, 3, s2);
+
+  /*
+  configStruct config = *(configStruct *)params;
+
+	distType * data = config.data;
+	int data_size = config.data_size;
+  */
+
+  configStruct config;
+
+  distType * data;
+  data = (distType *) mxGetPr(prhs[1]);
+
+  int data_size = mxGetNumberOfElements(prhs[1]);
+
+  config.data = data;
+  config.data_size = data_size;
+
+
+
+  double ll = convolv_2invG_adapt_nov_loglikelihood(v, (void *) &config);
+
+  plhs[0] = mxCreateDoubleScalar(ll);
+
 
   return;
 
-  /*
-     int ARGSIZE = 1024;
-     int argc = 3;
-     char **argv = (char **) MALLOC (sizeof (char *));
-     for (int i = 0; i < argc; i++)
-     {
-     argv[i] = (char *) MALLOC (sizeof (char) * ARGSIZE);
 
-     }
-
-     argv[0] = "mexWrap";
-     argv[1] = "analysis";
-     argv[2] = "onestage";
-
-     main (argc, argv);
-   */
 }
+
+
+
+#endif

@@ -140,6 +140,7 @@
   <ItemGroup>
     <ClCompile Include="binned_conv.c" />
     <ClCompile Include="conv.c" />
+    <ClCompile Include="mexWrap.c" />
     <ClCompile Include="twostage.c" />
     <ClCompile Include="threestage.c" />
     <ClCompile Include="emgpdf.c" />

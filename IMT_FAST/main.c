@@ -12,8 +12,10 @@
 #include "twostage.h"
 #include "threestage.h"
 #include "time.h"
-#include "mex.h"
 
+#ifdef MATLAB_MEX_FILE
+#include "mex.h"
+#endif
 
 traceDepth = 0;
 
