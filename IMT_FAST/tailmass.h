@@ -5,7 +5,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _OPENMP
 #include "omp.h"
+#endif
 
 extern double tailmass(const double m[2], const double s[2], double T2, const double sd[2]);
 

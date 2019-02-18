@@ -5,7 +5,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _OPENMP
 #include "omp.h"
+#endif
 #include "gsl/gsl_multimin.h"
 #include "main.h"
 

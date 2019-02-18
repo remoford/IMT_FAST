@@ -83,7 +83,8 @@ void window_conv(const distType z[], const distType y[], distType C[], double h,
 
 
 #ifdef _OLDCONV
-		unsigned long j;
+		//unsigned long j;
+		long j;
 //#pragma omp parallel for schedule(static, 1) private(newLastYIdx, j)
 		for (unsigned long i = firstIdx; i < lastIdx; i++) {
 			if ((size_xyz - i) < lastYIdx) {

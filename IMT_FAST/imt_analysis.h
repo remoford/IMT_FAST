@@ -5,7 +5,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _OPENMP
 #include "omp.h"
+#endif
 #include "main.h"
 
 extern distType * get_default_data(int * data_size);

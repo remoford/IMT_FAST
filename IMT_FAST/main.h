@@ -13,11 +13,17 @@
 
 extern int main(int argc, char * argv[]);
 
+
+#ifdef _OPENMP 
+#include "omp.h"
 //#define _PARALLEL_SEEDS
+//#define _PARALLEL_CONV
+#endif
+
 
 //#define _OLDCONV
 
-//#define _PARALLEL_CONV
+
 
 // _GOFAST is for debugging purposes, it sets convergence criteria excessively loose and should not be used when you want useful results!
 //#define _GOFAST
