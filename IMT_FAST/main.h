@@ -17,7 +17,7 @@ extern int main(int argc, char * argv[]);
 #ifdef _OPENMP 
 #include "omp.h"
 //#define _PARALLEL_SEEDS
-//#define _PARALLEL_CONV
+#define _PARALLEL_CONV
 #endif
 
 

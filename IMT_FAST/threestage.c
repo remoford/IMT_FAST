@@ -233,7 +233,7 @@ void optimize_threestage(const distType data[], int data_size, configStruct conf
 			SetConsoleTextAttribute(hConsole, BACKGROUND_INTENSITY);
 #endif
 			printf("ll=%g [%.8f %.8f %.8f %.8f %.8f %.8f] size=%.3f %.3fs",
-				0.0-sqrt(s->fval),
+				s->fval,
 				gsl_vector_get(s->x, 0),
 				gsl_vector_get(s->x, 1),
 				gsl_vector_get(s->x, 2),
@@ -376,7 +376,7 @@ double convolv_3invG_nov_loglikelihood(const gsl_vector * v, void *params)
 		FREE(Y);
 	
 	
-    double objective =  ll*ll;
+    double objective =  ll;
 
 	
 
