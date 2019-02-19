@@ -31,7 +31,7 @@
 	for stage in "two" "three"
 	do
 	echo "$stage"
-	grep "finished seedIdx" "output/latest/icc_fast_""$stage""stage_"* |\
+	grep "finished seedIdx" "output/latest/gcc_fast_""$stage""stage_"* |\
 		sed 's#output*stage_##' |\
 		sed 's#_out.txt##' |\
 		cut -d':' -f1 |\

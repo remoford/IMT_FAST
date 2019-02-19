@@ -21,7 +21,7 @@ else
 	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)
 	data=${data_sets[ $(( $task_index % 6 )) ]}
 	mode=${modes[ $(( $task_index / 6 )) ]}
-	binary="./icc_fast"
+	binary="./gcc_fast"
 	output_dir="output/""$JOB_NAME""/"
 	(
 		echo -n "Job ""$JOB_ID"".""$task_index"" started on ""$HOSTNAME"" from ""$SGE_O_HOST"" logging to ""$output_dir"
