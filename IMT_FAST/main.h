@@ -78,7 +78,7 @@ typedef struct  {
 //#define _ENABLE_FUNCTION_TRACING
 
 // This stores the current function depth for printing function tracing information
-int traceDepth;
+//int traceDepth;
 
 
 #define _MULTI_ADAPT
